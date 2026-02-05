@@ -1,0 +1,1029 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes" />
+<title>2026 실업급여 계산기 (예상)</title>
+<style>
+  .unemployment-calculator {
+    --bg: #f8f9fa;
+    --panel: #ffffff;
+    --panel-2: #f1f3f5;
+    --brand: #2563eb;
+    --brand-light: #3b82f6;
+    --ok: #10b981;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --text: #1f2937;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+    --border-light: #f3f4f6;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --radius: 12px;
+  }
+
+  .unemployment-calculator * { box-sizing: border-box; }
+
+  .unemployment-calculator {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Arial, Apple SD Gothic Neo, "Noto Sans KR", Malgun Gothic, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    padding: 20px 0;
+  }
+
+  .unemployment-calculator .wrap {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 4px;
+  }
+
+  .unemployment-calculator .calculator-container {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .unemployment-calculator .input-section { padding: 16px; overflow: hidden; }
+  .unemployment-calculator .results-section {
+    padding: 16px;
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border-top: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  @media (max-width: 600px) {
+    .unemployment-calculator .input-section,
+    .unemployment-calculator .results-section { padding: 12px; }
+  }
+  @media (max-width: 480px) {
+    .unemployment-calculator .input-section,
+    .unemployment-calculator .results-section { padding: 10px; }
+  }
+
+  .unemployment-calculator h1 {
+    font-size: 24px;
+    margin: 0 0 6px 0;
+    font-weight: 700;
+    color: var(--text);
+  }
+  @media (max-width: 600px) { .unemployment-calculator h1 { font-size: 22px; } }
+  @media (max-width: 480px) { .unemployment-calculator h1 { font-size: 20px; } }
+
+  .unemployment-calculator .subtitle {
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    font-size: 14px;
+    word-break: keep-all;
+    line-height: 1.4;
+  }
+  @media (max-width: 600px) {
+    .unemployment-calculator .subtitle { font-size: 13px; margin-bottom: 16px; }
+  }
+
+  .unemployment-calculator .section-title {
+    margin: 20px 0 12px;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--text);
+  }
+  @media (max-width: 600px) {
+    .unemployment-calculator .section-title { margin: 16px 0 10px; font-size: 15px; }
+  }
+
+  .unemployment-calculator .row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    width: 100%;
+  }
+  .unemployment-calculator .row > * { flex: 1; min-width: 0; }
+
+  @media (max-width: 600px) {
+    .unemployment-calculator .row { flex-direction: column; gap: 10px; }
+    .unemployment-calculator .row > * { flex: none; width: 100%; }
+  }
+
+  .unemployment-calculator label {
+    display: block;
+    font-weight: 500;
+    margin: 0 0 4px;
+    color: var(--text);
+    font-size: 13px;
+  }
+
+  .unemployment-calculator input[type="text"],
+  .unemployment-calculator input[type="number"],
+  .unemployment-calculator input[type="date"],
+  .unemployment-calculator select {
+    width: 100%;
+    max-width: 100%;
+    padding: 10px 12px;
+    background: var(--panel);
+    color: var(--text);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    outline: none;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+  }
+
+  @media (max-width: 600px) {
+    .unemployment-calculator input[type="text"],
+    .unemployment-calculator input[type="number"],
+    .unemployment-calculator input[type="date"],
+    .unemployment-calculator select {
+      padding: 12px 14px;
+      font-size: 16px;
+    }
+  }
+
+  .unemployment-calculator input:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+  .unemployment-calculator input::placeholder { color: var(--text-muted); }
+
+  .unemployment-calculator .toggle {
+    display: flex;
+    gap: 0;
+    background: var(--border-light);
+    border: 2px solid var(--border);
+    padding: 3px;
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 100%;
+  }
+  .unemployment-calculator .toggle button {
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 0;
+    color: var(--text-muted);
+    background: transparent;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 13px;
+    transition: all 0.2s ease;
+    min-height: 40px;
+    white-space: nowrap;
+  }
+  .unemployment-calculator .toggle button.active {
+    background: var(--brand);
+    color: white;
+    box-shadow: var(--shadow);
+  }
+
+  .unemployment-calculator .company-block {
+    background: var(--panel-2);
+    border: 2px dashed var(--border);
+    padding: 12px;
+    border-radius: var(--radius);
+    margin-bottom: 10px;
+    width: 100%;
+  }
+  @media (max-width: 600px) { .unemployment-calculator .company-block { padding: 10px; } }
+
+  .unemployment-calculator .add-btn {
+    width: 100%;
+    max-width: 100%;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    border: 2px dashed var(--border);
+    background: var(--panel);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    min-height: 44px;
+    box-sizing: border-box;
+  }
+  .unemployment-calculator .add-btn:hover { border-color: var(--brand); color: var(--brand); }
+
+  .unemployment-calculator .controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    width: 100%;
+  }
+  @media (max-width: 600px) {
+    .unemployment-calculator .controls { flex-direction: column; gap: 8px; }
+  }
+
+  .unemployment-calculator .primary {
+    background: var(--brand);
+    color: white;
+    border: 0;
+    padding: 14px 20px;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    flex: 1;
+    transition: background-color 0.2s ease;
+    min-height: 44px;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  .unemployment-calculator .primary:hover { background: var(--brand-light); }
+
+  .unemployment-calculator .ghost {
+    background: transparent;
+    border: 2px solid var(--border);
+    color: var(--text-muted);
+    padding: 14px 20px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    flex: 0.7;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    min-height: 44px;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  @media (max-width: 600px) { .unemployment-calculator .ghost { flex: 1; } }
+  .unemployment-calculator .ghost:hover { border-color: var(--text-muted); color: var(--text); }
+
+  .unemployment-calculator .result-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin: 12px 0;
+    box-shadow: var(--shadow);
+    width: 100%;
+    box-sizing: border-box;
+  }
+  @media (max-width: 600px) {
+    .unemployment-calculator .result-card { padding: 14px; margin: 10px 0; }
+  }
+
+  .unemployment-calculator .headline {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 6px 0 16px;
+    color: var(--text);
+    word-break: keep-all;
+  }
+  @media (max-width: 600px) { .unemployment-calculator .headline { font-size: 18px; margin: 4px 0 14px; } }
+
+  .unemployment-calculator .kpi {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    width: 100%;
+  }
+  .unemployment-calculator .kpi:last-child { border-bottom: 0; }
+
+  .unemployment-calculator .kpi .label {
+    color: var(--text-muted);
+    font-size: 13px;
+    flex: 1;
+    line-height: 1.3;
+    word-break: keep-all;
+  }
+
+  .unemployment-calculator .kpi .value {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    text-align: right;
+  }
+
+  @media (max-width: 600px) {
+    .unemployment-calculator .kpi { flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px 0; }
+    .unemployment-calculator .kpi .label { font-size: 12px; }
+    .unemployment-calculator .kpi .value { font-size: 15px; align-self: flex-end; }
+  }
+
+  .unemployment-calculator .pill {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    background: var(--brand);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    max-width: 100%;
+  }
+  @media (max-width: 600px) {
+    .unemployment-calculator .pill { font-size: 11px; padding: 5px 10px; margin-bottom: 10px; }
+  }
+
+  .unemployment-calculator .help {
+    color: var(--text-muted);
+    font-size: 11px;
+    margin-left: 6px;
+  }
+  @media (max-width: 600px) { .unemployment-calculator .help { font-size: 10px; margin-left: 4px; } }
+
+  .unemployment-calculator .note {
+    font-size: 12px;
+    color: var(--text-muted);
+    border-left: 3px solid var(--brand);
+    margin: 14px 0;
+    background: var(--panel-2);
+    padding: 10px 10px 10px 16px;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    word-break: keep-all;
+    width: 100%;
+    box-sizing: border-box;
+    line-height: 1.4;
+  }
+  @media (max-width: 600px) {
+    .unemployment-calculator .note { font-size: 11px; padding: 8px 8px 8px 14px; margin: 12px 0; }
+  }
+
+  .unemployment-calculator .flex-end {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    width: 100%;
+  }
+  @media (max-width: 600px) { .unemployment-calculator .flex-end { flex-direction: column; gap: 8px; } }
+
+  .unemployment-calculator .danger { color: var(--danger); }
+
+  .unemployment-calculator .mini {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  @media (max-width: 600px) { .unemployment-calculator .mini { font-size: 11px; gap: 5px; } }
+
+  .unemployment-calculator .chip {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  @media (max-width: 600px) { .unemployment-calculator .chip { font-size: 10px; padding: 3px 6px; } }
+
+  .unemployment-calculator .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 100%;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    border: 2px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin-bottom: 6px;
+    min-height: 42px;
+    box-sizing: border-box;
+    font-size: 14px;
+  }
+  .unemployment-calculator .btn:hover { border-color: var(--text-muted); }
+  .unemployment-calculator .btn.primary {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: white;
+  }
+  .unemployment-calculator .btn.primary:hover {
+    background: var(--brand-light);
+    border-color: var(--brand-light);
+  }
+
+  .unemployment-calculator .mono { font-family: ui-monospace, SFMono-Regular, Consolas, Menlo, monospace; }
+
+  .unemployment-calculator input[type="checkbox"] { width: 16px; height: 16px; margin-right: 6px; }
+
+  .unemployment-calculator .delete-btn {
+    background: var(--danger);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    min-width: 50px;
+    min-height: 36px;
+    transition: background-color 0.2s ease;
+    white-space: nowrap;
+  }
+  .unemployment-calculator .delete-btn:hover { background: #dc2626; }
+
+  @media (max-width: 600px) {
+    .unemployment-calculator .delete-btn {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px 12px;
+      min-height: 40px;
+    }
+    .unemployment-calculator .company-row { flex-direction: column; gap: 10px; }
+    .unemployment-calculator .company-row > * { width: 100%; }
+  }
+
+  .unemployment-calculator #uc-daysInput {
+    width: 100px !important;
+    max-width: 100px !important;
+    text-align: right;
+    background: var(--panel);
+    border: 2px solid var(--border);
+    color: var(--text);
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+  }
+  @media (max-width: 600px) {
+    .unemployment-calculator #uc-daysInput { width: 80px !important; max-width: 80px !important; font-size: 13px; }
+  }
+  @media (max-width: 480px) {
+    .unemployment-calculator .kpi .value { font-size: 14px; }
+    .unemployment-calculator .headline { font-size: 16px; }
+  }
+
+  .unemployment-calculator .wrap,
+  .unemployment-calculator .calculator-container,
+  .unemployment-calculator .input-section,
+  .unemployment-calculator .results-section {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  @media (max-width: 400px) {
+    .unemployment-calculator .wrap { padding: 2px; }
+    .unemployment-calculator .input-section, .unemployment-calculator .results-section { padding: 8px; }
+    .unemployment-calculator h1 { font-size: 18px; }
+    .unemployment-calculator .subtitle { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+  <div class="unemployment-calculator" id="uc-root">
+    <div class="wrap">
+      <div class="calculator-container">
+        <div class="input-section">
+          <h1>실업급여 계산기</h1>
+          <div class="subtitle">마지막 퇴사일 기준 <b>최근 18개월</b> 이내 기간만 합산합니다. (예상치)</div>
+
+          <div class="row">
+            <div>
+              <label for="uc-birth">생년월일(8자리)</label>
+              <input id="uc-birth" type="text" placeholder="예) 19930821" inputmode="numeric" maxlength="8">
+            </div>
+            <div>
+              <label>장애인 여부<span style="color: var(--danger)">*</span></label>
+              <div class="toggle" id="uc-disability-toggle">
+                <button type="button" data-value="yes">예</button>
+                <button type="button" data-value="no" class="active">아니오</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-title">재직기간
+            <div class="mini" style="margin-top: 6px;">
+              <span class="chip">여러 회사 추가 가능</span>
+              <span class="chip">마지막 퇴사일 기준 18개월</span>
+              <span class="chip">겹치는 기간은 중복 제거</span>
+            </div>
+          </div>
+          <div id="uc-companies"></div>
+          <button type="button" class="add-btn" id="uc-add-company-btn">+ 회사 추가</button>
+
+          <div class="section-title">퇴사 전 3개월 급여(세전)</div>
+          <div class="row" id="uc-salaryRow">
+            <input id="uc-salary1" type="text" placeholder="예) 2,100,000" inputmode="numeric">
+          </div>
+          <div class="mini" style="margin-top: 10px;">
+            <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+              <input id="uc-same3m" type="checkbox" checked> 3개월 동일
+            </label>
+            <span class="help">체크 해제 시 3개월 금액 개별 입력</span>
+          </div>
+          <div class="row" id="uc-salary3m" style="display: none; margin-top: 12px;">
+            <input id="uc-salary2" type="text" placeholder="전월 (예: 2,100,000)" inputmode="numeric">
+            <input id="uc-salary3" type="text" placeholder="2개월 전" inputmode="numeric">
+            <input id="uc-salary4" type="text" placeholder="3개월 전" inputmode="numeric">
+          </div>
+
+          <div class="controls">
+            <button type="button" class="primary" id="uc-calculate-btn">계산하기</button>
+            <button type="button" class="ghost" id="uc-reset-btn">초기화</button>
+          </div>
+
+          <div class="note">
+            ※ 본 계산기는 안내용 예상치입니다. 실제 산정은 피보험단위기간(유급일 등)과 이직사유, 근로형태 등에 따라 달라질 수 있습니다.
+          </div>
+        </div>
+
+        <div class="results-section">
+          <div class="pill">
+            <span>예상 결과</span>
+            <span class="mono" id="uc-insuredDaysPill">가입기간: 0일</span>
+          </div>
+          <div class="headline" id="uc-headline">실업급여 수급 대상</div>
+
+          <div class="result-card">
+            <div class="kpi">
+              <div class="label">1일 실업급여 수급액</div>
+              <div class="value" id="uc-kpiDaily">0 원</div>
+            </div>
+            <div class="kpi">
+              <div class="label">예상 지급일 수 <span class="help">(추정값/수정 가능)</span></div>
+              <div class="value">
+                <input id="uc-daysInput" type="number" min="0" step="1" value="120">
+              </div>
+            </div>
+            <div class="kpi">
+              <div class="label">총 예상수급액</div>
+              <div class="value" id="uc-kpiTotal">0 원</div>
+            </div>
+          </div>
+
+          <div class="result-card" id="uc-debugInfo" style="display: none; background: var(--panel-2); font-size: 11px; color: var(--text) !important;">
+            <div style="font-weight: 600; margin-bottom: 10px;">계산 정보 (확인용)</div>
+            <div id="uc-debugText"></div>
+          </div>
+
+          <div class="note" id="uc-note2026">
+            * 18개월 내 합산 일수가 <b>180일 미만</b>이면 수급이 제한될 수 있습니다.<br>
+            * 2026년 기준 상한액: <b>68,100원/일</b>, 하한액: <b>66,048원/일</b> (8시간 기준)
+          </div>
+
+          <div class="flex-end">
+            <a class="btn primary" href="https://total.comwel.or.kr/" target="_blank" rel="noopener noreferrer">고용보험 가입이력 조회</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function() {
+  "use strict";
+
+  // 즉시 실행 함수로 전역 스코프 오염 방지 + 워드프레스 충돌 방지
+  // 모든 ID에 'uc-' 접두사를 붙여 충돌 방지
+
+  var disabilityStatus = "no";
+  var companyCount = 0;
+
+  function formatNumber(num) {
+    return new Intl.NumberFormat("ko-KR").format(num);
+  }
+
+  function parseNumber(str) {
+    return parseInt(String(str || "").replace(/[^\d]/g, ""), 10) || 0;
+  }
+
+  function formatWon(num) {
+    return formatNumber(Math.round(num)) + " 원";
+  }
+
+  function selectDisability(status, btn) {
+    disabilityStatus = status;
+    var buttons = document.querySelectorAll("#uc-disability-toggle button");
+    buttons.forEach(function(b) { b.classList.remove("active"); });
+    if (btn) btn.classList.add("active");
+  }
+
+  function addCompany(ev) {
+    if (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+    }
+
+    companyCount++;
+    var div = document.createElement("div");
+    div.className = "company-block";
+    div.setAttribute("data-company-id", companyCount);
+    div.innerHTML =
+      '<div class="row company-row">' +
+        '<div>' +
+          '<label>회사명</label>' +
+          '<input type="text" placeholder="회사명 (선택)" class="co-name">' +
+        '</div>' +
+        '<div>' +
+          '<label>입사일</label>' +
+          '<input type="date" class="co-start">' +
+        '</div>' +
+        '<div>' +
+          '<label>퇴사일</label>' +
+          '<input type="date" class="co-end">' +
+        '</div>' +
+        '<div style="display: flex; align-items: flex-end;">' +
+          '<button type="button" class="delete-btn uc-delete-company">삭제</button>' +
+        '</div>' +
+      '</div>';
+    document.getElementById("uc-companies").appendChild(div);
+  }
+
+  function removeCompany(btn) {
+    var block = btn.closest(".company-block");
+    if (block) block.remove();
+  }
+
+  function toggleSalary3m() {
+    var checked = document.getElementById("uc-same3m").checked;
+    document.getElementById("uc-salary3m").style.display = checked ? "none" : "flex";
+  }
+
+  function updateTotal() {
+    var days = parseInt(document.getElementById("uc-daysInput").value, 10) || 0;
+    var daily = parseNumber(document.getElementById("uc-kpiDaily").textContent);
+    document.getElementById("uc-kpiTotal").textContent = formatWon(daily * days);
+  }
+
+  function parseBirthToDate(birth8) {
+    if (!birth8 || birth8.length !== 8) return null;
+    var y = parseInt(birth8.slice(0, 4), 10);
+    var m = parseInt(birth8.slice(4, 6), 10);
+    var d = parseInt(birth8.slice(6, 8), 10);
+    if (!y || !m || !d) return null;
+    var dt = new Date(y, m - 1, d);
+    if (Number.isNaN(dt.getTime())) return null;
+    return dt;
+  }
+
+  function calcAgeAt(birthDate, refDate) {
+    if (!birthDate || !refDate) return 30;
+    var age = refDate.getFullYear() - birthDate.getFullYear();
+    var mDiff = refDate.getMonth() - birthDate.getMonth();
+    if (mDiff < 0 || (mDiff === 0 && refDate.getDate() < birthDate.getDate())) age--;
+    return age;
+  }
+
+  function toYMD(date) {
+    var y = date.getFullYear();
+    var m = String(date.getMonth() + 1).padStart(2, "0");
+    var d = String(date.getDate()).padStart(2, "0");
+    return y + "-" + m + "-" + d;
+  }
+
+  function dateFloor(d) {
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+
+  function overlapInterval(aStart, aEnd, bStart, bEnd) {
+    var s = new Date(Math.max(aStart.getTime(), bStart.getTime()));
+    var e = new Date(Math.min(aEnd.getTime(), bEnd.getTime()));
+    if (e < s) return null;
+    return [s, e];
+  }
+
+  function mergeIntervals(intervals) {
+    if (!intervals.length) return [];
+    var sorted = intervals
+      .map(function(arr) { return [dateFloor(arr[0]), dateFloor(arr[1])]; })
+      .sort(function(x, y) { return x[0] - y[0]; });
+
+    var merged = [];
+    var cur = sorted[0];
+    var curS = cur[0], curE = cur[1];
+
+    for (var i = 1; i < sorted.length; i++) {
+      var s = sorted[i][0], e = sorted[i][1];
+
+      var nextDay = new Date(curE);
+      nextDay.setDate(nextDay.getDate() + 1);
+
+      if (s <= nextDay) {
+        if (e > curE) curE = e;
+      } else {
+        merged.push([curS, curE]);
+        curS = s;
+        curE = e;
+      }
+    }
+    merged.push([curS, curE]);
+    return merged;
+  }
+
+  function countDaysInclusive(start, end) {
+    var ms = dateFloor(start).getTime();
+    var me = dateFloor(end).getTime();
+    var diff = Math.floor((me - ms) / (1000 * 60 * 60 * 24));
+    return diff + 1;
+  }
+
+  function calcBenefitDays(insuredDays, isSpecial) {
+    if (insuredDays < 180) return 0;
+    if (insuredDays >= 180 && insuredDays < 365) return 120;
+    if (insuredDays >= 365 && insuredDays < 1095) return isSpecial ? 180 : 150;
+    if (insuredDays >= 1095 && insuredDays < 1825) return isSpecial ? 210 : 180;
+    if (insuredDays >= 1825 && insuredDays < 3650) return isSpecial ? 240 : 210;
+    return isSpecial ? 270 : 240;
+  }
+
+  function calculate(ev) {
+    if (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+    }
+
+    var MIN_WAGE_2026 = 10320;
+    var MIN_DAILY = Math.round(MIN_WAGE_2026 * 8 * 0.8);
+    var MAX_DAILY = 68100;
+
+    var same3 = document.getElementById("uc-same3m").checked;
+    var s1 = parseNumber(document.getElementById("uc-salary1").value);
+    var salaries = [s1, s1, s1];
+
+    if (!same3) {
+      salaries = [
+        parseNumber(document.getElementById("uc-salary2").value),
+        parseNumber(document.getElementById("uc-salary3").value),
+        parseNumber(document.getElementById("uc-salary4").value)
+      ];
+    }
+
+    if (salaries.some(function(v) { return v <= 0; })) {
+      alert("급여를 올바르게 입력해주세요.");
+      return false;
+    }
+
+    var companies = document.querySelectorAll("#uc-companies .company-block");
+    if (companies.length === 0) {
+      alert("재직기간을 1개 이상 입력하세요.");
+      return false;
+    }
+
+    var rawIntervals = [];
+    var lastEndDate = null;
+
+    for (var i = 0; i < companies.length; i++) {
+      var company = companies[i];
+      var startDate = company.querySelector(".co-start").value;
+      var endDate = company.querySelector(".co-end").value;
+
+      if (!startDate || !endDate) {
+        alert("모든 입사일과 퇴사일을 입력해주세요.");
+        return false;
+      }
+
+      var start = new Date(startDate);
+      var end = new Date(endDate);
+
+      if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+        alert("날짜 형식이 올바르지 않습니다.");
+        return false;
+      }
+      if (end < start) {
+        alert("퇴사일이 입사일보다 빠를 수 없습니다.");
+        return false;
+      }
+
+      rawIntervals.push([dateFloor(start), dateFloor(end)]);
+      if (!lastEndDate || end > lastEndDate) lastEndDate = dateFloor(end);
+    }
+
+    if (!lastEndDate) {
+      alert("퇴사일을 확인해주세요.");
+      return false;
+    }
+
+    var windowEnd = dateFloor(lastEndDate);
+    var windowStart = new Date(windowEnd);
+    windowStart.setMonth(windowStart.getMonth() - 18);
+
+    var clippedIntervals = [];
+    for (var j = 0; j < rawIntervals.length; j++) {
+      var interval = rawIntervals[j];
+      var ov = overlapInterval(interval[0], interval[1], windowStart, windowEnd);
+      if (ov) clippedIntervals.push(ov);
+    }
+
+    var merged = mergeIntervals(clippedIntervals);
+    var insuredDays = merged.reduce(function(sum, arr) { return sum + countDaysInclusive(arr[0], arr[1]); }, 0);
+
+    var birthStr = document.getElementById("uc-birth").value;
+    var birthDate = parseBirthToDate(birthStr);
+    var age = calcAgeAt(birthDate, windowEnd);
+
+    var isDisabled = disabilityStatus === "yes";
+    var is50Plus = age >= 50;
+    var isSpecial = isDisabled || is50Plus;
+
+    var estimatedDays = calcBenefitDays(insuredDays, isSpecial);
+
+    var totalSalary = salaries.reduce(function(a, b) { return a + b; }, 0);
+    var avgDaily = totalSalary / 90;
+
+    var dailyBenefit = Math.floor(avgDaily * 0.6);
+    var appliedRule = "정상 계산";
+
+    if (dailyBenefit < MIN_DAILY) {
+      dailyBenefit = MIN_DAILY;
+      appliedRule = "하한액 적용";
+    } else if (dailyBenefit > MAX_DAILY) {
+      dailyBenefit = MAX_DAILY;
+      appliedRule = "상한액 적용";
+    }
+
+    document.getElementById("uc-insuredDaysPill").textContent = "가입기간: " + formatNumber(insuredDays) + "일 (마지막 퇴사일 기준 18개월)";
+    document.getElementById("uc-kpiDaily").textContent = formatWon(dailyBenefit);
+    document.getElementById("uc-daysInput").value = estimatedDays;
+    document.getElementById("uc-kpiTotal").textContent = formatWon(dailyBenefit * estimatedDays);
+
+    var headline = document.getElementById("uc-headline");
+    if (insuredDays < 180) {
+      headline.innerHTML = '실업급여 수급 대상 <span class="danger" style="font-size:14px; font-weight:600">(가입기간 부족)</span>';
+    } else {
+      headline.textContent = "실업급여 수급 대상";
+    }
+
+    var debugInfo = document.getElementById("uc-debugInfo");
+    var debugText = document.getElementById("uc-debugText");
+
+    var mergedText = merged.map(function(arr) {
+      return toYMD(arr[0]) + " ~ " + toYMD(arr[1]) + " (" + countDaysInclusive(arr[0], arr[1]) + "일)";
+    }).join("<br>");
+
+    debugText.innerHTML =
+      "<div>• 기준일(마지막 퇴사일): " + toYMD(windowEnd) + "</div>" +
+      "<div>• 18개월 윈도우: " + toYMD(windowStart) + " ~ " + toYMD(windowEnd) + "</div>" +
+      "<div>• 나이(기준일): " + age + "세, 장애인: " + (isDisabled ? "예" : "아니오") + "</div>" +
+      "<div>• 입력 회사 수: " + companies.length + "개</div>" +
+      "<div>• 합산 구간(중복 제거 후):<br>" + (mergedText || "해당 없음") + "</div>" +
+      "<div>• 합산 일수(예상): " + formatNumber(insuredDays) + "일</div>" +
+      "<div>• 3개월 급여: " + salaries.map(function(x) { return formatNumber(x); }).join(", ") + "원</div>" +
+      "<div>• 3개월 합계: " + formatNumber(totalSalary) + "원</div>" +
+      "<div>• 평균일급: " + formatNumber(Math.round(avgDaily)) + "원</div>" +
+      "<div>• 계산된 실업급여: " + formatNumber(Math.floor(avgDaily * 0.6)) + "원 (평균일급 × 60%)</div>" +
+      "<div>• 1일 실업급여: " + formatNumber(dailyBenefit) + "원 [" + appliedRule + "]</div>" +
+      "<div>• 2026 상하한액: " + formatNumber(MIN_DAILY) + " ~ " + formatNumber(MAX_DAILY) + "원</div>" +
+      "<div>• 예상 지급일수: " + estimatedDays + "일 (표 기준)</div>" +
+      "<div>• 총 예상수급액: " + formatWon(dailyBenefit * estimatedDays) + "</div>";
+    debugInfo.style.display = "block";
+
+    return false;
+  }
+
+  function resetForm(ev) {
+    if (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+    }
+
+    document.getElementById("uc-birth").value = "";
+    document.getElementById("uc-salary1").value = "";
+    document.getElementById("uc-salary2").value = "";
+    document.getElementById("uc-salary3").value = "";
+    document.getElementById("uc-salary4").value = "";
+    document.getElementById("uc-companies").innerHTML = "";
+    document.getElementById("uc-same3m").checked = true;
+    document.getElementById("uc-salary3m").style.display = "none";
+    document.getElementById("uc-daysInput").value = 120;
+    document.getElementById("uc-kpiDaily").textContent = "0 원";
+    document.getElementById("uc-kpiTotal").textContent = "0 원";
+    document.getElementById("uc-insuredDaysPill").textContent = "가입기간: 0일";
+    document.getElementById("uc-debugInfo").style.display = "none";
+    document.getElementById("uc-headline").textContent = "실업급여 수급 대상";
+
+    disabilityStatus = "no";
+    var toggleBtns = document.querySelectorAll("#uc-disability-toggle button");
+    toggleBtns.forEach(function(btn) { btn.classList.remove("active"); });
+    var noBtn = document.querySelector('#uc-disability-toggle button[data-value="no"]');
+    if (noBtn) noBtn.classList.add("active");
+
+    companyCount = 0;
+    addCompany();
+
+    return false;
+  }
+
+  function setupSalaryFormatting() {
+    ["uc-salary1", "uc-salary2", "uc-salary3", "uc-salary4"].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener("input", function(e) {
+        var num = parseNumber(e.target.value);
+        e.target.value = num ? formatNumber(num) : "";
+      });
+    });
+  }
+
+  function init() {
+    // 이벤트 위임을 사용하여 동적으로 생성된 요소에도 이벤트 적용
+    var root = document.getElementById("uc-root");
+    if (!root) return;
+
+    // 삭제 버튼 이벤트 위임
+    root.addEventListener("click", function(e) {
+      // 삭제 버튼
+      if (e.target.classList.contains("uc-delete-company")) {
+        e.preventDefault();
+        e.stopPropagation();
+        removeCompany(e.target);
+        return false;
+      }
+    });
+
+    // 장애인 여부 토글
+    var disabilityToggle = document.getElementById("uc-disability-toggle");
+    if (disabilityToggle) {
+      disabilityToggle.addEventListener("click", function(e) {
+        if (e.target.tagName === "BUTTON") {
+          e.preventDefault();
+          e.stopPropagation();
+          var value = e.target.getAttribute("data-value");
+          selectDisability(value, e.target);
+          return false;
+        }
+      });
+    }
+
+    // 회사 추가 버튼
+    var addBtn = document.getElementById("uc-add-company-btn");
+    if (addBtn) {
+      addBtn.addEventListener("click", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        addCompany(e);
+        return false;
+      });
+    }
+
+    // 3개월 동일 체크박스
+    var same3m = document.getElementById("uc-same3m");
+    if (same3m) {
+      same3m.addEventListener("change", function(e) {
+        toggleSalary3m();
+      });
+    }
+
+    // 계산하기 버튼
+    var calcBtn = document.getElementById("uc-calculate-btn");
+    if (calcBtn) {
+      calcBtn.addEventListener("click", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        calculate(e);
+        return false;
+      });
+    }
+
+    // 초기화 버튼
+    var resetBtn = document.getElementById("uc-reset-btn");
+    if (resetBtn) {
+      resetBtn.addEventListener("click", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        resetForm(e);
+        return false;
+      });
+    }
+
+    // 지급일 수 입력 변경
+    var daysInput = document.getElementById("uc-daysInput");
+    if (daysInput) {
+      daysInput.addEventListener("change", function(e) {
+        updateTotal();
+      });
+      daysInput.addEventListener("input", function(e) {
+        updateTotal();
+      });
+    }
+
+    // 급여 포맷팅 설정
+    setupSalaryFormatting();
+
+    // 초기 회사 추가
+    addCompany();
+  }
+
+  // DOM 준비 완료 후 초기화
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    // 이미 로드된 경우 약간의 지연 후 실행 (워드프레스 호환성)
+    setTimeout(init, 10);
+  }
+
+})();
+</script>
+</body>
+</html>
