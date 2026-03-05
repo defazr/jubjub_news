@@ -12,11 +12,9 @@ import {
   Home,
   Search,
   X,
+  Globe,
 } from "lucide-react";
-
-const categories = [
-  "정치", "경제", "사회", "국제", "문화", "IT/과학", "스포츠", "오피니언",
-];
+import { CATEGORIES } from "@/lib/categories";
 
 interface Props {
   onSearch?: (query: string) => void;
@@ -42,16 +40,14 @@ export default function Header({ onSearch }: Props) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  function handleCategoryClick(cat: string) {
-    setSheetOpen(false);
-    const el = document.getElementById(`category-${cat}`);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-
   function handleSearchSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (searchQuery.trim() && onSearch) {
-      onSearch(searchQuery.trim());
+    if (searchQuery.trim()) {
+      if (onSearch) {
+        onSearch(searchQuery.trim());
+      } else {
+        window.location.href = `/search?q=${encodeURIComponent(searchQuery.trim())}`;
+      }
       setSearchOpen(false);
       setSearchQuery("");
     }
@@ -65,9 +61,12 @@ export default function Header({ onSearch }: Props) {
           <div className="max-w-[1200px] mx-auto px-4 py-1.5 flex justify-between items-center text-xs text-muted-foreground">
             <span>{currentDate}</span>
             <div className="flex items-center gap-3">
+              <a href="/world" className="hover:text-primary transition-colors flex items-center gap-1">
+                <Globe className="h-3 w-3" />
+                해외 뉴스
+              </a>
               <a href="#" className="hover:text-foreground transition-colors">로그인</a>
               <a href="#" className="hover:text-foreground transition-colors">회원가입</a>
-              <a href="#" className="hidden sm:inline hover:text-foreground transition-colors">MY뉴스</a>
             </div>
           </div>
         </div>
@@ -79,9 +78,11 @@ export default function Header({ onSearch }: Props) {
           }`}
         >
           <div className="max-w-[1200px] mx-auto px-4 py-5 md:py-7 text-center">
-            <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tight text-foreground">
-              JubJub 뉴스
-            </h1>
+            <a href="/">
+              <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tight text-foreground">
+                JubJub 뉴스
+              </h1>
+            </a>
             <p className="text-xs md:text-sm text-muted-foreground mt-1.5">
               국내외 주요 뉴스를 한눈에
             </p>
@@ -96,7 +97,7 @@ export default function Header({ onSearch }: Props) {
         >
           <div className="max-w-[1200px] mx-auto px-4">
             <div className="flex items-center justify-between h-12">
-              {/* Mobile: hamburger + logo */}
+              {/* Mobile: hamburger */}
               <div className="flex md:hidden items-center gap-2">
                 <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                   <SheetTrigger asChild>
@@ -111,35 +112,42 @@ export default function Header({ onSearch }: Props) {
                       <p className="text-xs text-muted-foreground mt-1">국내외 주요 뉴스를 한눈에</p>
                     </div>
                     <div className="py-2">
-                      <button
-                        onClick={() => { setSheetOpen(false); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                      <a
+                        href="/"
                         className="flex items-center gap-3 w-full px-5 py-3 text-sm font-medium hover:bg-accent transition-colors"
                       >
                         <Home className="h-4 w-4" /> 홈
-                      </button>
+                      </a>
                       <Separator />
-                      {categories.map((cat) => (
-                        <button
-                          key={cat}
-                          onClick={() => handleCategoryClick(cat)}
+                      {CATEGORIES.map((cat) => (
+                        <a
+                          key={cat.slug}
+                          href={`/category/${cat.slug}`}
                           className="flex items-center w-full px-5 py-3 text-sm hover:bg-accent transition-colors"
                         >
-                          {cat}
-                        </button>
+                          {cat.name}
+                        </a>
                       ))}
+                      <Separator />
+                      <a
+                        href="/world"
+                        className="flex items-center gap-3 w-full px-5 py-3 text-sm font-medium text-primary hover:bg-accent transition-colors"
+                      >
+                        <Globe className="h-4 w-4" /> 해외 뉴스
+                      </a>
                     </div>
                   </SheetContent>
                 </Sheet>
               </div>
 
-              {/* Compact logo (shows when scrolled, visible on all screens) */}
+              {/* Compact logo (shows when scrolled) */}
               {scrolled && (
-                <button
-                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                <a
+                  href="/"
                   className="font-headline text-lg font-bold text-primary hover:opacity-80 transition-opacity hidden md:block"
                 >
                   JubJub 뉴스
-                </button>
+                </a>
               )}
 
               {/* Desktop nav links */}
@@ -148,30 +156,44 @@ export default function Header({ onSearch }: Props) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    asChild
                     className="text-sm font-medium text-foreground/80 hover:text-primary hover:bg-primary/5"
                   >
-                    <Home className="h-4 w-4 mr-1" />
-                    홈
+                    <a href="/">
+                      <Home className="h-4 w-4 mr-1" />
+                      홈
+                    </a>
                   </Button>
                 </li>
-                {categories.map((cat) => (
-                  <li key={cat}>
+                {CATEGORIES.map((cat) => (
+                  <li key={cat.slug}>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleCategoryClick(cat)}
+                      asChild
                       className="text-sm font-medium text-foreground/80 hover:text-primary hover:bg-primary/5"
                     >
-                      {cat}
+                      <a href={`/category/${cat.slug}`}>{cat.name}</a>
                     </Button>
                   </li>
                 ))}
+                <li>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    asChild
+                    className="text-sm font-medium text-primary hover:bg-primary/5"
+                  >
+                    <a href="/world">
+                      <Globe className="h-4 w-4 mr-1" />
+                      해외
+                    </a>
+                  </Button>
+                </li>
               </ul>
 
               {/* Right actions */}
               <div className="flex items-center gap-1">
-                {/* Search toggle */}
                 <Button
                   variant="ghost"
                   size="icon"
@@ -181,7 +203,6 @@ export default function Header({ onSearch }: Props) {
                   {searchOpen ? <X className="h-4 w-4" /> : <Search className="h-4 w-4" />}
                 </Button>
 
-                {/* Dark mode toggle */}
                 {mounted && (
                   <Button
                     variant="ghost"

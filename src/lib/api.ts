@@ -52,17 +52,48 @@ async function cachedFetch(proxyUrl: string): Promise<ApiArticle[]> {
 }
 
 export async function fetchTrendingNews(
-  topic: string = "general"
+  topic: string = "general",
+  language: string = "ko"
 ): Promise<ApiArticle[]> {
   return cachedFetch(
-    `/.netlify/functions/news-proxy?endpoint=trending&topic=${topic}`
+    `/.netlify/functions/news-proxy?endpoint=trending&topic=${topic}&language=${language}`
   );
 }
 
-export async function searchNews(query: string): Promise<ApiArticle[]> {
+export async function searchNews(
+  query: string,
+  language: string = "ko"
+): Promise<ApiArticle[]> {
   return cachedFetch(
-    `/.netlify/functions/news-proxy?endpoint=search&query=${encodeURIComponent(query)}`
+    `/.netlify/functions/news-proxy?endpoint=search&query=${encodeURIComponent(query)}&language=${language}`
   );
+}
+
+const translateCache = new Map<string, { data: string[]; ts: number }>();
+const TRANSLATE_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+
+export async function translateTexts(
+  texts: string[],
+  targetLang: "ko" | "en"
+): Promise<string[]> {
+  const key = `${targetLang}:${texts.join("|")}`;
+  const hit = translateCache.get(key);
+  if (hit && Date.now() - hit.ts < TRANSLATE_CACHE_TTL) return hit.data;
+
+  try {
+    const res = await fetch("/.netlify/functions/translate-proxy", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ texts, targetLang }),
+    });
+    if (!res.ok) return texts;
+    const json = await res.json();
+    const translations = json.translations || texts;
+    translateCache.set(key, { data: translations, ts: Date.now() });
+    return translations;
+  } catch {
+    return texts;
+  }
 }
 
 export function formatDate(dateStr: string): string {

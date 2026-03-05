@@ -1,6 +1,5 @@
 import { Separator } from "@/components/ui/separator";
-
-const sections = ["정치", "경제", "사회", "국제", "문화", "IT/과학", "스포츠", "오피니언"];
+import { CATEGORIES } from "@/lib/categories";
 
 export default function Footer() {
   return (
@@ -8,9 +7,11 @@ export default function Footer() {
       <div className="max-w-[1200px] mx-auto px-4 py-8 md:py-10">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mb-8">
           <div className="col-span-2 md:col-span-1">
-            <h4 className="font-headline text-xl font-bold text-foreground mb-2">
-              JubJub 뉴스
-            </h4>
+            <a href="/">
+              <h4 className="font-headline text-xl font-bold text-foreground mb-2">
+                JubJub 뉴스
+              </h4>
+            </a>
             <p className="text-sm text-muted-foreground leading-relaxed">
               국내외 주요 뉴스를 한눈에 모아 보여드립니다.
             </p>
@@ -18,13 +19,18 @@ export default function Footer() {
           <div>
             <h5 className="text-sm font-bold text-foreground mb-3">섹션</h5>
             <ul className="text-sm space-y-1.5">
-              {sections.map((s) => (
-                <li key={s}>
-                  <a href={`#category-${s}`} className="text-muted-foreground hover:text-primary transition-colors">
-                    {s}
+              {CATEGORIES.map((cat) => (
+                <li key={cat.slug}>
+                  <a href={`/category/${cat.slug}`} className="text-muted-foreground hover:text-primary transition-colors">
+                    {cat.name}
                   </a>
                 </li>
               ))}
+              <li>
+                <a href="/world" className="text-primary hover:underline transition-colors font-medium">
+                  해외 뉴스
+                </a>
+              </li>
             </ul>
           </div>
           <div>
