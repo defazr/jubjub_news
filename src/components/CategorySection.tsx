@@ -1,4 +1,5 @@
 import { type ApiArticle, formatDate } from "@/lib/api";
+import { articleLink } from "@/lib/link";
 
 interface Props {
   categoryData: Record<string, ApiArticle[]>;
@@ -22,9 +23,7 @@ export default function CategorySection({ categoryData }: Props) {
                   className="border-b border-gray-200 pb-3 last:border-0"
                 >
                   <a
-                    href={article.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={articleLink(article.url, article.title, article.publisher.name)}
                     className="text-sm font-medium text-gray-800 hover:text-blue-900 block leading-snug"
                   >
                     {article.title}

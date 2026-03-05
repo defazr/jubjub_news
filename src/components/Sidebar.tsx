@@ -1,4 +1,5 @@
 import { type ApiArticle } from "@/lib/api";
+import { articleLink } from "@/lib/link";
 
 interface Props {
   articles: ApiArticle[];
@@ -19,9 +20,7 @@ export default function Sidebar({ articles }: Props) {
                 {i + 1}
               </span>
               <a
-                href={article.url}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={articleLink(article.url, article.title, article.publisher.name)}
                 className="text-sm text-gray-800 hover:text-blue-900 leading-snug"
               >
                 {article.title}

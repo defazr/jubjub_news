@@ -8,8 +8,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "JubJub 뉴스 - 신뢰와 정확으로 전하는 뉴스",
-  description: "대한민국을 대표하는 종합 뉴스 미디어 JubJub 뉴스",
+  title: "JubJub 뉴스 - 국내외 주요 뉴스를 한눈에",
+  description: "국내외 주요 뉴스를 한눈에 모아 보여드리는 JubJub 뉴스",
 };
 
 export default function RootLayout({

@@ -1,4 +1,5 @@
 import { type ApiArticle, formatDate } from "@/lib/api";
+import { articleLink } from "@/lib/link";
 
 interface Props {
   articles: ApiArticle[];
@@ -23,9 +24,7 @@ export default function HeadlineSection({ articles }: Props) {
             style={{ fontFamily: "Georgia, 'Nanum Myeongjo', serif" }}
           >
             <a
-              href={mainHeadline.url}
-              target="_blank"
-              rel="noopener noreferrer"
+              href={articleLink(mainHeadline.url, mainHeadline.title, mainHeadline.publisher.name)}
               className="hover:text-blue-900"
             >
               {mainHeadline.title}
@@ -63,9 +62,7 @@ export default function HeadlineSection({ articles }: Props) {
                 style={{ fontFamily: "Georgia, 'Nanum Myeongjo', serif" }}
               >
                 <a
-                  href={subHeadline.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href={articleLink(subHeadline.url, subHeadline.title, subHeadline.publisher.name)}
                   className="hover:text-blue-900"
                 >
                   {subHeadline.title}
@@ -91,9 +88,7 @@ export default function HeadlineSection({ articles }: Props) {
                     {i + 1}
                   </span>
                   <a
-                    href={article.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={articleLink(article.url, article.title, article.publisher.name)}
                     className="text-gray-800 hover:text-blue-900 line-clamp-2 md:line-clamp-1"
                   >
                     {article.title}
