@@ -18,31 +18,40 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
     async function loadNews() {
-      const [trendingData, politics, economy, society, international, culture, tech, sports, opinion] = await Promise.all(
-        [
+      // Batch 1: trending headlines + topic-based headlines (uses top-headlines endpoint)
+      const [trendingData, business, world, tech, sports, entertainment] =
+        await Promise.all([
           fetchTrendingNews("general"),
-          searchNews("한국 정치"),
-          searchNews("한국 경제"),
-          searchNews("한국 사회"),
-          searchNews("국제 세계 뉴스"),
-          searchNews("한국 문화 예술"),
-          searchNews("IT 기술 과학"),
-          searchNews("스포츠 한국"),
-          searchNews("사설 오피니언 칼럼"),
-        ]
-      );
+          fetchTrendingNews("BUSINESS"),
+          fetchTrendingNews("WORLD"),
+          fetchTrendingNews("TECHNOLOGY"),
+          fetchTrendingNews("SPORTS"),
+          fetchTrendingNews("ENTERTAINMENT"),
+        ]);
 
       setTrending(trendingData);
+
+      await delay(300);
+
+      // Batch 2: search-based categories for topics without a matching headline topic
+      const [politics, society, opinion] = await Promise.all([
+        searchNews("한국 정치 국회"),
+        searchNews("한국 사회 사건"),
+        searchNews("사설 오피니언 칼럼"),
+      ]);
+
       setCategoryData({
-        정치: politics.slice(0, 4),
-        경제: economy.slice(0, 4),
-        사회: society.slice(0, 4),
-        국제: international.slice(0, 4),
-        문화: culture.slice(0, 4),
-        "IT/과학": tech.slice(0, 4),
-        스포츠: sports.slice(0, 4),
-        오피니언: opinion.slice(0, 4),
+        정치: politics.slice(0, 5),
+        경제: business.slice(0, 5),
+        사회: society.slice(0, 5),
+        국제: world.slice(0, 5),
+        문화: entertainment.slice(0, 5),
+        "IT/과학": tech.slice(0, 5),
+        스포츠: sports.slice(0, 5),
+        오피니언: opinion.slice(0, 5),
       });
       setLoading(false);
     }
