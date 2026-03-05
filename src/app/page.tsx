@@ -9,10 +9,11 @@ import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
 import AdUnit from "@/components/AdUnit";
+import TranslateButton from "@/components/TranslateButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import { fetchTrendingNews, searchNews, type ApiArticle } from "@/lib/api";
+import { fetchTrendingNews, searchNews, translateTexts, type ApiArticle } from "@/lib/api";
 
 const CACHE_KEY = "jubjub_news_cache";
 const CACHE_TTL = 3 * 60 * 60 * 1000; // 3 hours
@@ -111,19 +112,26 @@ export default function Home() {
   const [trending, setTrending] = useState<ApiArticle[]>([]);
   const [categoryData, setCategoryData] = useState<Record<string, ApiArticle[]>>({});
   const [loading, setLoading] = useState(true);
+  const [translated, setTranslated] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const [originalTrending, setOriginalTrending] = useState<ApiArticle[]>([]);
+  const [originalCategories, setOriginalCategories] = useState<Record<string, ApiArticle[]>>({});
 
   useEffect(() => {
     async function loadNews() {
       const cached = loadCache();
       if (cached) {
         setTrending(cached.trending);
+        setOriginalTrending(cached.trending);
         setCategoryData(cached.categories);
+        setOriginalCategories(cached.categories);
         setLoading(false);
         return;
       }
 
       const trendingData = await fetchTrendingNews("general");
       setTrending(trendingData);
+      setOriginalTrending(trendingData);
       setLoading(false);
 
       const categories: Record<string, ApiArticle[]> = {};
@@ -138,10 +146,53 @@ export default function Home() {
         setCategoryData({ ...categories });
         if (i + 2 < CATEGORY_QUERIES.length) await delay(600);
       }
+      setOriginalCategories({ ...categories });
       saveCache(trendingData, categories);
     }
     loadNews();
   }, []);
+
+  async function handleTranslate() {
+    if (translating) return;
+
+    if (translated) {
+      setTrending(originalTrending);
+      setCategoryData(originalCategories);
+      setTranslated(false);
+      return;
+    }
+
+    setTranslating(true);
+
+    // Translate trending headlines
+    const trendingTexts = trending.slice(0, 10).flatMap((a) => [a.title, a.excerpt]);
+    const trendingResult = await translateTexts(trendingTexts, "en");
+    const updatedTrending = trending.map((a, i) => {
+      if (i >= 10) return a;
+      return {
+        ...a,
+        title: trendingResult[i * 2] || a.title,
+        excerpt: trendingResult[i * 2 + 1] || a.excerpt,
+      };
+    });
+    setTrending(updatedTrending);
+
+    // Translate category articles
+    const updatedCategories: Record<string, ApiArticle[]> = {};
+    for (const [cat, articles] of Object.entries(categoryData)) {
+      const catTexts = articles.flatMap((a) => [a.title, a.excerpt]);
+      const catResult = await translateTexts(catTexts, "en");
+      updatedCategories[cat] = articles.map((a, i) => ({
+        ...a,
+        title: catResult[i * 2] || a.title,
+        excerpt: catResult[i * 2 + 1] || a.excerpt,
+      }));
+    }
+    setCategoryData(updatedCategories);
+
+    setTranslated(true);
+    setTranslating(false);
+  }
 
   const headlines = trending.slice(0, 5);
   const breakingTitles = trending.slice(0, 4).map((a) => `속보: ${a.title}`);
@@ -156,9 +207,19 @@ export default function Home() {
           <LoadingSkeleton />
         ) : (
           <>
+            {/* Translate button */}
+            <div className="flex justify-end mb-4">
+              <TranslateButton
+                translated={translated}
+                translating={translating}
+                targetLabel="English"
+                onToggle={handleTranslate}
+              />
+            </div>
+
             <HeadlineSection articles={headlines} />
 
-            {/* 광고 1: 헤드라인 아래 (전면 배너) */}
+            {/* 광고 1 */}
             <InlineAd slot="9121339058" className="my-5" />
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -169,14 +230,11 @@ export default function Home() {
                     <InlineAd slot="2248808942" className="my-5" />
                   }
                 />
-                {/* 광고 3: 카테고리 하단 (전면 배너) */}
                 <InlineAd slot="9121339058" className="mt-5" />
               </div>
               <div className="lg:col-span-1">
                 <Sidebar articles={trending.slice(0, 10)} />
-                {/* 광고 4: 사이드바 하단 */}
                 <InlineAd slot="2248808942" className="mt-5" />
-                {/* 광고 5: 사이드바 추가 */}
                 <InlineAd slot="9121339058" className="mt-5" />
               </div>
             </div>
