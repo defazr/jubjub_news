@@ -21,34 +21,44 @@ export default function Home() {
     const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
     async function loadNews() {
-      // Batch 1: trending headlines + topic-based headlines (uses top-headlines endpoint)
-      const [trendingData, business, world, tech, sports, entertainment] =
-        await Promise.all([
-          fetchTrendingNews("general"),
-          fetchTrendingNews("BUSINESS"),
-          fetchTrendingNews("WORLD"),
-          fetchTrendingNews("TECHNOLOGY"),
-          fetchTrendingNews("SPORTS"),
-          fetchTrendingNews("ENTERTAINMENT"),
-        ]);
-
+      // Batch 1: trending + 2 categories
+      const [trendingData, politics, economy] = await Promise.all([
+        fetchTrendingNews("general"),
+        searchNews("한국 정치 국회"),
+        searchNews("한국 경제 금융"),
+      ]);
       setTrending(trendingData);
 
-      await delay(300);
+      await delay(500);
 
-      // Batch 2: search-based categories for topics without a matching headline topic
-      const [politics, society, opinion] = await Promise.all([
-        searchNews("한국 정치 국회"),
+      // Batch 2
+      const [society, international] = await Promise.all([
         searchNews("한국 사회 사건"),
-        searchNews("사설 오피니언 칼럼"),
+        searchNews("국제 세계 외교"),
+      ]);
+
+      await delay(500);
+
+      // Batch 3
+      const [culture, tech] = await Promise.all([
+        searchNews("한국 문화 예술 연예"),
+        searchNews("IT 기술 과학 AI"),
+      ]);
+
+      await delay(500);
+
+      // Batch 4
+      const [sports, opinion] = await Promise.all([
+        searchNews("스포츠 축구 야구"),
+        searchNews("사설 칼럼 오피니언"),
       ]);
 
       setCategoryData({
         정치: politics.slice(0, 5),
-        경제: business.slice(0, 5),
+        경제: economy.slice(0, 5),
         사회: society.slice(0, 5),
-        국제: world.slice(0, 5),
-        문화: entertainment.slice(0, 5),
+        국제: international.slice(0, 5),
+        문화: culture.slice(0, 5),
         "IT/과학": tech.slice(0, 5),
         스포츠: sports.slice(0, 5),
         오피니언: opinion.slice(0, 5),
