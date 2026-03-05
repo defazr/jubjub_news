@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 interface Props {
   slot: string;
@@ -22,51 +22,24 @@ export default function AdUnit({
   className = "",
 }: Props) {
   const pushed = useRef(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    let attempts = 0;
-    const maxAttempts = 20;
+    if (pushed.current) return;
 
-    const check = setInterval(() => {
-      attempts++;
-
-      // Keep trying to push until adsbygoogle is available
-      if (!pushed.current) {
-        try {
-          (window.adsbygoogle = window.adsbygoogle || []).push({});
-          pushed.current = true;
-        } catch {
-          // adsbygoogle not loaded yet, will retry on next interval
-        }
+    const timer = setTimeout(() => {
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+        pushed.current = true;
+      } catch {
+        // adsbygoogle not ready yet
       }
+    }, 300);
 
-      // Check if ad actually rendered with content
-      const ins = containerRef.current?.querySelector("ins");
-      if (ins) {
-        const status = ins.getAttribute("data-ad-status");
-        if (status === "filled" || (ins.offsetHeight > 90 && ins.children.length > 0)) {
-          setVisible(true);
-          clearInterval(check);
-        }
-        if (status === "unfilled") {
-          clearInterval(check);
-        }
-      }
-
-      if (attempts >= maxAttempts) clearInterval(check);
-    }, 500);
-
-    return () => clearInterval(check);
+    return () => clearTimeout(timer);
   }, []);
 
   return (
-    <div
-      ref={containerRef}
-      className={visible ? className : ""}
-      style={visible ? undefined : { display: "none" }}
-    >
+    <div className={className}>
       <ins
         className="adsbygoogle"
         style={{ display: "block" }}
