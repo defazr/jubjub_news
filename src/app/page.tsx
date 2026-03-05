@@ -76,10 +76,12 @@ export default function Home() {
         return;
       }
 
-      // Fetch fresh data in batches of 2
+      // Fetch trending first, then show page immediately
       const trendingData = await fetchTrendingNews("general");
       setTrending(trendingData);
+      setLoading(false); // Show page right away with headlines
 
+      // Then load categories progressively
       const categories: Record<string, ApiArticle[]> = {};
 
       for (let i = 0; i < CATEGORY_QUERIES.length; i += 2) {
@@ -90,13 +92,13 @@ export default function Home() {
         batch.forEach(([name], idx) => {
           categories[name] = results[idx].slice(0, 5);
         });
+        // Update UI progressively as each batch loads
+        setCategoryData({ ...categories });
 
         if (i + 2 < CATEGORY_QUERIES.length) await delay(600);
       }
 
-      setCategoryData(categories);
       saveCache(trendingData, categories);
-      setLoading(false);
     }
     loadNews();
   }, []);
