@@ -70,7 +70,60 @@ export async function searchNews(
 }
 
 const translateCache = new Map<string, { data: string[]; ts: number }>();
-const TRANSLATE_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+const TRANSLATE_CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
+// localStorage-based persistent cache
+const LS_TRANSLATE_KEY = "jubjub_translate_cache";
+const LS_TRANSLATE_TTL = 2 * 60 * 60 * 1000; // 2 hours
+
+function loadLocalCache(): void {
+  if (typeof window === "undefined") return;
+  try {
+    const raw = localStorage.getItem(LS_TRANSLATE_KEY);
+    if (!raw) return;
+    const entries: [string, { data: string[]; ts: number }][] = JSON.parse(raw);
+    const now = Date.now();
+    for (const [key, val] of entries) {
+      if (now - val.ts < LS_TRANSLATE_TTL) {
+        translateCache.set(key, val);
+      }
+    }
+  } catch { /* ignore */ }
+}
+
+function saveLocalCache(): void {
+  if (typeof window === "undefined") return;
+  try {
+    const now = Date.now();
+    const entries = [...translateCache.entries()].filter(
+      ([, v]) => now - v.ts < LS_TRANSLATE_TTL
+    );
+    localStorage.setItem(LS_TRANSLATE_KEY, JSON.stringify(entries));
+  } catch { /* ignore */ }
+}
+
+// Load persisted translations on module init
+loadLocalCache();
+
+const CHUNK_SIZE = 10; // max texts per API call for reliability
+
+async function translateChunk(
+  texts: string[],
+  targetLang: "ko" | "en"
+): Promise<string[]> {
+  try {
+    const res = await fetch("/.netlify/functions/translate-proxy", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ texts, targetLang }),
+    });
+    if (!res.ok) return texts;
+    const json = await res.json();
+    return json.translations || texts;
+  } catch {
+    return texts;
+  }
+}
 
 export async function translateTexts(
   texts: string[],
@@ -80,20 +133,20 @@ export async function translateTexts(
   const hit = translateCache.get(key);
   if (hit && Date.now() - hit.ts < TRANSLATE_CACHE_TTL) return hit.data;
 
-  try {
-    const res = await fetch("/.netlify/functions/translate-proxy", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ texts, targetLang }),
-    });
-    if (!res.ok) return texts;
-    const json = await res.json();
-    const translations = json.translations || texts;
-    translateCache.set(key, { data: translations, ts: Date.now() });
-    return translations;
-  } catch {
-    return texts;
+  // Split into small chunks and translate in parallel
+  const chunks: string[][] = [];
+  for (let i = 0; i < texts.length; i += CHUNK_SIZE) {
+    chunks.push(texts.slice(i, i + CHUNK_SIZE));
   }
+
+  const results = await Promise.all(
+    chunks.map((chunk) => translateChunk(chunk, targetLang))
+  );
+  const translations = results.flat();
+
+  translateCache.set(key, { data: translations, ts: Date.now() });
+  saveLocalCache();
+  return translations;
 }
 
 export function formatDate(dateStr: string): string {

@@ -177,18 +177,20 @@ export default function Home() {
     });
     setTrending(updatedTrending);
 
-    // Translate category articles
-    const updatedCategories: Record<string, ApiArticle[]> = {};
-    for (const [cat, articles] of Object.entries(categoryData)) {
-      const catTexts = articles.flatMap((a) => [a.title, a.excerpt]);
-      const catResult = await translateTexts(catTexts, "en");
-      updatedCategories[cat] = articles.map((a, i) => ({
-        ...a,
-        title: catResult[i * 2] || a.title,
-        excerpt: catResult[i * 2 + 1] || a.excerpt,
-      }));
-    }
-    setCategoryData(updatedCategories);
+    // Translate category articles in parallel
+    const catEntries = Object.entries(categoryData);
+    const catResults = await Promise.all(
+      catEntries.map(async ([cat, articles]) => {
+        const catTexts = articles.flatMap((a) => [a.title, a.excerpt]);
+        const catResult = await translateTexts(catTexts, "en");
+        return [cat, articles.map((a, i) => ({
+          ...a,
+          title: catResult[i * 2] || a.title,
+          excerpt: catResult[i * 2 + 1] || a.excerpt,
+        }))] as [string, ApiArticle[]];
+      })
+    );
+    setCategoryData(Object.fromEntries(catResults));
 
     setTranslated(true);
     setTranslating(false);
