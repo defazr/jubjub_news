@@ -72,14 +72,12 @@ export async function searchNews(
 const translateCache = new Map<string, { data: string[]; ts: number }>();
 const TRANSLATE_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
 
-export async function translateTexts(
+const CHUNK_SIZE = 10; // max texts per API call for reliability
+
+async function translateChunk(
   texts: string[],
   targetLang: "ko" | "en"
 ): Promise<string[]> {
-  const key = `${targetLang}:${texts.join("|")}`;
-  const hit = translateCache.get(key);
-  if (hit && Date.now() - hit.ts < TRANSLATE_CACHE_TTL) return hit.data;
-
   try {
     const res = await fetch("/.netlify/functions/translate-proxy", {
       method: "POST",
@@ -88,12 +86,33 @@ export async function translateTexts(
     });
     if (!res.ok) return texts;
     const json = await res.json();
-    const translations = json.translations || texts;
-    translateCache.set(key, { data: translations, ts: Date.now() });
-    return translations;
+    return json.translations || texts;
   } catch {
     return texts;
   }
+}
+
+export async function translateTexts(
+  texts: string[],
+  targetLang: "ko" | "en"
+): Promise<string[]> {
+  const key = `${targetLang}:${texts.join("|")}`;
+  const hit = translateCache.get(key);
+  if (hit && Date.now() - hit.ts < TRANSLATE_CACHE_TTL) return hit.data;
+
+  // Split into small chunks and translate in parallel
+  const chunks: string[][] = [];
+  for (let i = 0; i < texts.length; i += CHUNK_SIZE) {
+    chunks.push(texts.slice(i, i + CHUNK_SIZE));
+  }
+
+  const results = await Promise.all(
+    chunks.map((chunk) => translateChunk(chunk, targetLang))
+  );
+  const translations = results.flat();
+
+  translateCache.set(key, { data: translations, ts: Date.now() });
+  return translations;
 }
 
 export function formatDate(dateStr: string): string {

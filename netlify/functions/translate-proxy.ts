@@ -68,11 +68,11 @@ export default async (req: Request) => {
     const raw =
       data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
-    // Parse numbered responses
+    // Parse numbered responses (handle [0], 0., 0), 0: formats)
     const translations: string[] = [];
     const lines = raw.split("\n").filter((l: string) => l.trim());
     for (const line of lines) {
-      const match = line.match(/^\[(\d+)\]\s*(.+)/);
+      const match = line.match(/^\[?(\d+)\]?[.):\s]\s*(.+)/);
       if (match) {
         translations[parseInt(match[1])] = match[2].trim();
       }
