@@ -1,16 +1,11 @@
-import { articles } from "@/data/news";
+import { type ApiArticle, formatDate } from "@/lib/api";
 
-export default function CategorySection() {
-  const categoryGroups = articles.reduce(
-    (acc, article) => {
-      if (!acc[article.category]) acc[article.category] = [];
-      acc[article.category].push(article);
-      return acc;
-    },
-    {} as Record<string, typeof articles>
-  );
+interface Props {
+  categoryData: Record<string, ApiArticle[]>;
+}
 
-  const displayCategories = ["경제", "사회", "IT/과학", "스포츠"];
+export default function CategorySection({ categoryData }: Props) {
+  const displayCategories = Object.keys(categoryData);
 
   return (
     <section className="mb-8">
@@ -21,19 +16,24 @@ export default function CategorySection() {
               {cat}
             </h3>
             <ul className="space-y-3">
-              {(categoryGroups[cat] || []).map((article) => (
+              {(categoryData[cat] || []).map((article, i) => (
                 <li
-                  key={article.id}
+                  key={i}
                   className="border-b border-gray-200 pb-3 last:border-0"
                 >
                   <a
-                    href="#"
+                    href={article.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-sm font-medium text-gray-800 hover:text-blue-900 block leading-snug"
                   >
                     {article.title}
                   </a>
                   <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                    {article.summary}
+                    {article.excerpt}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {article.publisher.name} | {formatDate(article.date)}
                   </p>
                 </li>
               ))}

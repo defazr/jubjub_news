@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { categories } from "@/data/news";
+
+const categories = [
+  "정치", "경제", "사회", "국제", "문화", "IT/과학", "스포츠", "오피니언",
+];
 
 export default function Header() {
   const [currentDate] = useState(() => {
