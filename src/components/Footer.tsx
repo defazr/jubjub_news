@@ -1,6 +1,8 @@
 export default function Footer() {
+  const sections = ["정치", "경제", "사회", "국제", "문화", "IT/과학", "스포츠", "오피니언"];
+
   return (
-    <footer className="bg-gray-900 text-gray-400 mt-8 md:mt-12">
+    <footer className="bg-gray-900 text-gray-400 mt-4">
       <div className="max-w-[1200px] mx-auto px-4 py-6 md:py-8">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 mb-6 md:mb-8">
           <div className="col-span-2 md:col-span-1">
@@ -17,11 +19,13 @@ export default function Footer() {
           <div>
             <h5 className="text-white text-sm font-bold mb-2 md:mb-3">섹션</h5>
             <ul className="text-sm space-y-1">
-              <li><a href="#" className="hover:text-white">정치</a></li>
-              <li><a href="#" className="hover:text-white">경제</a></li>
-              <li><a href="#" className="hover:text-white">사회</a></li>
-              <li><a href="#" className="hover:text-white">국제</a></li>
-              <li><a href="#" className="hover:text-white">문화</a></li>
+              {sections.map((s) => (
+                <li key={s}>
+                  <a href={`#category-${s}`} className="hover:text-white">
+                    {s}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
           <div>

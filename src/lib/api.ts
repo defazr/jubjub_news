@@ -56,34 +56,39 @@ function transform(raw: RawArticle): ApiArticle {
   };
 }
 
-export async function fetchTrendingNews(
-  topic: string = "general"
-): Promise<ApiArticle[]> {
+const cache = new Map<string, { data: ApiArticle[]; ts: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+async function cachedFetch(url: string): Promise<ApiArticle[]> {
+  const now = Date.now();
+  const hit = cache.get(url);
+  if (hit && now - hit.ts < CACHE_TTL) return hit.data;
+
   try {
-    const res = await fetch(
-      `https://${RAPIDAPI_HOST}/top-headlines?country=KR&lang=ko`,
-      { headers }
-    );
+    const res = await fetch(url, { headers });
     if (!res.ok) return [];
-    const data: RawResponse = await res.json();
-    return (data.data || []).map(transform);
+    const json: RawResponse = await res.json();
+    const articles = (json.data || []).map(transform);
+    cache.set(url, { data: articles, ts: now });
+    return articles;
   } catch {
     return [];
   }
 }
 
+export async function fetchTrendingNews(
+  topic: string = "general"
+): Promise<ApiArticle[]> {
+  const topicParam = topic !== "general" ? `&topic=${topic}` : "";
+  return cachedFetch(
+    `https://${RAPIDAPI_HOST}/top-headlines?country=KR&lang=ko${topicParam}`
+  );
+}
+
 export async function searchNews(query: string): Promise<ApiArticle[]> {
-  try {
-    const res = await fetch(
-      `https://${RAPIDAPI_HOST}/search?query=${encodeURIComponent(query)}&country=KR&lang=ko`,
-      { headers }
-    );
-    if (!res.ok) return [];
-    const data: RawResponse = await res.json();
-    return (data.data || []).map(transform);
-  } catch {
-    return [];
-  }
+  return cachedFetch(
+    `https://${RAPIDAPI_HOST}/search?query=${encodeURIComponent(query)}&country=KR&lang=ko`
+  );
 }
 
 export function formatDate(dateStr: string): string {

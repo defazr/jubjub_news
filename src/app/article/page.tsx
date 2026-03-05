@@ -2,6 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import AdUnit from "@/components/AdUnit";
 
 function ArticleRedirectContent() {
   const params = useSearchParams();
@@ -57,14 +58,8 @@ function ArticleRedirectContent() {
       </header>
 
       <main className="max-w-[800px] mx-auto px-4 py-8">
-        {/* Ad space - top */}
-        <div className="bg-white border border-dashed border-gray-300 rounded-lg p-6 mb-6 text-center">
-          <p className="text-xs text-gray-400 mb-2">광고</p>
-          {/* Google AdSense 코드가 여기에 들어갑니다 */}
-          <div className="h-[90px] bg-gray-50 flex items-center justify-center text-gray-300 text-sm">
-            AD SPACE (728×90)
-          </div>
-        </div>
+        {/* Ad - top */}
+        <AdUnit slot="9121339058" className="mb-6" />
 
         {/* Article preview card */}
         <div className="bg-white shadow-sm rounded-lg p-6 mb-6">
@@ -95,13 +90,8 @@ function ArticleRedirectContent() {
           </div>
         </div>
 
-        {/* Ad space - bottom */}
-        <div className="bg-white border border-dashed border-gray-300 rounded-lg p-6 mb-6 text-center">
-          <p className="text-xs text-gray-400 mb-2">광고</p>
-          <div className="h-[250px] bg-gray-50 flex items-center justify-center text-gray-300 text-sm">
-            AD SPACE (300×250)
-          </div>
-        </div>
+        {/* Ad - bottom */}
+        <AdUnit slot="2248808942" className="mb-6" />
 
         {/* Back to home */}
         <div className="text-center">

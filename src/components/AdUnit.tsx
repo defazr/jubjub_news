@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface Props {
   slot: string;
@@ -22,6 +22,8 @@ export default function AdUnit({
   className = "",
 }: Props) {
   const pushed = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (!pushed.current) {
@@ -32,10 +34,36 @@ export default function AdUnit({
         // adsbygoogle not loaded yet
       }
     }
+
+    // Poll to check if ad actually rendered with content
+    let attempts = 0;
+    const check = setInterval(() => {
+      attempts++;
+      const ins = containerRef.current?.querySelector("ins");
+      if (ins) {
+        const status = ins.getAttribute("data-ad-status");
+        // Only show if ad is filled (not "unfilled") and has real content
+        if (status === "filled" || (ins.offsetHeight > 90 && ins.children.length > 0)) {
+          setVisible(true);
+          clearInterval(check);
+        }
+        // If AdSense explicitly says unfilled, stop checking
+        if (status === "unfilled") {
+          clearInterval(check);
+        }
+      }
+      if (attempts >= 15) clearInterval(check);
+    }, 500);
+
+    return () => clearInterval(check);
   }, []);
 
   return (
-    <div className={className}>
+    <div
+      ref={containerRef}
+      className={visible ? className : ""}
+      style={visible ? undefined : { height: 0, overflow: "hidden", margin: 0, padding: 0 }}
+    >
       <ins
         className="adsbygoogle"
         style={{ display: "block" }}
