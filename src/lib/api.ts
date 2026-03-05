@@ -13,39 +13,9 @@ export interface ApiArticle {
   };
 }
 
-interface RawArticle {
-  title: string;
-  link: string;
-  snippet: string;
-  photo_url: string;
-  thumbnail_url: string;
-  published_datetime_utc: string;
-  authors: string[];
-  source_url: string;
-  source_name: string;
-  source_favicon_url: string;
-}
-
 interface RawResponse {
-  status: string;
-  data: RawArticle[];
-}
-
-function transform(raw: RawArticle): ApiArticle {
-  return {
-    title: raw.title,
-    url: raw.link,
-    excerpt: raw.snippet || "",
-    thumbnail: raw.photo_url || raw.thumbnail_url || "",
-    language: "ko",
-    date: raw.published_datetime_utc,
-    authors: raw.authors || [],
-    publisher: {
-      name: raw.source_name || "",
-      url: raw.source_url || "",
-      favicon: raw.source_favicon_url || "",
-    },
-  };
+  success: boolean;
+  data: ApiArticle[];
 }
 
 const cache = new Map<string, { data: ApiArticle[]; ts: number }>();
@@ -60,7 +30,20 @@ async function cachedFetch(proxyUrl: string): Promise<ApiArticle[]> {
     const res = await fetch(proxyUrl);
     if (!res.ok) return [];
     const json: RawResponse = await res.json();
-    const articles = (json.data || []).map(transform);
+    const articles = (json.data || []).map((a) => ({
+      title: a.title || "",
+      url: a.url || "",
+      excerpt: a.excerpt || "",
+      thumbnail: a.thumbnail || "",
+      language: a.language || "ko",
+      date: a.date || "",
+      authors: a.authors || [],
+      publisher: {
+        name: a.publisher?.name || "",
+        url: a.publisher?.url || "",
+        favicon: a.publisher?.favicon || "",
+      },
+    }));
     cache.set(proxyUrl, { data: articles, ts: now });
     return articles;
   } catch {
