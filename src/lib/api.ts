@@ -21,8 +21,8 @@ interface ApiResponse {
   data: ApiArticle[];
 }
 
-const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || "";
-const RAPIDAPI_HOST = process.env.RAPIDAPI_HOST || "news-api14.p.rapidapi.com";
+const RAPIDAPI_KEY = "7ceb526388msh21a88d2b61d4eebp16fd2bjsn23f1646f4e42";
+const RAPIDAPI_HOST = "news-api14.p.rapidapi.com";
 
 const headers = {
   "x-rapidapi-host": RAPIDAPI_HOST,
@@ -34,7 +34,7 @@ export async function fetchTrendingNews(
 ): Promise<ApiArticle[]> {
   const res = await fetch(
     `https://${RAPIDAPI_HOST}/v2/trendings?topic=${topic}&language=ko`,
-    { headers, cache: "no-store" }
+    { headers }
   );
   if (!res.ok) return [];
   const data: ApiResponse = await res.json();
@@ -44,7 +44,7 @@ export async function fetchTrendingNews(
 export async function searchNews(query: string): Promise<ApiArticle[]> {
   const res = await fetch(
     `https://${RAPIDAPI_HOST}/v2/search/articles?query=${encodeURIComponent(query)}&language=ko`,
-    { headers, cache: "no-store" }
+    { headers }
   );
   if (!res.ok) return [];
   const data: ApiResponse = await res.json();
