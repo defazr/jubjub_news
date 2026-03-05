@@ -61,8 +61,11 @@ export default function AdUnit({
   return (
     <div
       ref={containerRef}
-      className={visible ? className : ""}
-      style={visible ? undefined : { display: "none" }}
+      className={className}
+      style={{
+        minHeight: visible ? undefined : "100px",
+        background: visible ? undefined : "transparent",
+      }}
     >
       <ins
         className="adsbygoogle"
