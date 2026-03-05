@@ -1,5 +1,8 @@
 import { type ApiArticle, formatDate } from "@/lib/api";
 import { articleLink } from "@/lib/link";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 interface Props {
   articles: ApiArticle[];
@@ -12,91 +15,99 @@ export default function HeadlineSection({ articles }: Props) {
   const subHeadline = articles[1];
 
   return (
-    <section className="border-b-2 border-gray-300 pb-4 md:pb-6 mb-4 md:mb-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+    <section className="mb-6 md:mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
         {/* Main headline */}
-        <div className="md:col-span-2 border-b md:border-b-0 md:border-r border-gray-300 pb-4 md:pb-0 md:pr-6">
-          <span className="text-xs font-bold text-red-700 uppercase tracking-wider">
-            {mainHeadline.publisher.name || "뉴스"}
-          </span>
-          <h2
-            className="text-xl md:text-3xl font-bold text-gray-900 mt-1 mb-3 leading-tight"
-            style={{ fontFamily: "Georgia, 'Nanum Myeongjo', serif" }}
-          >
-            <a
-              href={articleLink(mainHeadline.url, mainHeadline.title, mainHeadline.publisher.name)}
-              className="hover:text-blue-900"
-            >
-              {mainHeadline.title}
-            </a>
-          </h2>
-          {mainHeadline.thumbnail ? (
-            <img
-              src={mainHeadline.thumbnail}
-              alt={mainHeadline.title}
-              className="w-full h-40 md:h-48 object-cover mb-3 rounded"
-            />
-          ) : (
-            <div className="bg-gray-200 w-full h-40 md:h-48 mb-3 flex items-center justify-center text-gray-500 text-sm rounded">
-              뉴스 이미지
+        <Card className="md:col-span-2 overflow-hidden border-0 shadow-sm hover:shadow-md transition-shadow duration-300 py-0">
+          <a href={articleLink(mainHeadline.url, mainHeadline.title, mainHeadline.publisher.name)} className="block">
+            <div className="relative">
+              {mainHeadline.thumbnail ? (
+                <img
+                  src={mainHeadline.thumbnail}
+                  alt={mainHeadline.title}
+                  className="w-full h-48 md:h-64 object-cover"
+                />
+              ) : (
+                <div className="w-full h-48 md:h-64 bg-muted flex items-center justify-center text-muted-foreground text-sm">
+                  뉴스 이미지
+                </div>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6">
+                <Badge variant="secondary" className="mb-2 bg-primary text-primary-foreground border-0 text-xs">
+                  {mainHeadline.publisher.name || "뉴스"}
+                </Badge>
+                <h2 className="font-headline text-xl md:text-2xl font-bold text-white leading-tight line-clamp-2">
+                  {mainHeadline.title}
+                </h2>
+              </div>
             </div>
-          )}
-          <p className="text-gray-700 leading-relaxed text-sm line-clamp-3 md:line-clamp-none">
-            {mainHeadline.excerpt}
-          </p>
-          <p className="text-xs text-gray-500 mt-2">
-            {mainHeadline.authors?.[0] || mainHeadline.publisher.name} |{" "}
-            {formatDate(mainHeadline.date)}
-          </p>
-        </div>
+          </a>
+          <CardContent className="p-4 md:p-5">
+            <p className="text-muted-foreground text-sm leading-relaxed line-clamp-2">
+              {mainHeadline.excerpt}
+            </p>
+            <p className="text-xs text-muted-foreground/70 mt-3">
+              {mainHeadline.authors?.[0] || mainHeadline.publisher.name} · {formatDate(mainHeadline.date)}
+            </p>
+          </CardContent>
+        </Card>
 
-        {/* Sub headline + side stories */}
-        <div>
+        {/* Right column */}
+        <div className="space-y-5">
+          {/* Sub headline */}
           {subHeadline && (
-            <div className="mb-4 md:mb-6">
-              <span className="text-xs font-bold text-red-700 uppercase tracking-wider">
-                {subHeadline.publisher.name || "뉴스"}
-              </span>
-              <h3
-                className="text-lg md:text-xl font-bold text-gray-900 mt-1 mb-2 leading-snug"
-                style={{ fontFamily: "Georgia, 'Nanum Myeongjo', serif" }}
-              >
-                <a
-                  href={articleLink(subHeadline.url, subHeadline.title, subHeadline.publisher.name)}
-                  className="hover:text-blue-900"
-                >
-                  {subHeadline.title}
-                </a>
-              </h3>
-              <p className="text-sm text-gray-700 leading-relaxed line-clamp-3">
-                {subHeadline.excerpt}
-              </p>
-              <p className="text-xs text-gray-500 mt-2">
-                {subHeadline.authors?.[0] || subHeadline.publisher.name} |{" "}
-                {formatDate(subHeadline.date)}
-              </p>
-            </div>
+            <Card className="border-0 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden py-0">
+              <a href={articleLink(subHeadline.url, subHeadline.title, subHeadline.publisher.name)} className="block">
+                {subHeadline.thumbnail && (
+                  <img
+                    src={subHeadline.thumbnail}
+                    alt={subHeadline.title}
+                    className="w-full h-32 object-cover"
+                  />
+                )}
+                <CardContent className="p-4">
+                  <Badge variant="outline" className="mb-2 text-xs text-primary border-primary/30">
+                    {subHeadline.publisher.name || "뉴스"}
+                  </Badge>
+                  <h3 className="font-headline text-base md:text-lg font-bold text-card-foreground leading-snug line-clamp-2 hover:text-primary transition-colors">
+                    {subHeadline.title}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
+                    {subHeadline.excerpt}
+                  </p>
+                </CardContent>
+              </a>
+            </Card>
           )}
 
-          {/* Side list */}
-          <div className="border-t border-gray-300 pt-3 md:pt-4">
-            <h4 className="text-sm font-bold text-gray-900 mb-3">주요 뉴스</h4>
-            <ul className="space-y-2">
-              {articles.slice(2, 7).map((article, i) => (
-                <li key={i} className="flex gap-2 text-sm">
-                  <span className="text-red-700 font-bold shrink-0">
-                    {i + 1}
-                  </span>
-                  <a
-                    href={articleLink(article.url, article.title, article.publisher.name)}
-                    className="text-gray-800 hover:text-blue-900 line-clamp-2 md:line-clamp-1"
-                  >
-                    {article.title}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* Numbered list */}
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-4">
+              <h4 className="text-sm font-bold text-card-foreground mb-3 flex items-center gap-2">
+                <span className="w-1 h-4 bg-primary rounded-full" />
+                주요 뉴스
+              </h4>
+              <Separator className="mb-3" />
+              <ul className="space-y-2.5">
+                {articles.slice(2, 7).map((article, i) => (
+                  <li key={i} className="flex gap-2.5 text-sm group">
+                    <span className={`font-bold shrink-0 w-5 text-center ${
+                      i < 3 ? "text-primary" : "text-muted-foreground/50"
+                    }`}>
+                      {i + 1}
+                    </span>
+                    <a
+                      href={articleLink(article.url, article.title, article.publisher.name)}
+                      className="text-card-foreground group-hover:text-primary line-clamp-1 transition-colors"
+                    >
+                      {article.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </section>
