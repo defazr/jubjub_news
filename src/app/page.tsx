@@ -19,13 +19,17 @@ export default function Home() {
 
   useEffect(() => {
     async function loadNews() {
-      const [trendingData, politics, economy, tech, sports] = await Promise.all(
+      const [trendingData, politics, economy, society, international, culture, tech, sports, opinion] = await Promise.all(
         [
           fetchTrendingNews("general"),
           searchNews("한국 정치"),
           searchNews("한국 경제"),
+          searchNews("한국 사회"),
+          searchNews("국제 세계 뉴스"),
+          searchNews("한국 문화 예술"),
           searchNews("IT 기술 과학"),
           searchNews("스포츠 한국"),
+          searchNews("사설 오피니언 칼럼"),
         ]
       );
 
@@ -33,8 +37,12 @@ export default function Home() {
       setCategoryData({
         정치: politics.slice(0, 4),
         경제: economy.slice(0, 4),
+        사회: society.slice(0, 4),
+        국제: international.slice(0, 4),
+        문화: culture.slice(0, 4),
         "IT/과학": tech.slice(0, 4),
         스포츠: sports.slice(0, 4),
+        오피니언: opinion.slice(0, 4),
       });
       setLoading(false);
     }
