@@ -7,6 +7,7 @@ import HeadlineSection from "@/components/HeadlineSection";
 import CategorySection from "@/components/CategorySection";
 import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
+import AdUnit from "@/components/AdUnit";
 import { fetchTrendingNews, searchNews, type ApiArticle } from "@/lib/api";
 
 export default function Home() {
@@ -58,12 +59,14 @@ export default function Home() {
           ) : (
             <>
               <HeadlineSection articles={headlines} />
+              <AdUnit slot="9121339058" className="my-4" />
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 <div className="lg:col-span-3">
                   <CategorySection categoryData={categoryData} />
                 </div>
                 <div className="lg:col-span-1">
                   <Sidebar articles={trending.slice(0, 10)} />
+                  <AdUnit slot="2248808942" className="mt-6" />
                 </div>
               </div>
             </>
