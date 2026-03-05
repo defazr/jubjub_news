@@ -6,13 +6,16 @@ interface Props {
 }
 
 export default function CategorySection({ categoryData }: Props) {
-  const displayCategories = Object.keys(categoryData);
+  // Only show categories that have articles
+  const displayCategories = Object.keys(categoryData).filter(
+    (cat) => categoryData[cat] && categoryData[cat].length > 0
+  );
 
   return (
     <section className="mb-6 md:mb-8">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {displayCategories.map((cat) => {
-          const articles = categoryData[cat] || [];
+          const articles = categoryData[cat];
           const featured = articles[0];
           const rest = articles.slice(1);
 

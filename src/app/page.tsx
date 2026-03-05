@@ -10,6 +10,54 @@ import Footer from "@/components/Footer";
 import AdUnit from "@/components/AdUnit";
 import { fetchTrendingNews, searchNews, type ApiArticle } from "@/lib/api";
 
+const CACHE_KEY = "jubjub_news_cache";
+const CACHE_TTL = 3 * 60 * 60 * 1000; // 3 hours
+
+interface CachedNews {
+  trending: ApiArticle[];
+  categories: Record<string, ApiArticle[]>;
+  ts: number;
+}
+
+function loadCache(): CachedNews | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed: CachedNews = JSON.parse(raw);
+    if (Date.now() - parsed.ts < CACHE_TTL) return parsed;
+  } catch { /* ignore */ }
+  return null;
+}
+
+function saveCache(trending: ApiArticle[], categories: Record<string, ApiArticle[]>) {
+  try {
+    const data: CachedNews = { trending, categories, ts: Date.now() };
+    localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+  } catch { /* ignore */ }
+}
+
+const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+const CATEGORY_QUERIES: [string, string][] = [
+  ["정치", "한국 정치 국회"],
+  ["경제", "한국 경제 금융"],
+  ["사회", "한국 사회 사건"],
+  ["국제", "국제 세계 외교"],
+  ["문화", "한국 문화 예술 연예"],
+  ["IT/과학", "IT 기술 과학 AI"],
+  ["스포츠", "스포츠 축구 야구"],
+  ["오피니언", "사설 칼럼 오피니언"],
+];
+
+async function fetchWithRetry(query: string, retries = 1): Promise<ApiArticle[]> {
+  for (let i = 0; i <= retries; i++) {
+    const result = await searchNews(query);
+    if (result.length > 0) return result;
+    if (i < retries) await delay(800);
+  }
+  return [];
+}
+
 export default function Home() {
   const [trending, setTrending] = useState<ApiArticle[]>([]);
   const [categoryData, setCategoryData] = useState<
@@ -18,51 +66,36 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
     async function loadNews() {
-      // Batch 1: trending + 2 categories
-      const [trendingData, politics, economy] = await Promise.all([
-        fetchTrendingNews("general"),
-        searchNews("한국 정치 국회"),
-        searchNews("한국 경제 금융"),
-      ]);
+      // Try cache first
+      const cached = loadCache();
+      if (cached) {
+        setTrending(cached.trending);
+        setCategoryData(cached.categories);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch fresh data in batches of 2
+      const trendingData = await fetchTrendingNews("general");
       setTrending(trendingData);
 
-      await delay(500);
+      const categories: Record<string, ApiArticle[]> = {};
 
-      // Batch 2
-      const [society, international] = await Promise.all([
-        searchNews("한국 사회 사건"),
-        searchNews("국제 세계 외교"),
-      ]);
+      for (let i = 0; i < CATEGORY_QUERIES.length; i += 2) {
+        const batch = CATEGORY_QUERIES.slice(i, i + 2);
+        const results = await Promise.all(
+          batch.map(([, query]) => fetchWithRetry(query))
+        );
+        batch.forEach(([name], idx) => {
+          categories[name] = results[idx].slice(0, 5);
+        });
 
-      await delay(500);
+        if (i + 2 < CATEGORY_QUERIES.length) await delay(600);
+      }
 
-      // Batch 3
-      const [culture, tech] = await Promise.all([
-        searchNews("한국 문화 예술 연예"),
-        searchNews("IT 기술 과학 AI"),
-      ]);
-
-      await delay(500);
-
-      // Batch 4
-      const [sports, opinion] = await Promise.all([
-        searchNews("스포츠 축구 야구"),
-        searchNews("사설 칼럼 오피니언"),
-      ]);
-
-      setCategoryData({
-        정치: politics.slice(0, 5),
-        경제: economy.slice(0, 5),
-        사회: society.slice(0, 5),
-        국제: international.slice(0, 5),
-        문화: culture.slice(0, 5),
-        "IT/과학": tech.slice(0, 5),
-        스포츠: sports.slice(0, 5),
-        오피니언: opinion.slice(0, 5),
-      });
+      setCategoryData(categories);
+      saveCache(trendingData, categories);
       setLoading(false);
     }
     loadNews();
