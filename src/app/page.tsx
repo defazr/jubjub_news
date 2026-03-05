@@ -48,8 +48,8 @@ export default function Home() {
       <Header />
       <BreakingNewsTicker items={breakingTitles} />
 
-      <main className="max-w-[1200px] mx-auto px-4 py-6">
-        <div className="bg-white p-6 shadow-sm">
+      <main className="max-w-[1200px] mx-auto px-3 md:px-4 py-4 md:py-6">
+        <div className="bg-white p-3 md:p-6 shadow-sm">
           {loading ? (
             <div className="text-center py-20 text-gray-500">
               <div className="inline-block w-8 h-8 border-4 border-gray-300 border-t-red-700 rounded-full animate-spin mb-4"></div>

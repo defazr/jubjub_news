@@ -1,11 +1,11 @@
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-400 mt-12">
-      <div className="max-w-[1200px] mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-          <div>
+    <footer className="bg-gray-900 text-gray-400 mt-8 md:mt-12">
+      <div className="max-w-[1200px] mx-auto px-4 py-6 md:py-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 mb-6 md:mb-8">
+          <div className="col-span-2 md:col-span-1">
             <h4
-              className="text-white text-lg font-bold mb-3"
+              className="text-white text-lg font-bold mb-2 md:mb-3"
               style={{ fontFamily: "Georgia, 'Nanum Myeongjo', serif" }}
             >
               JubJub 뉴스
@@ -17,7 +17,7 @@ export default function Footer() {
             </p>
           </div>
           <div>
-            <h5 className="text-white text-sm font-bold mb-3">섹션</h5>
+            <h5 className="text-white text-sm font-bold mb-2 md:mb-3">섹션</h5>
             <ul className="text-sm space-y-1">
               <li><a href="#" className="hover:text-white">정치</a></li>
               <li><a href="#" className="hover:text-white">경제</a></li>
@@ -27,7 +27,7 @@ export default function Footer() {
             </ul>
           </div>
           <div>
-            <h5 className="text-white text-sm font-bold mb-3">고객센터</h5>
+            <h5 className="text-white text-sm font-bold mb-2 md:mb-3">고객센터</h5>
             <ul className="text-sm space-y-1">
               <li><a href="#" className="hover:text-white">광고 문의</a></li>
               <li><a href="#" className="hover:text-white">제보하기</a></li>
@@ -37,7 +37,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="border-t border-gray-700 pt-4 text-xs text-center">
-          <p>© 2026 JubJub 뉴스. All rights reserved.</p>
+          <p>&copy; 2026 JubJub 뉴스. All rights reserved.</p>
         </div>
       </div>
     </footer>

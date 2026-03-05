@@ -8,11 +8,11 @@ export default function CategorySection({ categoryData }: Props) {
   const displayCategories = Object.keys(categoryData);
 
   return (
-    <section className="mb-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <section className="mb-6 md:mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {displayCategories.map((cat) => (
           <div key={cat} className="border-t-2 border-gray-900 pt-3">
-            <h3 className="text-lg font-bold text-gray-900 mb-3 pb-2 border-b border-gray-300">
+            <h3 className="text-base md:text-lg font-bold text-gray-900 mb-3 pb-2 border-b border-gray-300">
               {cat}
             </h3>
             <ul className="space-y-3">
