@@ -3,15 +3,77 @@ import Script from "next/script";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
+const SITE_URL = "https://headlines.fazr.co.kr";
+const SITE_NAME = "JubJub 뉴스";
+const SITE_DESCRIPTION =
+  "국내외 정치, 경제, 사회, 국제, IT/과학, 스포츠 등 주요 뉴스를 실시간으로 한눈에 모아보는 뉴스 큐레이션 서비스";
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  maximumScale: 5,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#1a1a2e" },
+  ],
 };
 
 export const metadata: Metadata = {
-  title: "JubJub 뉴스 - 국내외 주요 뉴스를 한눈에",
-  description: "국내외 주요 뉴스를 한눈에 모아 보여드리는 JubJub 뉴스",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${SITE_NAME} - 국내외 주요 뉴스를 한눈에`,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  keywords: [
+    "뉴스",
+    "한국 뉴스",
+    "실시간 뉴스",
+    "속보",
+    "정치",
+    "경제",
+    "사회",
+    "국제",
+    "IT",
+    "과학",
+    "스포츠",
+    "문화",
+    "오피니언",
+    "뉴스 큐레이션",
+    "JubJub",
+  ],
+  authors: [{ name: SITE_NAME }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  openGraph: {
+    type: "website",
+    locale: "ko_KR",
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: `${SITE_NAME} - 국내외 주요 뉴스를 한눈에`,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE_NAME} - 국내외 주요 뉴스를 한눈에`,
+    description: SITE_DESCRIPTION,
+  },
+  alternates: {
+    canonical: SITE_URL,
+  },
+  verification: {},
+  category: "news",
 };
 
 export default function RootLayout({
@@ -21,6 +83,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" suppressHydrationWarning>
+      <head>
+        <link rel="canonical" href={SITE_URL} />
+        <meta name="naver-site-verification" content="" />
+        <meta name="google-site-verification" content="" />
+      </head>
       <body className="antialiased overflow-x-hidden">
         <ThemeProvider>
           {children}
