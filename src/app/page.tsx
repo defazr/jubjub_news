@@ -62,6 +62,15 @@ async function fetchWithRetry(query: string, retries = 1): Promise<ApiArticle[]>
   return [];
 }
 
+function InlineAd({ slot, className = "" }: { slot: string; className?: string }) {
+  return (
+    <div className={className}>
+      <p className="text-[10px] text-muted-foreground/50 text-center mb-1">광고</p>
+      <AdUnit slot={slot} />
+    </div>
+  );
+}
+
 function LoadingSkeleton() {
   return (
     <div className="space-y-6">
@@ -149,15 +158,26 @@ export default function Home() {
           <>
             <HeadlineSection articles={headlines} />
 
-            <AdUnit slot="9121339058" className="my-5" />
+            {/* 광고 1: 헤드라인 아래 (전면 배너) */}
+            <InlineAd slot="9121339058" className="my-5" />
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               <div className="lg:col-span-3">
-                <CategorySection categoryData={categoryData} />
+                <CategorySection
+                  categoryData={categoryData}
+                  renderMidAd={
+                    <InlineAd slot="2248808942" className="my-5" />
+                  }
+                />
+                {/* 광고 3: 카테고리 하단 (전면 배너) */}
+                <InlineAd slot="9121339058" className="mt-5" />
               </div>
               <div className="lg:col-span-1">
                 <Sidebar articles={trending.slice(0, 10)} />
-                <AdUnit slot="2248808942" className="mt-5" />
+                {/* 광고 4: 사이드바 하단 */}
+                <InlineAd slot="2248808942" className="mt-5" />
+                {/* 광고 5: 사이드바 추가 */}
+                <InlineAd slot="9121339058" className="mt-5" />
               </div>
             </div>
           </>

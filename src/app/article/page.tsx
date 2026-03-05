@@ -1,24 +1,31 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
 import AdUnit from "@/components/AdUnit";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, ExternalLink, Clock } from "lucide-react";
+import { ArrowLeft, ExternalLink, X, Loader2 } from "lucide-react";
+
+const COUNTDOWN_SECONDS = 7;
 
 function ArticleRedirectContent() {
   const params = useSearchParams();
   const url = params.get("url") || "";
   const title = params.get("title") || "뉴스 기사";
   const source = params.get("source") || "";
-  const [countdown, setCountdown] = useState(5);
+  const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
+  const [paused, setPaused] = useState(false);
+
+  const goToArticle = useCallback(() => {
+    if (url) window.location.href = url;
+  }, [url]);
 
   useEffect(() => {
-    if (!url) return;
+    if (!url || paused) return;
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -30,7 +37,14 @@ function ArticleRedirectContent() {
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [url]);
+  }, [url, paused]);
+
+  const handleSkip = () => {
+    setPaused(true);
+    setCountdown(0);
+  };
+
+  const progress = ((COUNTDOWN_SECONDS - countdown) / COUNTDOWN_SECONDS) * 100;
 
   if (!url) {
     return (
@@ -65,10 +79,23 @@ function ArticleRedirectContent() {
             </a>
           </Button>
         </div>
+        {/* Progress bar */}
+        {countdown > 0 && !paused && (
+          <div className="h-1 bg-muted">
+            <div
+              className="h-full bg-primary transition-all duration-1000 ease-linear"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        )}
       </header>
 
       <main className="max-w-[800px] mx-auto px-4 py-8">
-        <AdUnit slot="9121339058" className="mb-6" />
+        {/* 상단 광고 */}
+        <div className="mb-6">
+          <p className="text-[10px] text-muted-foreground/50 text-center mb-1">광고</p>
+          <AdUnit slot="9121339058" />
+        </div>
 
         <Card className="border-0 shadow-sm mb-6">
           <CardContent className="p-6">
@@ -96,17 +123,45 @@ function ArticleRedirectContent() {
                   기사 바로가기
                 </a>
               </Button>
-              <span className="text-sm text-muted-foreground flex items-center gap-1.5">
-                <Clock className="h-3.5 w-3.5" />
-                {countdown > 0
-                  ? `${countdown}초 후 자동으로 이동합니다`
-                  : "이동 중..."}
-              </span>
+
+              {countdown > 0 && !paused ? (
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    {countdown}초 후 자동 이동
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleSkip}
+                    className="text-xs text-muted-foreground hover:text-foreground gap-1"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    취소
+                  </Button>
+                </div>
+              ) : paused ? (
+                <span className="text-sm text-muted-foreground">
+                  자동 이동이 취소되었습니다
+                </span>
+              ) : (
+                <span className="text-sm text-muted-foreground">이동 중...</span>
+              )}
             </div>
           </CardContent>
         </Card>
 
-        <AdUnit slot="2248808942" className="mb-6" />
+        {/* 중간 광고 */}
+        <div className="mb-6">
+          <p className="text-[10px] text-muted-foreground/50 text-center mb-1">광고</p>
+          <AdUnit slot="2248808942" />
+        </div>
+
+        {/* 하단 광고 */}
+        <div className="mb-6">
+          <p className="text-[10px] text-muted-foreground/50 text-center mb-1">광고</p>
+          <AdUnit slot="9121339058" format="rectangle" />
+        </div>
 
         <div className="text-center">
           <Button variant="link" asChild className="text-muted-foreground">
