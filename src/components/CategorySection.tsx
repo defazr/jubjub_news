@@ -11,6 +11,17 @@ export default function CategorySection({ categoryData }: Props) {
     (cat) => categoryData[cat] && categoryData[cat].length > 0
   );
 
+  if (displayCategories.length === 0) {
+    return (
+      <section className="mb-6 md:mb-8">
+        <div className="text-center py-8 text-gray-400">
+          <div className="inline-block w-6 h-6 border-3 border-gray-300 border-t-red-700 rounded-full animate-spin mb-2"></div>
+          <p className="text-sm">카테고리별 뉴스 로딩 중...</p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="mb-6 md:mb-8">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
