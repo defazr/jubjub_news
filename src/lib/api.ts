@@ -31,6 +31,14 @@ interface RawResponse {
   data: RawArticle[];
 }
 
+const RAPIDAPI_KEY = "7ceb526388msh21a88d2b61d4eebp16fd2bjsn23f1646f4e42";
+const RAPIDAPI_HOST = "real-time-news-data.p.rapidapi.com";
+
+const headers = {
+  "x-rapidapi-host": RAPIDAPI_HOST,
+  "x-rapidapi-key": RAPIDAPI_KEY,
+};
+
 function transform(raw: RawArticle): ApiArticle {
   return {
     title: raw.title,
@@ -52,7 +60,10 @@ export async function fetchTrendingNews(
   topic: string = "general"
 ): Promise<ApiArticle[]> {
   try {
-    const res = await fetch("/api/news?type=headlines");
+    const res = await fetch(
+      `https://${RAPIDAPI_HOST}/top-headlines?country=KR&lang=ko`,
+      { headers }
+    );
     if (!res.ok) return [];
     const data: RawResponse = await res.json();
     return (data.data || []).map(transform);
@@ -63,7 +74,10 @@ export async function fetchTrendingNews(
 
 export async function searchNews(query: string): Promise<ApiArticle[]> {
   try {
-    const res = await fetch(`/api/news?type=search&query=${encodeURIComponent(query)}`);
+    const res = await fetch(
+      `https://${RAPIDAPI_HOST}/search?query=${encodeURIComponent(query)}&country=KR&lang=ko`,
+      { headers }
+    );
     if (!res.ok) return [];
     const data: RawResponse = await res.json();
     return (data.data || []).map(transform);
