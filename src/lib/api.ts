@@ -70,7 +70,40 @@ export async function searchNews(
 }
 
 const translateCache = new Map<string, { data: string[]; ts: number }>();
-const TRANSLATE_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+const TRANSLATE_CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
+// localStorage-based persistent cache
+const LS_TRANSLATE_KEY = "jubjub_translate_cache";
+const LS_TRANSLATE_TTL = 2 * 60 * 60 * 1000; // 2 hours
+
+function loadLocalCache(): void {
+  if (typeof window === "undefined") return;
+  try {
+    const raw = localStorage.getItem(LS_TRANSLATE_KEY);
+    if (!raw) return;
+    const entries: [string, { data: string[]; ts: number }][] = JSON.parse(raw);
+    const now = Date.now();
+    for (const [key, val] of entries) {
+      if (now - val.ts < LS_TRANSLATE_TTL) {
+        translateCache.set(key, val);
+      }
+    }
+  } catch { /* ignore */ }
+}
+
+function saveLocalCache(): void {
+  if (typeof window === "undefined") return;
+  try {
+    const now = Date.now();
+    const entries = [...translateCache.entries()].filter(
+      ([, v]) => now - v.ts < LS_TRANSLATE_TTL
+    );
+    localStorage.setItem(LS_TRANSLATE_KEY, JSON.stringify(entries));
+  } catch { /* ignore */ }
+}
+
+// Load persisted translations on module init
+loadLocalCache();
 
 const CHUNK_SIZE = 10; // max texts per API call for reliability
 
@@ -112,6 +145,7 @@ export async function translateTexts(
   const translations = results.flat();
 
   translateCache.set(key, { data: translations, ts: Date.now() });
+  saveLocalCache();
   return translations;
 }
 
