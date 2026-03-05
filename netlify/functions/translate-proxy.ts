@@ -34,6 +34,13 @@ export default async (req: Request) => {
 
     const prompt = `Translate the following news headlines and excerpts to ${langName}. Keep the same numbered format. Only output translations, no explanations.\n\n${numbered}`;
 
+    if (!GEMINI_API_KEY) {
+      return new Response(JSON.stringify({ error: "GEMINI_API_KEY not configured" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+    }
+
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
       {
@@ -48,6 +55,14 @@ export default async (req: Request) => {
         }),
       }
     );
+
+    if (!res.ok) {
+      const errText = await res.text();
+      return new Response(JSON.stringify({ error: `Gemini API error ${res.status}`, detail: errText }), {
+        status: 502,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+    }
 
     const data = await res.json();
     const raw =
