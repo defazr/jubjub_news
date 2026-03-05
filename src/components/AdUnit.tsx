@@ -26,33 +26,36 @@ export default function AdUnit({
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (!pushed.current) {
-      try {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-        pushed.current = true;
-      } catch {
-        // adsbygoogle not loaded yet
-      }
-    }
-
-    // Poll to check if ad actually rendered with content
     let attempts = 0;
+    const maxAttempts = 20;
+
     const check = setInterval(() => {
       attempts++;
+
+      // Keep trying to push until adsbygoogle is available
+      if (!pushed.current) {
+        try {
+          (window.adsbygoogle = window.adsbygoogle || []).push({});
+          pushed.current = true;
+        } catch {
+          // adsbygoogle not loaded yet, will retry on next interval
+        }
+      }
+
+      // Check if ad actually rendered with content
       const ins = containerRef.current?.querySelector("ins");
       if (ins) {
         const status = ins.getAttribute("data-ad-status");
-        // Only show if ad is filled (not "unfilled") and has real content
         if (status === "filled" || (ins.offsetHeight > 90 && ins.children.length > 0)) {
           setVisible(true);
           clearInterval(check);
         }
-        // If AdSense explicitly says unfilled, stop checking
         if (status === "unfilled") {
           clearInterval(check);
         }
       }
-      if (attempts >= 15) clearInterval(check);
+
+      if (attempts >= maxAttempts) clearInterval(check);
     }, 500);
 
     return () => clearInterval(check);
