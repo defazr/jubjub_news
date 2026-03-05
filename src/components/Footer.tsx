@@ -11,9 +11,7 @@ export default function Footer() {
               JubJub 뉴스
             </h4>
             <p className="text-sm leading-relaxed">
-              신뢰와 정확으로 전하는 뉴스.
-              <br />
-              대한민국을 대표하는 종합 뉴스 미디어.
+              국내외 주요 뉴스를 한눈에 모아 보여드립니다.
             </p>
           </div>
           <div>

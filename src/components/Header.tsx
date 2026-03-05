@@ -14,6 +14,14 @@ export default function Header() {
     return `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 (${days[now.getDay()]})`;
   });
 
+  function handleCategoryClick(cat: string) {
+    setMenuOpen(false);
+    const el = document.getElementById(`category-${cat}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
+
   return (
     <header className="border-b-2 border-gray-900">
       {/* Top bar */}
@@ -33,7 +41,7 @@ export default function Header() {
         <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-gray-900" style={{ fontFamily: "Georgia, 'Nanum Myeongjo', serif" }}>
           JubJub 뉴스
         </h1>
-        <p className="text-xs md:text-sm text-gray-500 mt-1">신뢰와 정확으로 전하는 뉴스</p>
+        <p className="text-xs md:text-sm text-gray-500 mt-1">국내외 주요 뉴스를 한눈에</p>
       </div>
 
       {/* Navigation */}
@@ -42,15 +50,21 @@ export default function Header() {
           {/* Desktop nav */}
           <ul className="hidden md:flex justify-center">
             <li>
-              <a href="#" className="block px-5 py-3 text-sm font-medium hover:bg-gray-700 transition-colors">
+              <button
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                className="block px-5 py-3 text-sm font-medium hover:bg-gray-700 transition-colors"
+              >
                 홈
-              </a>
+              </button>
             </li>
             {categories.map((cat) => (
               <li key={cat}>
-                <a href="#" className="block px-5 py-3 text-sm font-medium hover:bg-gray-700 transition-colors">
+                <button
+                  onClick={() => handleCategoryClick(cat)}
+                  className="block px-5 py-3 text-sm font-medium hover:bg-gray-700 transition-colors"
+                >
                   {cat}
-                </a>
+                </button>
               </li>
             ))}
           </ul>
@@ -70,7 +84,12 @@ export default function Header() {
               </svg>
               메뉴
             </button>
-            <a href="#" className="text-sm font-medium px-2 py-1">홈</a>
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="text-sm font-medium px-2 py-1"
+            >
+              홈
+            </button>
           </div>
         </div>
 
@@ -80,13 +99,12 @@ export default function Header() {
             <ul className="max-w-[1200px] mx-auto px-4 py-2">
               {categories.map((cat) => (
                 <li key={cat}>
-                  <a
-                    href="#"
-                    className="block px-3 py-2.5 text-sm font-medium hover:bg-gray-700 rounded transition-colors"
-                    onClick={() => setMenuOpen(false)}
+                  <button
+                    className="block w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-gray-700 rounded transition-colors"
+                    onClick={() => handleCategoryClick(cat)}
                   >
                     {cat}
-                  </a>
+                  </button>
                 </li>
               ))}
             </ul>
