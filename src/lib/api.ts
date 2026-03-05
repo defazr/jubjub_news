@@ -31,14 +31,6 @@ interface RawResponse {
   data: RawArticle[];
 }
 
-const RAPIDAPI_KEY = "7ceb526388msh21a88d2b61d4eebp16fd2bjsn23f1646f4e42";
-const RAPIDAPI_HOST = "real-time-news-data.p.rapidapi.com";
-
-const headers = {
-  "x-rapidapi-host": RAPIDAPI_HOST,
-  "x-rapidapi-key": RAPIDAPI_KEY,
-};
-
 function transform(raw: RawArticle): ApiArticle {
   return {
     title: raw.title,
@@ -59,17 +51,17 @@ function transform(raw: RawArticle): ApiArticle {
 const cache = new Map<string, { data: ApiArticle[]; ts: number }>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
-async function cachedFetch(url: string): Promise<ApiArticle[]> {
+async function cachedFetch(proxyUrl: string): Promise<ApiArticle[]> {
   const now = Date.now();
-  const hit = cache.get(url);
+  const hit = cache.get(proxyUrl);
   if (hit && now - hit.ts < CACHE_TTL) return hit.data;
 
   try {
-    const res = await fetch(url, { headers });
+    const res = await fetch(proxyUrl);
     if (!res.ok) return [];
     const json: RawResponse = await res.json();
     const articles = (json.data || []).map(transform);
-    cache.set(url, { data: articles, ts: now });
+    cache.set(proxyUrl, { data: articles, ts: now });
     return articles;
   } catch {
     return [];
@@ -79,15 +71,14 @@ async function cachedFetch(url: string): Promise<ApiArticle[]> {
 export async function fetchTrendingNews(
   topic: string = "general"
 ): Promise<ApiArticle[]> {
-  const topicParam = topic !== "general" ? `&topic=${topic}` : "";
   return cachedFetch(
-    `https://${RAPIDAPI_HOST}/top-headlines?country=KR&lang=ko${topicParam}`
+    `/.netlify/functions/news-proxy?endpoint=trending&topic=${topic}`
   );
 }
 
 export async function searchNews(query: string): Promise<ApiArticle[]> {
   return cachedFetch(
-    `https://${RAPIDAPI_HOST}/search?query=${encodeURIComponent(query)}&country=KR&lang=ko`
+    `/.netlify/functions/news-proxy?endpoint=search&query=${encodeURIComponent(query)}`
   );
 }
 
