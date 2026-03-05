@@ -23,7 +23,7 @@ export default function AdUnit({
 }: Props) {
   const pushed = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [filled, setFilled] = useState(false);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (!pushed.current) {
@@ -35,22 +35,26 @@ export default function AdUnit({
       }
     }
 
-    // Check if ad actually rendered (has height)
-    const timer = setTimeout(() => {
+    // Poll to check if ad actually rendered
+    let attempts = 0;
+    const check = setInterval(() => {
+      attempts++;
       const ins = containerRef.current?.querySelector("ins");
       if (ins && ins.offsetHeight > 0) {
-        setFilled(true);
+        setVisible(true);
+        clearInterval(check);
       }
-    }, 2000);
+      if (attempts >= 10) clearInterval(check);
+    }, 500);
 
-    return () => clearTimeout(timer);
+    return () => clearInterval(check);
   }, []);
 
   return (
     <div
       ref={containerRef}
-      className={className}
-      style={{ minHeight: filled ? undefined : 0, overflow: "hidden" }}
+      className={visible ? className : ""}
+      style={visible ? undefined : { height: 0, overflow: "hidden", margin: 0, padding: 0 }}
     >
       <ins
         className="adsbygoogle"
