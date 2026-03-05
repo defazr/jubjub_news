@@ -7,7 +7,11 @@ import HeadlineSection from "@/components/HeadlineSection";
 import CategorySection from "@/components/CategorySection";
 import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
+import ScrollToTop from "@/components/ScrollToTop";
 import AdUnit from "@/components/AdUnit";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
 import { fetchTrendingNews, searchNews, type ApiArticle } from "@/lib/api";
 
 const CACHE_KEY = "jubjub_news_cache";
@@ -58,16 +62,49 @@ async function fetchWithRetry(query: string, retries = 1): Promise<ApiArticle[]>
   return [];
 }
 
+function LoadingSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <Card className="md:col-span-2 border-0 shadow-sm">
+          <CardContent className="p-0">
+            <Skeleton className="h-64 w-full rounded-t-lg" />
+            <div className="p-5 space-y-3">
+              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+            </div>
+          </CardContent>
+        </Card>
+        <div className="space-y-5">
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-4 space-y-3">
+              <Skeleton className="h-32 w-full rounded-md" />
+              <Skeleton className="h-5 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </CardContent>
+          </Card>
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-4 space-y-2.5">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Skeleton key={i} className="h-4 w-full" />
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+      <Separator />
+    </div>
+  );
+}
+
 export default function Home() {
   const [trending, setTrending] = useState<ApiArticle[]>([]);
-  const [categoryData, setCategoryData] = useState<
-    Record<string, ApiArticle[]>
-  >({});
+  const [categoryData, setCategoryData] = useState<Record<string, ApiArticle[]>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadNews() {
-      // Try cache first
       const cached = loadCache();
       if (cached) {
         setTrending(cached.trending);
@@ -76,14 +113,11 @@ export default function Home() {
         return;
       }
 
-      // Fetch trending first, then show page immediately
       const trendingData = await fetchTrendingNews("general");
       setTrending(trendingData);
-      setLoading(false); // Show page right away with headlines
+      setLoading(false);
 
-      // Then load categories progressively
       const categories: Record<string, ApiArticle[]> = {};
-
       for (let i = 0; i < CATEGORY_QUERIES.length; i += 2) {
         const batch = CATEGORY_QUERIES.slice(i, i + 2);
         const results = await Promise.all(
@@ -92,12 +126,9 @@ export default function Home() {
         batch.forEach(([name], idx) => {
           categories[name] = results[idx].slice(0, 5);
         });
-        // Update UI progressively as each batch loads
         setCategoryData({ ...categories });
-
         if (i + 2 < CATEGORY_QUERIES.length) await delay(600);
       }
-
       saveCache(trendingData, categories);
     }
     loadNews();
@@ -107,36 +138,34 @@ export default function Home() {
   const breakingTitles = trending.slice(0, 4).map((a) => `속보: ${a.title}`);
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-background">
       <Header />
       <BreakingNewsTicker items={breakingTitles} />
 
-      <main className="max-w-[1200px] mx-auto px-3 md:px-4 py-4 md:py-6">
-        <div className="bg-white p-3 md:p-6 shadow-sm">
-          {loading ? (
-            <div className="text-center py-20 text-gray-500">
-              <div className="inline-block w-8 h-8 border-4 border-gray-300 border-t-red-700 rounded-full animate-spin mb-4"></div>
-              <p>최신 뉴스를 불러오는 중...</p>
-            </div>
-          ) : (
-            <>
-              <HeadlineSection articles={headlines} />
-              <AdUnit slot="9121339058" className="my-4" />
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <div className="lg:col-span-3">
-                  <CategorySection categoryData={categoryData} />
-                </div>
-                <div className="lg:col-span-1">
-                  <Sidebar articles={trending.slice(0, 10)} />
-                  <AdUnit slot="2248808942" className="mt-6" />
-                </div>
+      <main className="max-w-[1200px] mx-auto px-3 md:px-4 py-5 md:py-8">
+        {loading ? (
+          <LoadingSkeleton />
+        ) : (
+          <>
+            <HeadlineSection articles={headlines} />
+
+            <AdUnit slot="9121339058" className="my-5" />
+
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              <div className="lg:col-span-3">
+                <CategorySection categoryData={categoryData} />
               </div>
-            </>
-          )}
-        </div>
+              <div className="lg:col-span-1">
+                <Sidebar articles={trending.slice(0, 10)} />
+                <AdUnit slot="2248808942" className="mt-5" />
+              </div>
+            </div>
+          </>
+        )}
       </main>
 
       <Footer />
+      <ScrollToTop />
     </div>
   );
 }

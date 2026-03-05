@@ -1,5 +1,9 @@
 import { type ApiArticle } from "@/lib/api";
 import { articleLink } from "@/lib/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { TrendingUp, Globe } from "lucide-react";
 
 interface Props {
   articles: ApiArticle[];
@@ -7,42 +11,60 @@ interface Props {
 
 export default function Sidebar({ articles }: Props) {
   return (
-    <aside className="space-y-6">
+    <aside className="space-y-5 lg:sticky lg:top-16">
       {/* Most read */}
-      <div className="border-t-2 border-red-700 pt-3">
-        <h3 className="text-lg font-bold text-gray-900 mb-3">많이 본 뉴스</h3>
-        <ol className="space-y-2">
-          {articles.slice(0, 8).map((article, i) => (
-            <li key={i} className="flex gap-3 items-start">
-              <span
-                className={`text-lg font-bold shrink-0 ${i < 3 ? "text-red-700" : "text-gray-400"}`}
-              >
-                {i + 1}
-              </span>
-              <a
-                href={articleLink(article.url, article.title, article.publisher.name)}
-                className="text-sm text-gray-800 hover:text-blue-900 leading-snug"
-              >
-                {article.title}
-              </a>
-            </li>
-          ))}
-        </ol>
-      </div>
-
-      {/* Publisher sources */}
-      <div className="border-t-2 border-gray-900 pt-3">
-        <h3 className="text-lg font-bold text-gray-900 mb-3">뉴스 출처</h3>
-        <ul className="space-y-2">
-          {[...new Set(articles.map((a) => a.publisher.name).filter(Boolean))]
-            .slice(0, 6)
-            .map((name, i) => (
-              <li key={i} className="text-sm text-gray-600">
-                {name}
+      <Card className="border-0 shadow-sm overflow-hidden py-0 gap-0">
+        <CardHeader className="bg-primary/5 dark:bg-primary/10 pt-4 pb-3 px-4">
+          <CardTitle className="text-sm font-bold flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-primary" />
+            많이 본 뉴스
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4">
+          <ol className="space-y-3">
+            {articles.slice(0, 8).map((article, i) => (
+              <li key={i} className="flex gap-3 items-start group">
+                <Badge
+                  variant={i < 3 ? "default" : "secondary"}
+                  className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center p-0 text-xs font-bold ${
+                    i < 3 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {i + 1}
+                </Badge>
+                <a
+                  href={articleLink(article.url, article.title, article.publisher.name)}
+                  className="text-sm text-card-foreground group-hover:text-primary leading-snug transition-colors line-clamp-2"
+                >
+                  {article.title}
+                </a>
               </li>
             ))}
-        </ul>
-      </div>
+          </ol>
+        </CardContent>
+      </Card>
+
+      {/* Publisher sources */}
+      <Card className="border-0 shadow-sm py-0 gap-0">
+        <CardHeader className="pt-4 pb-3 px-4">
+          <CardTitle className="text-sm font-bold flex items-center gap-2">
+            <Globe className="h-4 w-4 text-primary" />
+            뉴스 출처
+          </CardTitle>
+        </CardHeader>
+        <Separator />
+        <CardContent className="p-4">
+          <div className="flex flex-wrap gap-2">
+            {[...new Set(articles.map((a) => a.publisher.name).filter(Boolean))]
+              .slice(0, 8)
+              .map((name, i) => (
+                <Badge key={i} variant="outline" className="text-xs font-normal">
+                  {name}
+                </Badge>
+              ))}
+          </div>
+        </CardContent>
+      </Card>
     </aside>
   );
 }

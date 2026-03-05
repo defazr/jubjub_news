@@ -1,12 +1,14 @@
 import { type ApiArticle, formatDate } from "@/lib/api";
 import { articleLink } from "@/lib/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Props {
   categoryData: Record<string, ApiArticle[]>;
 }
 
 export default function CategorySection({ categoryData }: Props) {
-  // Only show categories that have articles
   const displayCategories = Object.keys(categoryData).filter(
     (cat) => categoryData[cat] && categoryData[cat].length > 0
   );
@@ -14,9 +16,23 @@ export default function CategorySection({ categoryData }: Props) {
   if (displayCategories.length === 0) {
     return (
       <section className="mb-6 md:mb-8">
-        <div className="text-center py-8 text-gray-400">
-          <div className="inline-block w-6 h-6 border-3 border-gray-300 border-t-red-700 rounded-full animate-spin mb-2"></div>
-          <p className="text-sm">카테고리별 뉴스 로딩 중...</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className="border-0 shadow-sm">
+              <CardHeader className="pb-3">
+                <Skeleton className="h-5 w-20" />
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Skeleton className="h-36 w-full rounded-md" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+                <Separator />
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-4/5" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </section>
     );
@@ -24,64 +40,72 @@ export default function CategorySection({ categoryData }: Props) {
 
   return (
     <section className="mb-6 md:mb-8">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        {displayCategories.map((cat) => {
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+        {displayCategories.map((cat, catIndex) => {
           const articles = categoryData[cat];
           const featured = articles[0];
           const rest = articles.slice(1);
 
           return (
-            <div key={cat} id={`category-${cat}`} className="border-t-2 border-gray-900 pt-3 scroll-mt-16">
-              <h3 className="text-base md:text-lg font-bold text-gray-900 mb-3 pb-2 border-b border-gray-300">
-                {cat}
-              </h3>
-
-              {featured && (
-                <a
-                  href={articleLink(featured.url, featured.title, featured.publisher.name)}
-                  className="block mb-3 group"
-                >
-                  {featured.thumbnail && (
-                    <div className="relative w-full aspect-video mb-2 overflow-hidden bg-gray-100">
-                      <img
-                        src={featured.thumbnail}
-                        alt={featured.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                        loading="lazy"
-                      />
-                    </div>
-                  )}
-                  <span className="text-sm font-bold text-gray-900 group-hover:text-blue-900 leading-snug block">
-                    {featured.title}
-                  </span>
-                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                    {featured.excerpt}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {featured.publisher.name} | {formatDate(featured.date)}
-                  </p>
-                </a>
-              )}
-
-              <ul className="space-y-3">
-                {rest.map((article, i) => (
-                  <li
-                    key={i}
-                    className="border-b border-gray-200 pb-3 last:border-0"
+            <Card
+              key={cat}
+              id={`category-${cat}`}
+              className={`border-0 shadow-sm hover:shadow-md transition-all duration-300 scroll-mt-16 animate-fade-in-up animate-delay-${catIndex + 1} py-0 gap-0`}
+            >
+              <CardHeader className="pb-0 pt-4 px-4">
+                <CardTitle className="text-base font-bold flex items-center gap-2">
+                  <span className="w-1 h-4 bg-primary rounded-full" />
+                  {cat}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 pt-3">
+                {featured && (
+                  <a
+                    href={articleLink(featured.url, featured.title, featured.publisher.name)}
+                    className="block mb-3 group"
                   >
-                    <a
-                      href={articleLink(article.url, article.title, article.publisher.name)}
-                      className="text-sm font-medium text-gray-800 hover:text-blue-900 block leading-snug"
-                    >
-                      {article.title}
-                    </a>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {article.publisher.name} | {formatDate(article.date)}
+                    {featured.thumbnail && (
+                      <div className="relative w-full aspect-video mb-2.5 overflow-hidden rounded-md bg-muted">
+                        <img
+                          src={featured.thumbnail}
+                          alt={featured.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      </div>
+                    )}
+                    <span className="text-sm font-semibold text-card-foreground group-hover:text-primary leading-snug block transition-colors line-clamp-2">
+                      {featured.title}
+                    </span>
+                    <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2">
+                      {featured.excerpt}
                     </p>
-                  </li>
-                ))}
-              </ul>
-            </div>
+                    <p className="text-xs text-muted-foreground/60 mt-1.5">
+                      {featured.publisher.name} · {formatDate(featured.date)}
+                    </p>
+                  </a>
+                )}
+
+                <Separator className="my-2" />
+
+                <ul className="space-y-2.5">
+                  {rest.map((article, i) => (
+                    <li key={i}>
+                      <a
+                        href={articleLink(article.url, article.title, article.publisher.name)}
+                        className="text-sm text-card-foreground hover:text-primary block leading-snug transition-colors line-clamp-2"
+                      >
+                        {article.title}
+                      </a>
+                      <p className="text-xs text-muted-foreground/60 mt-0.5">
+                        {article.publisher.name} · {formatDate(article.date)}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
           );
         })}
       </div>
