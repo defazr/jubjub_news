@@ -87,7 +87,7 @@ export default function RootLayout({
         <link rel="canonical" href={SITE_URL} />
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
-        <meta name="naver-site-verification" content="" />
+        <meta name="naver-site-verification" content="d19fefda5c8d730ea238a493c59d291eb0a8c6b0" />
         <meta name="google-site-verification" content="" />
       </head>
       <body className="antialiased overflow-x-hidden">
