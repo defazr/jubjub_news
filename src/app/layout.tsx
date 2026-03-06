@@ -100,6 +100,12 @@ export default function RootLayout({
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
+        <Script id="font-size-init" strategy="beforeInteractive">{`
+          try {
+            var fs = localStorage.getItem('jubjub_font_size');
+            if (fs) document.documentElement.style.setProperty('--jubjub-font-size', fs + 'px');
+          } catch(e) {}
+        `}</Script>
         <Script id="sw-register" strategy="afterInteractive">{`
           if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js').catch(() => {});

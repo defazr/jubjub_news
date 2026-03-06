@@ -128,12 +128,17 @@
 }
 
 /* ===== Typography ===== */
+:root {
+  --jubjub-font-size: 16px;
+}
+
 body {
   font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕",
     "Nanum Gothic", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
 
 .font-headline {
   font-family: Georgia, "Nanum Myeongjo", "Batang", serif;
@@ -208,4 +213,5 @@ html, body {
 
 html {
   scroll-behavior: smooth;
+  font-size: var(--jubjub-font-size, 16px);
 }

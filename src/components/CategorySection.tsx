@@ -7,7 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import BookmarkButton from "@/components/BookmarkButton";
-import { getReadUrls } from "@/lib/storage";
+import ShareButton from "@/components/ShareButton";
+import { getReadUrls, getLayout, setLayoutPref } from "@/lib/storage";
+import { getCategoryByName } from "@/lib/categories";
+import { LayoutGrid, List } from "lucide-react";
 
 interface Props {
   categoryData: Record<string, ApiArticle[]>;
@@ -17,15 +20,18 @@ interface Props {
 function CategoryCard({ cat, articles, animDelay, readUrls }: { cat: string; articles: ApiArticle[]; animDelay: number; readUrls: Set<string> }) {
   const featured = articles[0];
   const rest = articles.slice(1);
+  const catInfo = getCategoryByName(cat);
+  const accentColor = catInfo?.color || "var(--primary)";
 
   return (
     <Card
       id={`category-${cat}`}
       className={`border-0 shadow-sm hover:shadow-md transition-all duration-300 scroll-mt-16 animate-fade-in-up animate-delay-${animDelay} py-0 gap-0`}
+      style={{ borderTop: `3px solid ${accentColor}` }}
     >
       <CardHeader className="pb-0 pt-4 px-4">
         <CardTitle className="text-base font-bold flex items-center gap-2">
-          <span className="w-1 h-4 bg-primary rounded-full" />
+          <span className="w-1 h-4 rounded-full" style={{ backgroundColor: accentColor }} />
           {cat}
         </CardTitle>
       </CardHeader>
@@ -49,6 +55,7 @@ function CategoryCard({ cat, articles, animDelay, readUrls }: { cat: string; art
               )}
               <span className={`text-sm font-semibold text-card-foreground group-hover:text-primary leading-snug block transition-colors line-clamp-2 ${readUrls.has(featured.url) ? "opacity-60" : ""}`}>
                 {featured.title}
+                {readUrls.has(featured.url) && <span className="ml-1 text-[10px] font-normal text-muted-foreground bg-muted px-1 py-0.5 rounded">읽음</span>}
               </span>
               <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2">
                 {featured.excerpt}
@@ -58,7 +65,10 @@ function CategoryCard({ cat, articles, animDelay, readUrls }: { cat: string; art
               <p className="text-xs text-muted-foreground/60">
                 {featured.publisher.name} · {formatDate(featured.date)}
               </p>
-              <BookmarkButton article={featured} className="shrink-0 p-1" />
+              <div className="flex items-center gap-0.5">
+                <ShareButton url={featured.url} title={featured.title} className="shrink-0" />
+                <BookmarkButton article={featured} className="shrink-0 p-1" />
+              </div>
             </div>
           </div>
         )}
@@ -74,6 +84,7 @@ function CategoryCard({ cat, articles, animDelay, readUrls }: { cat: string; art
               >
                 {article.title}
               </a>
+              <ShareButton url={article.url} title={article.title} className="shrink-0" />
               <BookmarkButton article={article} className="shrink-0 p-1" />
             </li>
           ))}
@@ -85,10 +96,18 @@ function CategoryCard({ cat, articles, animDelay, readUrls }: { cat: string; art
 
 export default function CategorySection({ categoryData, renderMidAd }: Props) {
   const [readUrls, setReadUrls] = useState<Set<string>>(new Set());
+  const [layout, setLayout] = useState<"grid" | "list">("grid");
 
   useEffect(() => {
     setReadUrls(getReadUrls());
+    setLayout(getLayout());
   }, []);
+
+  function toggleLayout() {
+    const next = layout === "grid" ? "list" : "grid";
+    setLayout(next);
+    setLayoutPref(next);
+  }
 
   const displayCategories = Object.keys(categoryData).filter(
     (cat) => categoryData[cat] && categoryData[cat].length > 0
@@ -122,10 +141,26 @@ export default function CategorySection({ categoryData, renderMidAd }: Props) {
   const firstHalf = displayCategories.slice(0, 4);
   const secondHalf = displayCategories.slice(4);
 
+  const gridClass = layout === "list"
+    ? "grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5"
+    : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5";
+
   return (
     <section className="mb-6 md:mb-8">
+      {/* Layout toggle */}
+      <div className="flex justify-end mb-3">
+        <button
+          onClick={toggleLayout}
+          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-accent"
+          title={layout === "grid" ? "리스트 보기" : "그리드 보기"}
+        >
+          {layout === "grid" ? <List className="h-3.5 w-3.5" /> : <LayoutGrid className="h-3.5 w-3.5" />}
+          {layout === "grid" ? "리스트" : "그리드"}
+        </button>
+      </div>
+
       {/* 카테고리 1~4 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+      <div className={gridClass}>
         {firstHalf.map((cat, i) => (
           <CategoryCard key={cat} cat={cat} articles={categoryData[cat]} animDelay={i + 1} readUrls={readUrls} />
         ))}
@@ -136,7 +171,7 @@ export default function CategorySection({ categoryData, renderMidAd }: Props) {
 
       {/* 카테고리 5~8 */}
       {secondHalf.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+        <div className={gridClass}>
           {secondHalf.map((cat, i) => (
             <CategoryCard key={cat} cat={cat} articles={categoryData[cat]} animDelay={i + 5} readUrls={readUrls} />
           ))}

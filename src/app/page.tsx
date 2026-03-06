@@ -8,6 +8,7 @@ import CategorySection from "@/components/CategorySection";
 import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
+import ReadingProgress from "@/components/ReadingProgress";
 import AdUnit from "@/components/AdUnit";
 import TranslateButton from "@/components/TranslateButton";
 import { Card, CardContent } from "@/components/ui/card";
@@ -246,6 +247,7 @@ export default function Home() {
 
       <Footer />
       <ScrollToTop />
+      <ReadingProgress />
     </div>
   );
 }

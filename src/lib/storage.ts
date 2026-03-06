@@ -95,3 +95,39 @@ export function clearSearchHistory(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(SEARCH_HISTORY_KEY);
 }
+
+// --- Font Size ---
+const FONT_SIZE_KEY = "jubjub_font_size";
+
+export function getFontSize(): number {
+  if (typeof window === "undefined") return 16;
+  try {
+    const raw = localStorage.getItem(FONT_SIZE_KEY);
+    return raw ? parseInt(raw, 10) : 16;
+  } catch {
+    return 16;
+  }
+}
+
+export function setFontSize(size: number): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(FONT_SIZE_KEY, String(size));
+}
+
+// --- Layout Preference ---
+const LAYOUT_KEY = "jubjub_layout";
+
+export function getLayout(): "grid" | "list" {
+  if (typeof window === "undefined") return "grid";
+  try {
+    const raw = localStorage.getItem(LAYOUT_KEY);
+    return raw === "list" ? "list" : "grid";
+  } catch {
+    return "grid";
+  }
+}
+
+export function setLayoutPref(layout: "grid" | "list"): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(LAYOUT_KEY, layout);
+}
