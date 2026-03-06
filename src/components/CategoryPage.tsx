@@ -6,13 +6,17 @@ import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
 import AdUnit from "@/components/AdUnit";
 import TranslateButton from "@/components/TranslateButton";
+import BookmarkButton from "@/components/BookmarkButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ChevronDown } from "lucide-react";
 import { searchNews, translateTexts, formatDate, type ApiArticle } from "@/lib/api";
 import { CATEGORIES, type CategoryInfo } from "@/lib/categories";
 import { articleLink } from "@/lib/link";
+import { getReadUrls } from "@/lib/storage";
 
 function InlineAd({ slot, className = "" }: { slot: string; className?: string }) {
   return (
@@ -22,6 +26,9 @@ function InlineAd({ slot, className = "" }: { slot: string; className?: string }
     </div>
   );
 }
+
+const INITIAL_COUNT = 6;
+const LOAD_MORE_COUNT = 6;
 
 interface Props {
   category: CategoryInfo;
@@ -33,6 +40,12 @@ export default function CategoryPageContent({ category }: Props) {
   const [translated, setTranslated] = useState(false);
   const [translating, setTranslating] = useState(false);
   const [originalArticles, setOriginalArticles] = useState<ApiArticle[]>([]);
+  const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
+  const [readUrls, setReadUrls] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    setReadUrls(getReadUrls());
+  }, []);
 
   useEffect(() => {
     document.title = `${category.name} - JubJub 뉴스`;
@@ -64,6 +77,13 @@ export default function CategoryPageContent({ category }: Props) {
     setTranslated(true);
     setTranslating(false);
   }
+
+  function handleLoadMore() {
+    setVisibleCount((prev) => prev + LOAD_MORE_COUNT);
+  }
+
+  const visibleArticles = articles.slice(0, visibleCount);
+  const hasMore = visibleCount < articles.length;
 
   return (
     <div className="min-h-screen bg-background">
@@ -117,10 +137,13 @@ export default function CategoryPageContent({ category }: Props) {
                     />
                   )}
                   <CardContent className="p-5 md:p-6 flex flex-col justify-center">
-                    <Badge variant="outline" className="mb-2 w-fit text-xs text-primary border-primary/30">
-                      {articles[0].publisher.name}
-                    </Badge>
-                    <h2 className="font-headline text-xl md:text-2xl font-bold text-card-foreground leading-tight mb-2 hover:text-primary transition-colors">
+                    <div className="flex items-start justify-between gap-2">
+                      <Badge variant="outline" className="mb-2 w-fit text-xs text-primary border-primary/30">
+                        {articles[0].publisher.name}
+                      </Badge>
+                      <BookmarkButton article={articles[0]} />
+                    </div>
+                    <h2 className={`font-headline text-xl md:text-2xl font-bold text-card-foreground leading-tight mb-2 hover:text-primary transition-colors ${readUrls.has(articles[0].url) ? "opacity-60" : ""}`}>
                       {articles[0].title}
                     </h2>
                     <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
@@ -137,7 +160,7 @@ export default function CategoryPageContent({ category }: Props) {
             <InlineAd slot="9121339058" className="mb-6" />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {articles.slice(1).map((article, i) => (
+              {visibleArticles.slice(1).map((article, i) => (
                 <Card key={i} className="border-0 shadow-sm hover:shadow-md transition-shadow py-0 gap-0">
                   <a href={articleLink(article.url, article.title, article.publisher.name)} className="block">
                     {article.thumbnail && (
@@ -149,9 +172,12 @@ export default function CategoryPageContent({ category }: Props) {
                       />
                     )}
                     <CardContent className="p-4">
-                      <h3 className="text-sm font-semibold text-card-foreground leading-snug mb-1.5 hover:text-primary transition-colors line-clamp-2">
-                        {article.title}
-                      </h3>
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className={`text-sm font-semibold text-card-foreground leading-snug mb-1.5 hover:text-primary transition-colors line-clamp-2 flex-1 ${readUrls.has(article.url) ? "opacity-60" : ""}`}>
+                          {article.title}
+                        </h3>
+                        <BookmarkButton article={article} />
+                      </div>
                       <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
                         {article.excerpt}
                       </p>
@@ -163,6 +189,20 @@ export default function CategoryPageContent({ category }: Props) {
                 </Card>
               ))}
             </div>
+
+            {/* 더보기 버튼 */}
+            {hasMore && (
+              <div className="flex justify-center mt-6">
+                <Button
+                  variant="outline"
+                  onClick={handleLoadMore}
+                  className="gap-2"
+                >
+                  <ChevronDown className="h-4 w-4" />
+                  더보기 ({articles.length - visibleCount}개 남음)
+                </Button>
+              </div>
+            )}
 
             <InlineAd slot="2248808942" className="mt-6" />
 

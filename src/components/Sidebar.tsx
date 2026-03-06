@@ -1,15 +1,25 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { type ApiArticle } from "@/lib/api";
 import { articleLink } from "@/lib/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Globe } from "lucide-react";
+import { getReadUrls } from "@/lib/storage";
 
 interface Props {
   articles: ApiArticle[];
 }
 
 export default function Sidebar({ articles }: Props) {
+  const [readUrls, setReadUrls] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    setReadUrls(getReadUrls());
+  }, []);
+
   return (
     <aside className="space-y-5 lg:sticky lg:top-16">
       {/* Most read */}
@@ -34,7 +44,7 @@ export default function Sidebar({ articles }: Props) {
                 </Badge>
                 <a
                   href={articleLink(article.url, article.title, article.publisher.name)}
-                  className="text-sm text-card-foreground group-hover:text-primary leading-snug transition-colors line-clamp-2"
+                  className={`text-sm text-card-foreground group-hover:text-primary leading-snug transition-colors line-clamp-2 ${readUrls.has(article.url) ? "opacity-60" : ""}`}
                 >
                   {article.title}
                 </a>

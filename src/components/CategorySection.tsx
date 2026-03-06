@@ -1,15 +1,19 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { type ApiArticle, formatDate } from "@/lib/api";
 import { articleLink } from "@/lib/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getReadUrls } from "@/lib/storage";
 
 interface Props {
   categoryData: Record<string, ApiArticle[]>;
   renderMidAd?: React.ReactNode;
 }
 
-function CategoryCard({ cat, articles, animDelay }: { cat: string; articles: ApiArticle[]; animDelay: number }) {
+function CategoryCard({ cat, articles, animDelay, readUrls }: { cat: string; articles: ApiArticle[]; animDelay: number; readUrls: Set<string> }) {
   const featured = articles[0];
   const rest = articles.slice(1);
 
@@ -41,7 +45,7 @@ function CategoryCard({ cat, articles, animDelay }: { cat: string; articles: Api
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </div>
             )}
-            <span className="text-sm font-semibold text-card-foreground group-hover:text-primary leading-snug block transition-colors line-clamp-2">
+            <span className={`text-sm font-semibold text-card-foreground group-hover:text-primary leading-snug block transition-colors line-clamp-2 ${readUrls.has(featured.url) ? "opacity-60" : ""}`}>
               {featured.title}
             </span>
             <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2">
@@ -60,7 +64,7 @@ function CategoryCard({ cat, articles, animDelay }: { cat: string; articles: Api
             <li key={i}>
               <a
                 href={articleLink(article.url, article.title, article.publisher.name)}
-                className="text-sm text-card-foreground hover:text-primary block leading-snug transition-colors line-clamp-2"
+                className={`text-sm text-card-foreground hover:text-primary block leading-snug transition-colors line-clamp-2 ${readUrls.has(article.url) ? "opacity-60" : ""}`}
               >
                 {article.title}
               </a>
@@ -76,6 +80,12 @@ function CategoryCard({ cat, articles, animDelay }: { cat: string; articles: Api
 }
 
 export default function CategorySection({ categoryData, renderMidAd }: Props) {
+  const [readUrls, setReadUrls] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    setReadUrls(getReadUrls());
+  }, []);
+
   const displayCategories = Object.keys(categoryData).filter(
     (cat) => categoryData[cat] && categoryData[cat].length > 0
   );
@@ -113,7 +123,7 @@ export default function CategorySection({ categoryData, renderMidAd }: Props) {
       {/* 카테고리 1~4 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
         {firstHalf.map((cat, i) => (
-          <CategoryCard key={cat} cat={cat} articles={categoryData[cat]} animDelay={i + 1} />
+          <CategoryCard key={cat} cat={cat} articles={categoryData[cat]} animDelay={i + 1} readUrls={readUrls} />
         ))}
       </div>
 
@@ -124,7 +134,7 @@ export default function CategorySection({ categoryData, renderMidAd }: Props) {
       {secondHalf.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
           {secondHalf.map((cat, i) => (
-            <CategoryCard key={cat} cat={cat} articles={categoryData[cat]} animDelay={i + 5} />
+            <CategoryCard key={cat} cat={cat} articles={categoryData[cat]} animDelay={i + 5} readUrls={readUrls} />
           ))}
         </div>
       )}

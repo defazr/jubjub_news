@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
 import AdUnit from "@/components/AdUnit";
 import TranslateButton from "@/components/TranslateButton";
+import BookmarkButton from "@/components/BookmarkButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -14,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { searchNews, translateTexts, formatDate, type ApiArticle } from "@/lib/api";
 import { articleLink } from "@/lib/link";
 import { SearchIcon } from "lucide-react";
+import { getReadUrls, addSearchHistory } from "@/lib/storage";
 
 function InlineAd({ slot, className = "" }: { slot: string; className?: string }) {
   return (
@@ -33,6 +35,11 @@ function SearchContent() {
   const [translated, setTranslated] = useState(false);
   const [translating, setTranslating] = useState(false);
   const [originalArticles, setOriginalArticles] = useState<ApiArticle[]>([]);
+  const [readUrls, setReadUrls] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    setReadUrls(getReadUrls());
+  }, []);
 
   useEffect(() => {
     if (!query) {
@@ -41,6 +48,7 @@ function SearchContent() {
       return;
     }
     document.title = `"${query}" 검색 결과 - JubJub 뉴스`;
+    addSearchHistory(query);
     setLoading(true);
     setTranslated(false);
     async function load() {
@@ -149,11 +157,14 @@ function SearchContent() {
                         loading="lazy"
                       />
                     )}
-                    <CardContent className="p-4 flex flex-col justify-center">
-                      <Badge variant="outline" className="mb-1.5 w-fit text-xs text-primary border-primary/30">
-                        {article.publisher.name}
-                      </Badge>
-                      <h3 className="text-base font-semibold text-card-foreground leading-snug mb-1 hover:text-primary transition-colors line-clamp-2">
+                    <CardContent className="p-4 flex flex-col justify-center flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <Badge variant="outline" className="mb-1.5 w-fit text-xs text-primary border-primary/30">
+                          {article.publisher.name}
+                        </Badge>
+                        <BookmarkButton article={article} />
+                      </div>
+                      <h3 className={`text-base font-semibold text-card-foreground leading-snug mb-1 hover:text-primary transition-colors line-clamp-2 ${readUrls.has(article.url) ? "opacity-60" : ""}`}>
                         {article.title}
                       </h3>
                       <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
