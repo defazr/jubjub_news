@@ -76,7 +76,7 @@ function ArticleRedirectContent() {
             href="/"
             className="hover:opacity-80 transition-opacity"
           >
-            <img src="/favicon.png" alt="줍줍뉴스" className="h-7 w-7 rounded-full" />
+            <span className="text-lg font-bold tracking-tight" style={{ fontFamily: "Georgia, 'Nanum Myeongjo', serif" }}>JubJub</span>
           </a>
           <Button variant="ghost" size="sm" asChild>
             <a href="/" className="gap-1.5">
