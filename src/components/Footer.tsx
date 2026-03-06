@@ -8,7 +8,7 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mb-8">
           <div className="col-span-2 md:col-span-1">
             <a href="/">
-              <img src="/logo.svg" alt="줍줍뉴스" className="h-10 mb-2" />
+              <img src="/logo.png" alt="실시간 헤드라인 뉴스" className="h-10 mb-2" />
             </a>
             <p className="text-sm text-muted-foreground leading-relaxed">
               국내외 주요 뉴스를 한눈에 모아 보여드립니다.

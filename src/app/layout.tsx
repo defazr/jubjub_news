@@ -76,7 +76,7 @@ export const metadata: Metadata = {
   category: "news",
   icons: {
     icon: [
-      { url: "/icons/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.png", type: "image/png" },
       { url: "/icons/icon-32.png", sizes: "32x32", type: "image/png" },
     ],
     apple: "/icons/icon-192.png",
