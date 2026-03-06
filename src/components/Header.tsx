@@ -151,7 +151,7 @@ export default function Header({ onSearch }: Props) {
                 <Globe className="h-3 w-3" />
                 해외 뉴스
               </a>
-              <span className="hidden sm:flex items-center gap-0.5 border-l border-border pl-3">
+              <span className="flex items-center gap-0.5 border-l border-border pl-3">
                 <button onClick={() => changeFontSize(-1)} className="hover:text-foreground transition-colors p-0.5" title="글자 줄이기">
                   <AArrowDown className="h-3.5 w-3.5" />
                 </button>
