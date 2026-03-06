@@ -6,6 +6,7 @@ import { articleLink } from "@/lib/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import BookmarkButton from "@/components/BookmarkButton";
 import { getReadUrls } from "@/lib/storage";
 
 interface Props {
@@ -30,47 +31,50 @@ function CategoryCard({ cat, articles, animDelay, readUrls }: { cat: string; art
       </CardHeader>
       <CardContent className="p-4 pt-3">
         {featured && (
-          <a
-            href={articleLink(featured.url, featured.title, featured.publisher.name)}
-            className="block mb-3 group"
-          >
-            {featured.thumbnail && (
-              <div className="relative w-full aspect-video mb-2.5 overflow-hidden rounded-md bg-muted">
-                <img
-                  src={featured.thumbnail}
-                  alt={featured.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </div>
-            )}
-            <span className={`text-sm font-semibold text-card-foreground group-hover:text-primary leading-snug block transition-colors line-clamp-2 ${readUrls.has(featured.url) ? "opacity-60" : ""}`}>
-              {featured.title}
-            </span>
-            <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2">
-              {featured.excerpt}
-            </p>
-            <p className="text-xs text-muted-foreground/60 mt-1.5">
-              {featured.publisher.name} · {formatDate(featured.date)}
-            </p>
-          </a>
+          <div className="mb-3">
+            <a
+              href={articleLink(featured.url, featured.title, featured.publisher.name)}
+              className="block group"
+            >
+              {featured.thumbnail && (
+                <div className="relative w-full aspect-video mb-2.5 overflow-hidden rounded-md bg-muted">
+                  <img
+                    src={featured.thumbnail}
+                    alt={featured.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </div>
+              )}
+              <span className={`text-sm font-semibold text-card-foreground group-hover:text-primary leading-snug block transition-colors line-clamp-2 ${readUrls.has(featured.url) ? "opacity-60" : ""}`}>
+                {featured.title}
+              </span>
+              <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2">
+                {featured.excerpt}
+              </p>
+            </a>
+            <div className="flex items-center justify-between mt-1.5">
+              <p className="text-xs text-muted-foreground/60">
+                {featured.publisher.name} · {formatDate(featured.date)}
+              </p>
+              <BookmarkButton article={featured} className="shrink-0 p-1" />
+            </div>
+          </div>
         )}
 
         <Separator className="my-2" />
 
         <ul className="space-y-2.5">
           {rest.map((article, i) => (
-            <li key={i}>
+            <li key={i} className="flex items-start gap-1.5">
               <a
                 href={articleLink(article.url, article.title, article.publisher.name)}
-                className={`text-sm text-card-foreground hover:text-primary block leading-snug transition-colors line-clamp-2 ${readUrls.has(article.url) ? "opacity-60" : ""}`}
+                className={`flex-1 text-sm text-card-foreground hover:text-primary leading-snug transition-colors line-clamp-2 ${readUrls.has(article.url) ? "opacity-60" : ""}`}
               >
                 {article.title}
               </a>
-              <p className="text-xs text-muted-foreground/60 mt-0.5">
-                {article.publisher.name} · {formatDate(article.date)}
-              </p>
+              <BookmarkButton article={article} className="shrink-0 p-1" />
             </li>
           ))}
         </ul>

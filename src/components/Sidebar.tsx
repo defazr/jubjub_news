@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Globe } from "lucide-react";
+import BookmarkButton from "@/components/BookmarkButton";
 import { getReadUrls } from "@/lib/storage";
 
 interface Props {
@@ -33,7 +34,7 @@ export default function Sidebar({ articles }: Props) {
         <CardContent className="p-4">
           <ol className="space-y-3">
             {articles.slice(0, 8).map((article, i) => (
-              <li key={i} className="flex gap-3 items-start group">
+              <li key={i} className="flex gap-2 items-start group">
                 <Badge
                   variant={i < 3 ? "default" : "secondary"}
                   className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center p-0 text-xs font-bold ${
@@ -44,10 +45,11 @@ export default function Sidebar({ articles }: Props) {
                 </Badge>
                 <a
                   href={articleLink(article.url, article.title, article.publisher.name)}
-                  className={`text-sm text-card-foreground group-hover:text-primary leading-snug transition-colors line-clamp-2 ${readUrls.has(article.url) ? "opacity-60" : ""}`}
+                  className={`flex-1 text-sm text-card-foreground group-hover:text-primary leading-snug transition-colors line-clamp-2 ${readUrls.has(article.url) ? "opacity-60" : ""}`}
                 >
                   {article.title}
                 </a>
+                <BookmarkButton article={article} className="shrink-0 p-1" />
               </li>
             ))}
           </ol>

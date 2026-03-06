@@ -112,7 +112,7 @@ export default function HeadlineSection({ articles }: Props) {
               <Separator className="mb-3" />
               <ul className="space-y-2.5">
                 {articles.slice(2, 7).map((article, i) => (
-                  <li key={i} className="flex gap-2.5 text-sm group">
+                  <li key={i} className="flex gap-2 text-sm group items-center">
                     <span className={`font-bold shrink-0 w-5 text-center ${
                       i < 3 ? "text-primary" : "text-muted-foreground/50"
                     }`}>
@@ -120,10 +120,11 @@ export default function HeadlineSection({ articles }: Props) {
                     </span>
                     <a
                       href={articleLink(article.url, article.title, article.publisher.name)}
-                      className={`text-card-foreground group-hover:text-primary line-clamp-1 transition-colors ${readUrls.has(article.url) ? "opacity-60" : ""}`}
+                      className={`flex-1 text-card-foreground group-hover:text-primary line-clamp-1 transition-colors ${readUrls.has(article.url) ? "opacity-60" : ""}`}
                     >
                       {article.title}
                     </a>
+                    <BookmarkButton article={article} className="shrink-0 p-1" />
                   </li>
                 ))}
               </ul>
