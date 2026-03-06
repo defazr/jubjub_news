@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import BookmarkButton from "@/components/BookmarkButton";
+import ShareButton from "@/components/ShareButton";
 import { getReadUrls } from "@/lib/storage";
 
 interface Props {
@@ -50,6 +51,7 @@ export default function HeadlineSection({ articles }: Props) {
                 </Badge>
                 <h2 className={`font-headline text-xl md:text-2xl font-bold text-white leading-tight line-clamp-2 ${readUrls.has(mainHeadline.url) ? "opacity-70" : ""}`}>
                   {mainHeadline.title}
+                  {readUrls.has(mainHeadline.url) && <span className="ml-2 text-xs font-normal bg-white/20 text-white/80 px-1.5 py-0.5 rounded align-middle">읽음</span>}
                 </h2>
               </div>
             </div>
@@ -64,7 +66,10 @@ export default function HeadlineSection({ articles }: Props) {
                   {mainHeadline.authors?.[0] || mainHeadline.publisher.name} · {formatDate(mainHeadline.date)}
                 </p>
               </div>
-              <BookmarkButton article={mainHeadline} />
+              <div className="flex items-center gap-1">
+                <ShareButton url={mainHeadline.url} title={mainHeadline.title} />
+                <BookmarkButton article={mainHeadline} />
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -95,7 +100,10 @@ export default function HeadlineSection({ articles }: Props) {
                         {subHeadline.excerpt}
                       </p>
                     </div>
-                    <BookmarkButton article={subHeadline} className="mt-5" />
+                    <div className="flex flex-col items-end gap-1 mt-5">
+                      <ShareButton url={subHeadline.url} title={subHeadline.title} />
+                      <BookmarkButton article={subHeadline} />
+                    </div>
                   </div>
                 </CardContent>
               </a>
@@ -124,6 +132,7 @@ export default function HeadlineSection({ articles }: Props) {
                     >
                       {article.title}
                     </a>
+                    <ShareButton url={article.url} title={article.title} className="shrink-0" />
                     <BookmarkButton article={article} className="shrink-0 p-1" />
                   </li>
                 ))}

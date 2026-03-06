@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Globe } from "lucide-react";
 import BookmarkButton from "@/components/BookmarkButton";
+import ShareButton from "@/components/ShareButton";
 import { getReadUrls } from "@/lib/storage";
 
 interface Props {
@@ -49,6 +50,7 @@ export default function Sidebar({ articles }: Props) {
                 >
                   {article.title}
                 </a>
+                <ShareButton url={article.url} title={article.title} className="shrink-0" />
                 <BookmarkButton article={article} className="shrink-0 p-1" />
               </li>
             ))}

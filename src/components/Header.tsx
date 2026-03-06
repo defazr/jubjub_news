@@ -9,15 +9,19 @@ import {
   Menu,
   Sun,
   Moon,
+  Sunrise,
+  Sunset,
   Home,
   Search,
   X,
   Globe,
   Bookmark,
   Clock,
+  AArrowUp,
+  AArrowDown,
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/categories";
-import { getSearchHistory, addSearchHistory, removeSearchHistoryItem, clearSearchHistory } from "@/lib/storage";
+import { getSearchHistory, addSearchHistory, removeSearchHistoryItem, clearSearchHistory, getFontSize, setFontSize as saveFontSize } from "@/lib/storage";
 
 interface Props {
   onSearch?: (query: string) => void;
@@ -30,6 +34,7 @@ export default function Header({ onSearch }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [fontSize, setFontSizeState] = useState(16);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -38,13 +43,36 @@ export default function Header({ onSearch }: Props) {
     const days = ["일", "월", "화", "수", "목", "금", "토"];
     return `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 (${days[now.getDay()]})`;
   });
+  const [timeOfDay] = useState<"morning" | "afternoon" | "evening" | "night">(() => {
+    const hour = new Date().getHours();
+    if (hour >= 6 && hour < 12) return "morning";
+    if (hour >= 12 && hour < 17) return "afternoon";
+    if (hour >= 17 && hour < 20) return "evening";
+    return "night";
+  });
+
+  const timeMeta = {
+    morning: { label: "좋은 아침", Icon: Sunrise },
+    afternoon: { label: "좋은 오후", Icon: Sun },
+    evening: { label: "좋은 저녁", Icon: Sunset },
+    night: { label: "좋은 밤", Icon: Moon },
+  } as const;
+  const { label: timeLabel, Icon: TimeIcon } = timeMeta[timeOfDay];
 
   useEffect(() => {
     setMounted(true);
+    setFontSizeState(getFontSize());
     const handleScroll = () => setScrolled(window.scrollY > 120);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  function changeFontSize(delta: number) {
+    const newSize = Math.max(12, Math.min(22, fontSize + delta));
+    setFontSizeState(newSize);
+    saveFontSize(newSize);
+    document.documentElement.style.setProperty("--jubjub-font-size", `${newSize}px`);
+  }
 
   useEffect(() => {
     if (searchOpen) {
@@ -107,7 +135,13 @@ export default function Header({ onSearch }: Props) {
         {/* Top info bar */}
         <div className="bg-muted/50 border-b border-border">
           <div className="max-w-[1200px] mx-auto px-4 py-1.5 flex justify-between items-center text-xs text-muted-foreground">
-            <span>{currentDate}</span>
+            <div className="flex items-center gap-3">
+              <span>{currentDate}</span>
+              <span className="hidden sm:flex items-center gap-1 text-primary/70">
+                <TimeIcon className="h-3 w-3" />
+                {timeLabel}
+              </span>
+            </div>
             <div className="flex items-center gap-3">
               <a href="/bookmarks" className="hover:text-primary transition-colors flex items-center gap-1">
                 <Bookmark className="h-3 w-3" />
@@ -117,8 +151,14 @@ export default function Header({ onSearch }: Props) {
                 <Globe className="h-3 w-3" />
                 해외 뉴스
               </a>
-              <a href="#" className="hover:text-foreground transition-colors">로그인</a>
-              <a href="#" className="hover:text-foreground transition-colors">회원가입</a>
+              <span className="hidden sm:flex items-center gap-0.5 border-l border-border pl-3">
+                <button onClick={() => changeFontSize(-1)} className="hover:text-foreground transition-colors p-0.5" title="글자 줄이기">
+                  <AArrowDown className="h-3.5 w-3.5" />
+                </button>
+                <button onClick={() => changeFontSize(1)} className="hover:text-foreground transition-colors p-0.5" title="글자 키우기">
+                  <AArrowUp className="h-3.5 w-3.5" />
+                </button>
+              </span>
             </div>
           </div>
         </div>
@@ -129,11 +169,9 @@ export default function Header({ onSearch }: Props) {
             scrolled ? "max-h-0 opacity-0" : "max-h-32 opacity-100"
           }`}
         >
-          <div className="max-w-[1200px] mx-auto px-4 py-5 md:py-7 text-center">
-            <a href="/">
-              <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tight text-foreground">
-                JubJub 뉴스
-              </h1>
+          <div className="max-w-[1200px] mx-auto px-4 py-4 md:py-6 text-center">
+            <a href="/" className="inline-block">
+              <img src="/logo.svg" alt="줍줍뉴스" className="h-12 md:h-16 mx-auto" />
             </a>
             <p className="text-xs md:text-sm text-muted-foreground mt-1.5">
               국내외 주요 뉴스를 한눈에
@@ -160,7 +198,7 @@ export default function Header({ onSearch }: Props) {
                   <SheetContent side="left" className="w-72 p-0">
                     <SheetTitle className="sr-only">메뉴</SheetTitle>
                     <div className="p-5 border-b border-border">
-                      <h2 className="font-headline text-xl font-bold text-foreground">JubJub 뉴스</h2>
+                      <img src="/logo.svg" alt="줍줍뉴스" className="h-10" />
                       <p className="text-xs text-muted-foreground mt-1">국내외 주요 뉴스를 한눈에</p>
                     </div>
                     <div className="py-2">
@@ -202,9 +240,9 @@ export default function Header({ onSearch }: Props) {
               {scrolled && (
                 <a
                   href="/"
-                  className="font-headline text-lg font-bold text-primary hover:opacity-80 transition-opacity hidden md:block"
+                  className="hover:opacity-80 transition-opacity hidden md:block"
                 >
-                  JubJub 뉴스
+                  <img src="/icons/favicon.svg" alt="줍줍뉴스" className="h-7 w-7" />
                 </a>
               )}
 
