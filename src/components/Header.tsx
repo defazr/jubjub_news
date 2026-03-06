@@ -117,8 +117,6 @@ export default function Header({ onSearch }: Props) {
                 <Globe className="h-3 w-3" />
                 해외 뉴스
               </a>
-              <a href="#" className="hover:text-foreground transition-colors">로그인</a>
-              <a href="#" className="hover:text-foreground transition-colors">회원가입</a>
             </div>
           </div>
         </div>
