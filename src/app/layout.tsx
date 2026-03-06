@@ -63,11 +63,21 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     title: `${SITE_NAME} - 국내외 주요 뉴스를 한눈에`,
     description: SITE_DESCRIPTION,
+    images: [
+      {
+        url: `${SITE_URL}/og-image.jpg`,
+        width: 1200,
+        height: 630,
+        alt: `${SITE_NAME} - 국내외 주요 뉴스를 한눈에`,
+        type: "image/jpeg",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: `${SITE_NAME} - 국내외 주요 뉴스를 한눈에`,
     description: SITE_DESCRIPTION,
+    images: [`${SITE_URL}/og-image.jpg`],
   },
   alternates: {
     canonical: SITE_URL,
@@ -96,6 +106,9 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <meta name="naver-site-verification" content="d19fefda5c8d730ea238a493c59d291eb0a8c6b0" />
         <meta name="google-site-verification" content="" />
+        {/* 카카오톡 공유용 (OG 태그 기반 + 추가 메타) */}
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
       </head>
       <body className="antialiased overflow-x-hidden">
         <ThemeProvider>
