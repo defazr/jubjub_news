@@ -74,6 +74,13 @@ export const metadata: Metadata = {
   },
   verification: {},
   category: "news",
+  icons: {
+    icon: [
+      { url: "/icons/favicon.svg", type: "image/svg+xml" },
+      { url: "/icons/icon-32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: "/icons/icon-192.png",
+  },
 };
 
 export default function RootLayout({
@@ -86,7 +93,7 @@ export default function RootLayout({
       <head>
         <link rel="canonical" href={SITE_URL} />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
+        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <meta name="naver-site-verification" content="d19fefda5c8d730ea238a493c59d291eb0a8c6b0" />
         <meta name="google-site-verification" content="" />
       </head>

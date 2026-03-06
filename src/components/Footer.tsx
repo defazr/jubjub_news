@@ -8,9 +8,7 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mb-8">
           <div className="col-span-2 md:col-span-1">
             <a href="/">
-              <h4 className="font-headline text-xl font-bold text-foreground mb-2">
-                JubJub 뉴스
-              </h4>
+              <img src="/logo.svg" alt="줍줍뉴스" className="h-10 mb-2" />
             </a>
             <p className="text-sm text-muted-foreground leading-relaxed">
               국내외 주요 뉴스를 한눈에 모아 보여드립니다.
@@ -50,7 +48,7 @@ export default function Footer() {
         </div>
         <Separator className="mb-5" />
         <p className="text-xs text-muted-foreground/60 text-center">
-          &copy; 2026 JubJub 뉴스. All rights reserved.
+          &copy; 2026 줍줍뉴스. All rights reserved.
         </p>
       </div>
     </footer>

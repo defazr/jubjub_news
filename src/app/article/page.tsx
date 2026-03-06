@@ -74,9 +74,9 @@ function ArticleRedirectContent() {
         <div className="max-w-[800px] mx-auto px-4 py-3 flex items-center justify-between">
           <a
             href="/"
-            className="font-headline text-lg font-bold text-primary hover:opacity-80 transition-opacity"
+            className="hover:opacity-80 transition-opacity"
           >
-            JubJub 뉴스
+            <img src="/icons/favicon.svg" alt="줍줍뉴스" className="h-7 w-7" />
           </a>
           <Button variant="ghost" size="sm" asChild>
             <a href="/" className="gap-1.5">
@@ -177,7 +177,7 @@ function ArticleRedirectContent() {
       </main>
 
       <footer className="bg-card border-t border-border text-muted-foreground/60 text-xs text-center py-4 mt-8">
-        &copy; 2026 JubJub 뉴스. All rights reserved.
+        &copy; 2026 줍줍뉴스. All rights reserved.
       </footer>
     </div>
   );
