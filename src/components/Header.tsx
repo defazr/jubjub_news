@@ -171,7 +171,9 @@ export default function Header({ onSearch }: Props) {
         >
           <div className="max-w-[1200px] mx-auto px-4 py-4 md:py-6 text-center">
             <a href="/" className="inline-block">
-              <img src="/logo.png" alt="실시간 헤드라인 뉴스" className="h-12 md:h-16 mx-auto" />
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight" style={{ fontFamily: "Georgia, 'Nanum Myeongjo', serif" }}>
+                JubJub 뉴스
+              </h1>
             </a>
             <p className="text-xs md:text-sm text-muted-foreground mt-1.5">
               국내외 주요 뉴스를 한눈에
@@ -198,7 +200,7 @@ export default function Header({ onSearch }: Props) {
                   <SheetContent side="left" className="w-72 p-0">
                     <SheetTitle className="sr-only">메뉴</SheetTitle>
                     <div className="p-5 border-b border-border">
-                      <img src="/logo.png" alt="실시간 헤드라인 뉴스" className="h-10" />
+                      <span className="text-xl font-bold tracking-tight" style={{ fontFamily: "Georgia, 'Nanum Myeongjo', serif" }}>JubJub 뉴스</span>
                       <p className="text-xs text-muted-foreground mt-1">국내외 주요 뉴스를 한눈에</p>
                     </div>
                     <div className="py-2">
@@ -242,7 +244,7 @@ export default function Header({ onSearch }: Props) {
                   href="/"
                   className="hover:opacity-80 transition-opacity hidden md:block"
                 >
-                  <img src="/favicon.png" alt="줍줍뉴스" className="h-7 w-7 rounded-full" />
+                  <span className="text-lg font-bold tracking-tight" style={{ fontFamily: "Georgia, 'Nanum Myeongjo', serif" }}>JubJub</span>
                 </a>
               )}
 
