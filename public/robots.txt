@@ -4,3 +4,5 @@ Disallow: /_next/
 Disallow: /api/
 
 Sitemap: https://headlines.fazr.co.kr/sitemap.xml
+
+#DaumWebMasterTool:907b70a889bd3a76ac03593e782091aae05c1064c6d62519f5e4b92d5739ee22:fZENwKwRN8Q4OLP9sQ7B3A==
