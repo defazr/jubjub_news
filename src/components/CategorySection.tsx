@@ -17,7 +17,7 @@ interface Props {
   renderMidAd?: React.ReactNode;
 }
 
-function CategoryCard({ cat, articles, animDelay, readUrls }: { cat: string; articles: ApiArticle[]; animDelay: number; readUrls: Set<string> }) {
+function CategoryCardGrid({ cat, articles, animDelay, readUrls }: { cat: string; articles: ApiArticle[]; animDelay: number; readUrls: Set<string> }) {
   const featured = articles[0];
   const rest = articles.slice(1);
   const catInfo = getCategoryByName(cat);
@@ -94,6 +94,63 @@ function CategoryCard({ cat, articles, animDelay, readUrls }: { cat: string; art
   );
 }
 
+function CategoryCardList({ cat, articles, readUrls }: { cat: string; articles: ApiArticle[]; readUrls: Set<string> }) {
+  const catInfo = getCategoryByName(cat);
+  const accentColor = catInfo?.color || "var(--primary)";
+
+  return (
+    <Card
+      id={`category-${cat}`}
+      className="border-0 shadow-sm hover:shadow-md transition-all duration-300 scroll-mt-16 py-0 gap-0"
+      style={{ borderLeft: `3px solid ${accentColor}` }}
+    >
+      <CardContent className="p-4">
+        <h3 className="text-base font-bold flex items-center gap-2 mb-3">
+          <span className="w-1 h-4 rounded-full" style={{ backgroundColor: accentColor }} />
+          {cat}
+        </h3>
+        <ul className="space-y-3">
+          {articles.map((article, i) => (
+            <li key={i} className="flex items-start gap-3">
+              {i === 0 && article.thumbnail && (
+                <a
+                  href={articleLink(article.url, article.title, article.publisher.name)}
+                  className="shrink-0 block"
+                >
+                  <div className="w-24 h-16 overflow-hidden rounded-md bg-muted">
+                    <img
+                      src={article.thumbnail}
+                      alt={article.title}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                  </div>
+                </a>
+              )}
+              <div className="flex-1 min-w-0">
+                <a
+                  href={articleLink(article.url, article.title, article.publisher.name)}
+                  className={`text-sm font-medium text-card-foreground hover:text-primary leading-snug transition-colors line-clamp-2 block ${readUrls.has(article.url) ? "opacity-60" : ""}`}
+                >
+                  {article.title}
+                  {readUrls.has(article.url) && <span className="ml-1 text-[10px] font-normal text-muted-foreground bg-muted px-1 py-0.5 rounded">읽음</span>}
+                </a>
+                <p className="text-xs text-muted-foreground/60 mt-0.5">
+                  {article.publisher.name} · {formatDate(article.date)}
+                </p>
+              </div>
+              <div className="flex items-center gap-0.5 shrink-0">
+                <ShareButton url={article.url} title={article.title} className="shrink-0" />
+                <BookmarkButton article={article} className="shrink-0 p-1" />
+              </div>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function CategorySection({ categoryData, renderMidAd }: Props) {
   const [readUrls, setReadUrls] = useState<Set<string>>(new Set());
   const [layout, setLayout] = useState<"grid" | "list">("grid");
@@ -142,7 +199,7 @@ export default function CategorySection({ categoryData, renderMidAd }: Props) {
   const secondHalf = displayCategories.slice(4);
 
   const gridClass = layout === "list"
-    ? "grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5"
+    ? "grid grid-cols-1 gap-4 md:gap-5"
     : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5";
 
   return (
@@ -151,10 +208,10 @@ export default function CategorySection({ categoryData, renderMidAd }: Props) {
       <div className="flex justify-end mb-3">
         <button
           onClick={toggleLayout}
-          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-accent"
+          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2.5 py-1.5 rounded-md border border-border hover:bg-accent"
           title={layout === "grid" ? "리스트 보기" : "그리드 보기"}
         >
-          {layout === "grid" ? <List className="h-3.5 w-3.5" /> : <LayoutGrid className="h-3.5 w-3.5" />}
+          {layout === "grid" ? <List className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
           {layout === "grid" ? "리스트" : "그리드"}
         </button>
       </div>
@@ -162,7 +219,9 @@ export default function CategorySection({ categoryData, renderMidAd }: Props) {
       {/* 카테고리 1~4 */}
       <div className={gridClass}>
         {firstHalf.map((cat, i) => (
-          <CategoryCard key={cat} cat={cat} articles={categoryData[cat]} animDelay={i + 1} readUrls={readUrls} />
+          layout === "list"
+            ? <CategoryCardList key={cat} cat={cat} articles={categoryData[cat]} readUrls={readUrls} />
+            : <CategoryCardGrid key={cat} cat={cat} articles={categoryData[cat]} animDelay={i + 1} readUrls={readUrls} />
         ))}
       </div>
 
@@ -173,7 +232,9 @@ export default function CategorySection({ categoryData, renderMidAd }: Props) {
       {secondHalf.length > 0 && (
         <div className={gridClass}>
           {secondHalf.map((cat, i) => (
-            <CategoryCard key={cat} cat={cat} articles={categoryData[cat]} animDelay={i + 5} readUrls={readUrls} />
+            layout === "list"
+              ? <CategoryCardList key={cat} cat={cat} articles={categoryData[cat]} readUrls={readUrls} />
+              : <CategoryCardGrid key={cat} cat={cat} articles={categoryData[cat]} animDelay={i + 5} readUrls={readUrls} />
           ))}
         </div>
       )}
