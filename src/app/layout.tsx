@@ -85,6 +85,8 @@ export default function RootLayout({
     <html lang="ko" suppressHydrationWarning>
       <head>
         <link rel="canonical" href={SITE_URL} />
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
         <meta name="naver-site-verification" content="" />
         <meta name="google-site-verification" content="" />
       </head>
@@ -98,6 +100,11 @@ export default function RootLayout({
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
+        <Script id="sw-register" strategy="afterInteractive">{`
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+          }
+        `}</Script>
       </body>
     </html>
   );

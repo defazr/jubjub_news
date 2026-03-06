@@ -31,6 +31,11 @@ export default function Footer() {
                   해외 뉴스
                 </a>
               </li>
+              <li>
+                <a href="/bookmarks" className="text-muted-foreground hover:text-primary transition-colors">
+                  스크랩
+                </a>
+              </li>
             </ul>
           </div>
           <div>

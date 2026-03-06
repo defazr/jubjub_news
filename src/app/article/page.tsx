@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, ExternalLink, X, Loader2 } from "lucide-react";
+import { markAsRead } from "@/lib/storage";
 
 const COUNTDOWN_SECONDS = 7;
 
@@ -22,6 +23,11 @@ function ArticleRedirectContent() {
 
   const goToArticle = useCallback(() => {
     if (url) window.location.href = url;
+  }, [url]);
+
+  // Mark article as read
+  useEffect(() => {
+    if (url) markAsRead(url);
   }, [url]);
 
   useEffect(() => {
