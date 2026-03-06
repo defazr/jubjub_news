@@ -21,6 +21,11 @@ interface RawResponse {
 const cache = new Map<string, { data: ApiArticle[]; ts: number }>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
+// Check if text contains broken Unicode (replacement chars, lone surrogates)
+function hasBrokenUnicode(text: string): boolean {
+  return /[\uFFFD]/.test(text) || /�/.test(text);
+}
+
 async function cachedFetch(proxyUrl: string): Promise<ApiArticle[]> {
   const now = Date.now();
   const hit = cache.get(proxyUrl);
@@ -30,20 +35,22 @@ async function cachedFetch(proxyUrl: string): Promise<ApiArticle[]> {
     const res = await fetch(proxyUrl);
     if (!res.ok) return [];
     const json: RawResponse = await res.json();
-    const articles = (json.data || []).map((a) => ({
-      title: a.title || "",
-      url: a.url || "",
-      excerpt: a.excerpt || "",
-      thumbnail: a.thumbnail || "",
-      language: a.language || "ko",
-      date: a.date || "",
-      authors: a.authors || [],
-      publisher: {
-        name: a.publisher?.name || "",
-        url: a.publisher?.url || "",
-        favicon: a.publisher?.favicon || "",
-      },
-    }));
+    const articles = (json.data || [])
+      .map((a) => ({
+        title: a.title || "",
+        url: a.url || "",
+        excerpt: a.excerpt || "",
+        thumbnail: a.thumbnail || "",
+        language: a.language || "ko",
+        date: a.date || "",
+        authors: a.authors || [],
+        publisher: {
+          name: a.publisher?.name || "",
+          url: a.publisher?.url || "",
+          favicon: a.publisher?.favicon || "",
+        },
+      }))
+      .filter((a) => a.title && !hasBrokenUnicode(a.title));
     cache.set(proxyUrl, { data: articles, ts: now });
     return articles;
   } catch {
