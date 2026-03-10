@@ -13,7 +13,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { translateTexts, formatDate, type ApiArticle } from "@/lib/api";
 import { articleLink } from "@/lib/link";
 import { Globe } from "lucide-react";
-import { supabase } from "@/lib/supabase";
 
 const WORLD_TOPICS = [
   { label: "전체", dbCategory: null },
@@ -64,18 +63,12 @@ export default function WorldNewsPage() {
     setTranslated(false);
     async function load() {
       const topic = WORLD_TOPICS[activeIdx];
-      let query = supabase
-        .from("articles")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(20);
+      const params = new URLSearchParams({ action: "by-category", limit: "20" });
+      if (topic.dbCategory) params.set("category", topic.dbCategory);
 
-      if (topic.dbCategory) {
-        query = query.eq("category", topic.dbCategory);
-      }
-
-      const { data } = await query;
-      const mapped = (data || []).map(dbArticleToApi);
+      const res = await fetch(`/api/articles?${params}`);
+      const json = await res.json();
+      const mapped = ((json.data || []) as Record<string, unknown>[]).map(dbArticleToApi);
       setArticles(mapped);
       setOriginalArticles(mapped);
       setLoading(false);
