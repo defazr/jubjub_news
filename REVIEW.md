@@ -159,6 +159,107 @@ SEO에서 중요. 검색엔진 크롤링 효율화.
 
 ---
 
-## 다음 단계
+## 2차 검토 (2026-03-10)
 
-홈페이지 DB 전환 완료 후 → SEO + 성능 + 트래픽 구조 최종 점검 예정.
+### 전체 결론
+
+**지금 상태면 실제 운영 시작 가능.** 트래픽 받기 전에 보완하면 좋은 것 5개 정리.
+
+### 프로젝트 완성도 (세부)
+
+| 영역 | 완성도 |
+|------|--------|
+| 뉴스 엔진 | 100% |
+| 뉴스 플랫폼 | 90% |
+| SEO 플랫폼 | 80% |
+
+현재 단계: **구조 안정화**
+
+---
+
+### 보완 포인트 5개
+
+#### 1. news-ingest 타임아웃 해결
+
+현재 순차 실행 → 배치 병렬로 전환 필요:
+
+```typescript
+// 추천 구조
+for (const batch of chunks(articles, 10)) {
+  await Promise.allSettled(batch.map(generateSummary));
+}
+```
+
+#### 2. AI 요약 입력 데이터 한계
+
+현재 `generateSummary()` 입력:
+
+```
+Title: ${title}
+Excerpt: ${excerpt}
+```
+
+- **본문(`/v2/article`)은 가져오지 않음**
+- RapidAPI `RawArticle` 인터페이스: `title`, `url`, `excerpt`, `thumbnail`, `date`, `publisher`만 포함
+- excerpt는 보통 1~3문장 수준
+- 150~200단어 요약을 1~3문장 excerpt로 생성하는 것은 **환각(hallucination) 위험** 있음
+
+**개선 방안:**
+- 요약 길이를 50~80단어로 줄이거나
+- `/v2/article` 엔드포인트로 본문 수집 후 요약 (API 비용/시간 증가)
+- 또는 요약 대신 "AI 핵심 포인트" 형태로 전환 (간결한 bullet point)
+
+#### 3. sitemap 분리 구조
+
+뉴스 사이트 권장:
+
+```
+/sitemap.xml          (인덱스)
+/sitemap-news.xml     (뉴스 기사)
+/sitemap-topics.xml   (토픽 페이지)
+```
+
+2~3개 분리가 크롤링 효율에 좋음.
+
+#### 4. /ai 페이지 SEO 강화
+
+meta description 개선:
+
+```
+AI summarized global news updated every 4 hours.
+```
+
+타겟 키워드:
+- `AI summarized news`
+- `AI curated news`
+- `AI news digest`
+
+#### 5. /topic 페이지 트래픽 전략
+
+`/topic/[keyword]` 페이지가 실질적 트래픽 유입 핵심:
+
+```
+/topic/ai
+/topic/openai
+/topic/nvidia
+```
+
+검색 유입 대부분은 이런 페이지에서 발생. sitemap에 반드시 포함.
+
+---
+
+### 다음 작업 순서
+
+| 순서 | 작업 | 우선순위 |
+|------|------|----------|
+| 1 | 홈페이지 DB 전환 | 높음 |
+| 2 | 카테고리 DB 전환 | 높음 |
+| 3 | sitemap 생성 | 중간 |
+
+이 3개 완료 시 → **완전 SEO 뉴스 사이트**
+
+---
+
+### 다음 단계
+
+홈페이지 DB 전환 보고서 완료 후 → 트래픽 구조 + 광고 수익 관점 최종 점검 예정.
