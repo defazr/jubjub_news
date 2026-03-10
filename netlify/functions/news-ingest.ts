@@ -1,5 +1,5 @@
 // Minimal scheduled function that triggers the Next.js API route
-const SITE_URL = process.env.URL || process.env.DEPLOY_URL || "";
+const SITE_URL = process.env.URL || process.env.DEPLOY_URL || "https://headlines.fazr.co.kr";
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
 export default async () => {
