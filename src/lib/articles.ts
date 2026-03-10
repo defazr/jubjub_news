@@ -1,6 +1,24 @@
 import { supabase } from "./supabase";
 import type { Article } from "@/types/database";
 
+/** Convert a DB Article to the ApiArticle shape used by UI components */
+export function articleToApiArticle(article: Article) {
+  return {
+    title: article.title,
+    url: `/news/${article.slug}`,
+    excerpt: article.excerpt || "",
+    thumbnail: article.image_url || "",
+    language: "en",
+    date: article.published_at || article.created_at,
+    authors: [] as string[],
+    publisher: {
+      name: article.publisher || "",
+      url: "",
+      favicon: "",
+    },
+  };
+}
+
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
   const { data } = await supabase
     .from("articles")

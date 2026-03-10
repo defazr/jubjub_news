@@ -1,0 +1,175 @@
+"use client";
+
+import { useState } from "react";
+import Header from "@/components/Header";
+import BreakingNewsTicker from "@/components/BreakingNewsTicker";
+import HeadlineSection from "@/components/HeadlineSection";
+import CategorySection from "@/components/CategorySection";
+import Sidebar from "@/components/Sidebar";
+import Footer from "@/components/Footer";
+import ScrollToTop from "@/components/ScrollToTop";
+import ReadingProgress from "@/components/ReadingProgress";
+import AdUnit from "@/components/AdUnit";
+import TranslateButton from "@/components/TranslateButton";
+import { translateTexts, type ApiArticle } from "@/lib/api";
+import { Badge } from "@/components/ui/badge";
+import { Sparkles, Hash } from "lucide-react";
+
+function InlineAd({ slot, className = "" }: { slot: string; className?: string }) {
+  return (
+    <div className={className}>
+      <p className="text-[10px] text-muted-foreground/50 text-center mb-1">광고</p>
+      <AdUnit slot={slot} />
+    </div>
+  );
+}
+
+interface Props {
+  trending: ApiArticle[];
+  categoryData: Record<string, ApiArticle[]>;
+  aiArticles: ApiArticle[];
+  popularKeywords: string[];
+}
+
+export default function HomeContent({ trending, categoryData, aiArticles, popularKeywords }: Props) {
+  const [currentTrending, setCurrentTrending] = useState(trending);
+  const [currentCategories, setCurrentCategories] = useState(categoryData);
+  const [translated, setTranslated] = useState(false);
+  const [translating, setTranslating] = useState(false);
+
+  async function handleTranslate() {
+    if (translating) return;
+
+    if (translated) {
+      setCurrentTrending(trending);
+      setCurrentCategories(categoryData);
+      setTranslated(false);
+      return;
+    }
+
+    setTranslating(true);
+
+    // Translate trending headlines
+    const trendingTexts = currentTrending.slice(0, 10).flatMap((a) => [a.title, a.excerpt]);
+    const trendingResult = await translateTexts(trendingTexts, "en");
+    const updatedTrending = currentTrending.map((a, i) => {
+      if (i >= 10) return a;
+      return {
+        ...a,
+        title: trendingResult[i * 2] || a.title,
+        excerpt: trendingResult[i * 2 + 1] || a.excerpt,
+      };
+    });
+    setCurrentTrending(updatedTrending);
+
+    // Translate category articles in parallel
+    const catEntries = Object.entries(currentCategories);
+    const catResults = await Promise.all(
+      catEntries.map(async ([cat, articles]) => {
+        const catTexts = articles.flatMap((a) => [a.title, a.excerpt]);
+        const catResult = await translateTexts(catTexts, "en");
+        return [cat, articles.map((a, i) => ({
+          ...a,
+          title: catResult[i * 2] || a.title,
+          excerpt: catResult[i * 2 + 1] || a.excerpt,
+        }))] as [string, ApiArticle[]];
+      })
+    );
+    setCurrentCategories(Object.fromEntries(catResults));
+
+    setTranslated(true);
+    setTranslating(false);
+  }
+
+  const headlines = currentTrending.slice(0, 5);
+  const breakingTitles = currentTrending.slice(0, 4).map((a) => `속보: ${a.title}`);
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <BreakingNewsTicker items={breakingTitles} />
+
+      <main className="max-w-[1200px] mx-auto px-3 md:px-4 py-5 md:py-8">
+        {/* Translate button */}
+        <div className="flex justify-end mb-4">
+          <TranslateButton
+            translated={translated}
+            translating={translating}
+            targetLabel="English"
+            onToggle={handleTranslate}
+          />
+        </div>
+
+        <HeadlineSection articles={headlines} />
+
+        {/* AI 요약 뉴스 섹션 */}
+        {aiArticles.length > 0 && (
+          <section className="mb-6 md:mb-8">
+            <h2 className="text-lg font-bold flex items-center gap-2 mb-3">
+              <Sparkles className="h-5 w-5 text-primary" />
+              AI 요약 뉴스
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+              {aiArticles.slice(0, 5).map((article, i) => (
+                <a
+                  key={i}
+                  href={article.url}
+                  className="block p-3 rounded-lg border border-border hover:border-primary/30 hover:bg-accent/50 transition-all"
+                >
+                  <Badge variant="secondary" className="text-[10px] mb-1.5">AI 요약</Badge>
+                  <h3 className="text-sm font-semibold line-clamp-2 text-card-foreground leading-snug">
+                    {article.title}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{article.excerpt}</p>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* 인기 키워드 */}
+        {popularKeywords.length > 0 && (
+          <section className="mb-6">
+            <h2 className="text-sm font-bold flex items-center gap-2 mb-2">
+              <Hash className="h-4 w-4 text-primary" />
+              인기 키워드
+            </h2>
+            <div className="flex flex-wrap gap-1.5">
+              {popularKeywords.map((kw) => (
+                <a key={kw} href={`/topic/${encodeURIComponent(kw)}`}>
+                  <Badge variant="outline" className="text-xs hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer">
+                    #{kw}
+                  </Badge>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* 광고 1 */}
+        <InlineAd slot="9121339058" className="my-5" />
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="lg:col-span-3">
+            <CategorySection
+              categoryData={currentCategories}
+              renderMidAd={
+                <InlineAd slot="2248808942" className="my-5" />
+              }
+            />
+            <InlineAd slot="9121339058" className="mt-5" />
+          </div>
+          <div className="lg:col-span-1">
+            <Sidebar articles={currentTrending.slice(0, 10)} />
+            <InlineAd slot="2248808942" className="mt-5" />
+            <InlineAd slot="9121339058" className="mt-5" />
+          </div>
+        </div>
+      </main>
+
+      <Footer />
+      <ScrollToTop />
+      <ReadingProgress />
+    </div>
+  );
+}

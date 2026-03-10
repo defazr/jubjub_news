@@ -99,11 +99,11 @@ async function generateSummary(title: string, excerpt: string): Promise<string |
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5-20251001",
-        max_tokens: 300,
+        max_tokens: 150,
         messages: [
           {
             role: "user",
-            content: `Summarize this news article in 150-200 words. Write a clear, informative summary suitable for a news website. Focus on key facts and context.\n\nTitle: ${title}\n\nExcerpt: ${excerpt}`,
+            content: `Summarize this news article in 2-3 sentences (50-80 words). Focus on key facts only.\n\nTitle: ${title}\n\nExcerpt: ${excerpt}`,
           },
         ],
       }),
@@ -117,6 +117,15 @@ async function generateSummary(title: string, excerpt: string): Promise<string |
   } catch {
     return null;
   }
+}
+
+/** Split array into chunks of given size */
+function chunks<T>(arr: T[], size: number): T[][] {
+  const result: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) {
+    result.push(arr.slice(i, i + size));
+  }
+  return result;
 }
 
 async function fetchTrending(language: string = "en"): Promise<RawArticle[]> {
@@ -180,7 +189,6 @@ export default async (req: Request) => {
     for (const a of articles) {
       allArticles.push({ article: a, category: cat.name });
     }
-    // Small delay between API calls
     await new Promise((r) => setTimeout(r, 300));
   }
 
@@ -195,8 +203,22 @@ export default async (req: Request) => {
 
   const existingHashes = new Set((existing || []).map((e) => e.source_hash));
 
-  // 4. Insert new articles
-  const toInsert = [];
+  // 4. Prepare new articles (without summaries yet)
+  interface PreparedArticle {
+    title: string;
+    slug: string;
+    summary: string | null;
+    excerpt: string | null;
+    source_url: string;
+    image_url: string | null;
+    publisher: string | null;
+    category: string;
+    keywords: string[];
+    published_at: string | null;
+    source_hash: string;
+  }
+
+  const prepared: PreparedArticle[] = [];
   const seenSlugs = new Set<string>();
 
   for (const { article, category } of allArticles) {
@@ -211,30 +233,19 @@ export default async (req: Request) => {
     let slug = generateSlug(article.title);
     if (!slug) continue;
 
-    // Ensure unique slug within this batch
     if (seenSlugs.has(slug)) {
       slug = `${slug}-${hash.slice(0, 4)}`;
     }
     seenSlugs.add(slug);
 
-    const keywords = extractKeywords(article.title, article.excerpt || "");
-
-    // Generate AI summary
     const cleanTitle = sanitizeText(article.title);
     const cleanExcerpt = article.excerpt ? sanitizeText(article.excerpt) : null;
-    let summary: string | null = null;
+    const keywords = extractKeywords(cleanTitle, cleanExcerpt || "");
 
-    if (cleanExcerpt) {
-      summary = await generateSummary(cleanTitle, cleanExcerpt);
-      if (summary) stats.summaries++;
-      // Small delay between AI calls to avoid rate limiting
-      await new Promise((r) => setTimeout(r, 200));
-    }
-
-    toInsert.push({
+    prepared.push({
       title: cleanTitle,
       slug,
-      summary,
+      summary: null,
       excerpt: cleanExcerpt,
       source_url: article.url,
       image_url: article.thumbnail || null,
@@ -245,14 +256,33 @@ export default async (req: Request) => {
       source_hash: hash,
     });
 
-    existingHashes.add(hash); // prevent within-batch duplicates
+    existingHashes.add(hash);
   }
 
-  // 5. Batch insert (Supabase supports upsert)
-  if (toInsert.length > 0) {
-    // Insert in chunks of 50
-    for (let i = 0; i < toInsert.length; i += 50) {
-      const chunk = toInsert.slice(i, i + 50);
+  // 5. Generate AI summaries in batches of 10 (parallel within each batch)
+  const BATCH_SIZE = 10;
+  for (const batch of chunks(prepared, BATCH_SIZE)) {
+    const results = await Promise.allSettled(
+      batch.map(async (item) => {
+        if (!item.excerpt) return;
+        const summary = await generateSummary(item.title, item.excerpt);
+        if (summary) {
+          item.summary = summary;
+          stats.summaries++;
+        }
+      })
+    );
+    for (const r of results) {
+      if (r.status === "rejected") {
+        console.error("Summary generation failed:", r.reason);
+      }
+    }
+  }
+
+  // 6. Batch insert (Supabase upsert)
+  if (prepared.length > 0) {
+    for (let i = 0; i < prepared.length; i += 50) {
+      const chunk = prepared.slice(i, i + 50);
       const { error } = await supabase
         .from("articles")
         .upsert(chunk, { onConflict: "slug", ignoreDuplicates: true });
