@@ -263,3 +263,141 @@ AI summarized global news updated every 4 hours.
 ### 다음 단계
 
 홈페이지 DB 전환 보고서 완료 후 → 트래픽 구조 + 광고 수익 관점 최종 점검 예정.
+
+---
+
+## 3차 검토 — 개발/운영 관점 피드백 (2026-03-10)
+
+### 전체 평가
+
+| 항목 | 평가 |
+|------|------|
+| 아키텍처 | 매우 안정적 |
+| 운영 가능 여부 | 가능 |
+| 구현 완성도 | 약 90% |
+| 실제 서비스 시작 | 가능 |
+
+현재 단계: **뉴스 자동화 엔진 → SEO 뉴스 플랫폼 전환 단계**
+핵심 기능은 이미 다 들어가 있음.
+
+---
+
+### 1. AI 요약 입력 구조 판단
+
+현재 `title + excerpt`만 사용하는 방식은 많은 뉴스 애그리게이터가 쓰는 방식이라 문제 없음.
+
+다만 **150~200단어 요약은 길다.** excerpt가 1~3문장이기 때문.
+
+**추천 방식: 50~80단어 요약 또는 AI 핵심 포인트 4개**
+
+```
+AI Key Points
+• Nvidia announced new AI chip
+• Production expected in 2026
+• Major cloud companies interested
+• Stock price rose after announcement
+```
+
+이 방식의 장점:
+- 환각 위험 감소
+- 읽기 속도 향상
+- SEO 유지
+
+### 2. /v2/article 본문 수집 판단
+
+| 항목 | 평가 |
+|------|------|
+| 장점 | 요약 품질 상승 |
+| 단점 | API 호출 증가, CRON 시간 증가, 파싱 실패 가능 |
+
+**결론: 초기 단계에서는 현재 방식 (title + excerpt) 유지가 맞음.**
+트래픽 커지면 그때 본문 수집 추가.
+
+### 3. news-ingest 타임아웃
+
+80 기사 × AI 호출 ≈ 96초, Netlify 제한 10~26초.
+
+**추천 수정:** batch 병렬 처리
+
+```typescript
+for (const batch of chunks(articles, 10)) {
+  await Promise.allSettled(batch.map(a => generateSummary(a.title, a.excerpt)));
+}
+```
+
+다음 단계에서 수정 요청. 지금은 테스트 먼저.
+
+### 4. SEO 구조 평가
+
+현재 `/news/[slug]`, `/topic/[keyword]`, `/ai` 구조는 뉴스 SEO에서 매우 좋음.
+
+**특히 `/topic` 페이지가 실제 트래픽을 먹는 페이지:**
+
+```
+/topic/ai
+/topic/openai
+/topic/nvidia
+```
+
+뉴스 사이트 트래픽 상당 부분이 여기서 발생.
+
+### 5. sitemap 구조
+
+보고서에서 제안한 구조 그대로 사용:
+
+```
+/sitemap.xml          (인덱스)
+/sitemap-news.xml     (뉴스 기사)
+/sitemap-topics.xml   (토픽 페이지)
+```
+
+Google 크롤링 속도 향상에 좋음.
+
+---
+
+### 완성도 (세부)
+
+| 영역 | 완성도 |
+|------|--------|
+| 뉴스 엔진 | 100% |
+| 뉴스 플랫폼 | 90% |
+| SEO 플랫폼 | 80% |
+
+**뉴스 엔진 단계는 끝남. 현재 SEO 확장 단계.**
+
+---
+
+### 남은 핵심 3개
+
+| 순서 | 작업 | 우선순위 |
+|------|------|----------|
+| 1 | 홈페이지 DB 전환 | 높음 |
+| 2 | 카테고리 DB 전환 | 높음 |
+| 3 | sitemap 생성 | 중간 |
+
+이 3개 완료 시 → **완전 SEO 뉴스 플랫폼**
+
+---
+
+### 추가 제안: keyword auto page 강화
+
+트래픽을 먹는 핵심 페이지는 `/topic/[keyword]`.
+
+다음 단계에서 강화할 키워드 페이지 예시:
+
+```
+/topic/ai
+/topic/tesla
+/topic/openai
+/topic/nvidia
+```
+
+이 페이지가 실제 검색 트래픽을 만든다.
+
+---
+
+### 결론
+
+JubJub 프로젝트는 **뉴스 자동화 플랫폼**으로 이미 거의 완성.
+
+홈페이지 DB 전환 보고서 완료 시 → SEO 구조 + 광고 수익 구조 + 트래픽 성장 구조 최종 점검 예정.
