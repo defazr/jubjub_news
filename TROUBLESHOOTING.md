@@ -21,39 +21,89 @@ RapidAPI → news-ingest (4시간 CRON) → Claude 요약 → Supabase DB 저장
 
 ---
 
-## 홈페이지에 뉴스가 안 나오는 문제
+## 뉴스가 안 나오는 원인 (확인됨)
 
-### 진단 방법
-
-배포 후 브라우저에서 이 URL을 열어주세요:
+### 에러 로그
 
 ```
-https://headlines.fazr.co.kr/api/articles?action=debug
+Could not find the table 'public.articles' in the schema cache
 ```
 
-JSON 응답이 나옵니다. 아래 3가지 케이스를 확인하세요.
+### 원인
+
+**Supabase에 `articles` 테이블이 존재하지 않음** — DB 스키마를 한 번도 만들지 않은 상태.
+
+| 항목 | 상태 |
+|------|------|
+| 환경변수 | 정상 |
+| Supabase 연결 | 정상 |
+| DB 테이블 | **없음** |
+
+코드가 아무리 잘 되어있어도, 테이블이 없으면 모든 쿼리가 실패한다.
 
 ---
 
-### 케이스 1: DB가 비어있음
+## 해결 방법 (3분)
 
-```json
-{
-  "totalArticles": 0,
-  "hasServiceKey": true,
-  "error": null,
-  "latestArticles": []
-}
+### 1단계: Supabase SQL Editor 열기
+
+1. [Supabase 대시보드](https://supabase.com/dashboard) 접속
+2. 프로젝트 **wzxayrmkykzxmujejyzg** 선택
+3. 왼쪽 메뉴에서 **SQL Editor** 클릭
+
+### 2단계: 아래 SQL 전체를 복사하여 실행
+
+이 내용은 프로젝트의 `supabase/schema.sql` 파일과 동일합니다.
+
+```sql
+-- JubJub Headlines - Articles Table Schema
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE TABLE IF NOT EXISTS articles (
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  title text NOT NULL,
+  slug text UNIQUE NOT NULL,
+  summary text,
+  excerpt text,
+  source_url text NOT NULL,
+  image_url text,
+  publisher text,
+  category text NOT NULL,
+  keywords text[] DEFAULT '{}',
+  published_at timestamptz,
+  created_at timestamptz DEFAULT now(),
+  source_hash text UNIQUE NOT NULL
+);
+
+-- Indexes for common queries
+CREATE INDEX IF NOT EXISTS idx_articles_slug ON articles (slug);
+CREATE INDEX IF NOT EXISTS idx_articles_category ON articles (category);
+CREATE INDEX IF NOT EXISTS idx_articles_created_at ON articles (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_articles_keywords ON articles USING GIN (keywords);
+
+-- RLS: Enable and allow public read access
+ALTER TABLE articles ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public read access" ON articles
+  FOR SELECT USING (true);
+
+CREATE POLICY "Service role insert" ON articles
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Service role update" ON articles
+  FOR UPDATE USING (true);
 ```
 
-**원인**: `news-ingest` CRON이 아직 한 번도 실행되지 않음
+**RUN** 버튼 클릭.
 
-**해결 방법**: Netlify에서 수동으로 news-ingest 실행
+### 3단계: 테이블 생성 확인
 
-1. [Netlify 대시보드](https://app.netlify.com) → 사이트 선택
-2. **Functions** 탭 클릭
-3. `news-ingest` 함수 찾기
-4. 직접 트리거하거나, 브라우저에서 아래 URL 호출:
+왼쪽 메뉴 → **Table Editor** → `articles` 테이블이 보이면 성공.
+
+### 4단계: news-ingest 수동 실행
+
+브라우저에서 아래 URL 호출:
 
 ```
 https://headlines.fazr.co.kr/.netlify/functions/news-ingest?secret=sb_secret_C1bcaG6
@@ -61,7 +111,7 @@ https://headlines.fazr.co.kr/.netlify/functions/news-ingest?secret=sb_secret_C1b
 
 > `secret` 값은 `SUPABASE_SERVICE_ROLE_KEY`의 앞 16글자입니다.
 
-5. 성공 시 응답 예시:
+성공 시 응답 예시:
 ```json
 {
   "success": true,
@@ -75,27 +125,28 @@ https://headlines.fazr.co.kr/.netlify/functions/news-ingest?secret=sb_secret_C1b
 }
 ```
 
-6. 뉴스 수집 완료 후 홈페이지를 새로고침하면 뉴스가 나옵니다 (ISR 5분).
+### 5단계: 홈페이지 확인
+
+ISR 캐시가 있으므로 최대 **5분 후** 뉴스가 표시됩니다.
 
 ---
 
-### 케이스 2: Service Role Key 미설정
+## 추가 문제 발생 시
 
-```json
-{
-  "totalArticles": null,
-  "hasServiceKey": false,
-  "error": "..."
-}
+### debug 엔드포인트
+
+```
+https://headlines.fazr.co.kr/api/articles?action=debug
 ```
 
-**원인**: Netlify에 `SUPABASE_SERVICE_ROLE_KEY` 환경변수가 설정되지 않음
+| 결과 | 의미 | 해결 |
+|------|------|------|
+| `totalArticles: 0` | 테이블은 있지만 비어있음 | news-ingest 수동 실행 |
+| `hasServiceKey: false` | 환경변수 미설정 | Netlify에 `SUPABASE_SERVICE_ROLE_KEY` 추가 |
+| `error: "permission denied..."` | RLS 정책 문제 | 위 SQL의 RLS 부분 재실행 |
+| `error: "relation ... does not exist"` | 테이블 미생성 | 위 SQL 전체 실행 |
 
-**해결 방법**:
-
-1. [Netlify 대시보드](https://app.netlify.com) → 사이트 선택
-2. **Site configuration** → **Environment variables**
-3. 아래 환경변수들이 모두 설정되어 있는지 확인:
+### 필요한 Netlify 환경변수
 
 | 변수명 | 설명 |
 |--------|------|
@@ -104,59 +155,6 @@ https://headlines.fazr.co.kr/.netlify/functions/news-ingest?secret=sb_secret_C1b
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role (관리자) 키 |
 | `RAPIDAPI_KEY` | RapidAPI 뉴스 API 키 |
 | `ANTHROPIC_API_KEY` | Claude AI 요약용 API 키 |
-
-4. `SUPABASE_SERVICE_ROLE_KEY` 확인 방법:
-   - [Supabase 대시보드](https://supabase.com/dashboard) → 프로젝트 선택
-   - **Settings** → **API** → **service_role** 키 복사
-   - 이 키는 `eyJhbGciOi...` 형태의 JWT 토큰입니다
-
-5. 환경변수 추가 후 **Deploys** → **Trigger deploy** → **Clear cache and deploy site**
-
----
-
-### 케이스 3: RLS 정책 문제
-
-```json
-{
-  "totalArticles": null,
-  "hasServiceKey": true,
-  "error": "permission denied for table articles"
-}
-```
-
-**원인**: Supabase Row Level Security (RLS)가 활성화되어 있지만 읽기 정책이 없음
-
-**해결 방법**:
-
-1. [Supabase 대시보드](https://supabase.com/dashboard) → 프로젝트 선택
-2. **SQL Editor** 클릭
-3. 아래 SQL 실행:
-
-```sql
--- articles 테이블에 공개 읽기 정책 추가
-CREATE POLICY "Allow public read access"
-  ON articles
-  FOR SELECT
-  USING (true);
-```
-
-또는 RLS 자체를 비활성화 (뉴스는 공개 데이터이므로):
-
-```sql
-ALTER TABLE articles DISABLE ROW LEVEL SECURITY;
-```
-
----
-
-## 체크리스트
-
-배포 후 확인할 사항:
-
-- [ ] `/api/articles?action=debug` 응답 확인
-- [ ] `totalArticles`가 0이면 → news-ingest 수동 실행
-- [ ] `hasServiceKey`가 false이면 → Netlify 환경변수 설정
-- [ ] `error`가 있으면 → RLS 정책 추가
-- [ ] 위 모든 해결 후 홈페이지 새로고침 (5분 ISR 대기)
 
 ---
 
