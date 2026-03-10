@@ -82,6 +82,17 @@ export async function getPopularKeywords(limit: number = 20): Promise<string[]> 
     .map(([kw]) => kw);
 }
 
+export async function getArticlesWithSummary(limit: number = 30): Promise<Article[]> {
+  const { data } = await supabase
+    .from("articles")
+    .select("*")
+    .not("summary", "is", null)
+    .neq("summary", "")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return data || [];
+}
+
 export async function getTrendingArticles(limit: number = 10): Promise<Article[]> {
   const { data } = await supabase
     .from("articles")

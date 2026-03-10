@@ -19,6 +19,7 @@ import {
   Clock,
   AArrowUp,
   AArrowDown,
+  Sparkles,
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/categories";
 import { getSearchHistory, addSearchHistory, removeSearchHistoryItem, clearSearchHistory, getFontSize, setFontSize as saveFontSize } from "@/lib/storage";
@@ -147,6 +148,10 @@ export default function Header({ onSearch }: Props) {
                 <Bookmark className="h-3 w-3" />
                 스크랩
               </a>
+              <a href="/ai" className="hover:text-primary transition-colors flex items-center gap-1">
+                <Sparkles className="h-3 w-3" />
+                AI 뉴스
+              </a>
               <a href="/world" className="hover:text-primary transition-colors flex items-center gap-1">
                 <Globe className="h-3 w-3" />
                 해외 뉴스
@@ -228,6 +233,12 @@ export default function Header({ onSearch }: Props) {
                         <Bookmark className="h-4 w-4" /> 스크랩
                       </a>
                       <a
+                        href="/ai"
+                        className="flex items-center gap-3 w-full px-5 py-3 text-sm font-medium text-primary hover:bg-accent transition-colors"
+                      >
+                        <Sparkles className="h-4 w-4" /> AI 뉴스
+                      </a>
+                      <a
                         href="/world"
                         className="flex items-center gap-3 w-full px-5 py-3 text-sm font-medium text-primary hover:bg-accent transition-colors"
                       >
@@ -275,6 +286,19 @@ export default function Header({ onSearch }: Props) {
                     </Button>
                   </li>
                 ))}
+                <li>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    asChild
+                    className="text-sm font-medium text-primary hover:bg-primary/5"
+                  >
+                    <a href="/ai">
+                      <Sparkles className="h-4 w-4 mr-1" />
+                      AI
+                    </a>
+                  </Button>
+                </li>
                 <li>
                   <Button
                     variant="ghost"
