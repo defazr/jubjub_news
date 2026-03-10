@@ -181,10 +181,26 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // Debug mode - check config without running ingest
+    const action = req.nextUrl.searchParams.get("action");
+    if (action === "status") {
+      return NextResponse.json({
+        hasSupabaseUrl: !!SUPABASE_URL,
+        hasSupabaseKey: !!SUPABASE_SERVICE_KEY,
+        hasRapidApiKey: !!RAPIDAPI_KEY,
+        hasAnthropicKey: !!ANTHROPIC_API_KEY,
+        supabaseUrl: SUPABASE_URL ? SUPABASE_URL.slice(0, 30) + "..." : "NOT SET",
+      });
+    }
+
     // Auth check
     const secret = req.nextUrl.searchParams.get("secret");
-    if (secret !== SUPABASE_SERVICE_KEY.slice(0, 16)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const expectedSecret = SUPABASE_SERVICE_KEY.slice(0, 16);
+    if (!secret || secret !== expectedSecret) {
+      return NextResponse.json(
+        { error: "Unauthorized", hint: "Missing or invalid secret parameter" },
+        { status: 401 }
+      );
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
