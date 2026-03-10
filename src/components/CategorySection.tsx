@@ -30,8 +30,8 @@ function CategoryCardGrid({ cat, articles, animDelay, readUrls }: { cat: string;
       style={{ borderTop: `3px solid ${accentColor}` }}
     >
       <CardHeader className="pb-0 pt-4 px-4">
-        <CardTitle className="text-base font-bold flex items-center gap-2">
-          <span className="w-1 h-4 rounded-full" style={{ backgroundColor: accentColor }} />
+        <CardTitle className="text-lg font-bold flex items-center gap-2">
+          <span className="w-1.5 h-5 rounded-full" style={{ backgroundColor: accentColor }} />
           {cat}
         </CardTitle>
       </CardHeader>
@@ -53,16 +53,16 @@ function CategoryCardGrid({ cat, articles, animDelay, readUrls }: { cat: string;
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
               )}
-              <span className={`text-sm font-semibold text-card-foreground group-hover:text-primary leading-snug block transition-colors line-clamp-2 ${readUrls.has(featured.url) ? "opacity-60" : ""}`}>
+              <span className={`font-headline text-base font-semibold text-card-foreground group-hover:text-primary leading-snug block transition-colors line-clamp-2 ${readUrls.has(featured.url) ? "opacity-60" : ""}`}>
                 {featured.title}
                 {readUrls.has(featured.url) && <span className="ml-1 text-[10px] font-normal text-muted-foreground bg-muted px-1 py-0.5 rounded">읽음</span>}
               </span>
-              <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2">
+              <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2">
                 {featured.excerpt}
               </p>
             </a>
-            <div className="flex items-center justify-between mt-1.5">
-              <p className="text-xs text-muted-foreground/60">
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-sm text-muted-foreground/60">
                 {featured.publisher.name} · {formatDate(featured.date)}
               </p>
               <div className="flex items-center gap-0.5">
@@ -75,12 +75,12 @@ function CategoryCardGrid({ cat, articles, animDelay, readUrls }: { cat: string;
 
         <Separator className="my-2" />
 
-        <ul className="space-y-2.5">
+        <ul className="space-y-3">
           {rest.map((article, i) => (
-            <li key={i} className="flex items-start gap-1.5">
+            <li key={i} className="flex items-start gap-2">
               <a
                 href={articleLink(article.url, article.title, article.publisher.name)}
-                className={`flex-1 text-sm text-card-foreground hover:text-primary leading-snug transition-colors line-clamp-2 ${readUrls.has(article.url) ? "opacity-60" : ""}`}
+                className={`flex-1 text-[15px] text-card-foreground hover:text-primary leading-snug transition-colors line-clamp-2 ${readUrls.has(article.url) ? "opacity-60" : ""}`}
               >
                 {article.title}
               </a>
@@ -105,11 +105,11 @@ function CategoryCardList({ cat, articles, readUrls }: { cat: string; articles: 
       style={{ borderLeft: `3px solid ${accentColor}` }}
     >
       <CardContent className="p-4">
-        <h3 className="text-base font-bold flex items-center gap-2 mb-3">
-          <span className="w-1 h-4 rounded-full" style={{ backgroundColor: accentColor }} />
+        <h3 className="text-lg font-bold flex items-center gap-2 mb-3">
+          <span className="w-1.5 h-5 rounded-full" style={{ backgroundColor: accentColor }} />
           {cat}
         </h3>
-        <ul className="space-y-3">
+        <ul className="space-y-3.5">
           {articles.map((article, i) => (
             <li key={i} className="flex items-start gap-3">
               {i === 0 && article.thumbnail && (
@@ -117,7 +117,7 @@ function CategoryCardList({ cat, articles, readUrls }: { cat: string; articles: 
                   href={articleLink(article.url, article.title, article.publisher.name)}
                   className="shrink-0 block"
                 >
-                  <div className="w-24 h-16 overflow-hidden rounded-md bg-muted">
+                  <div className="w-28 h-20 overflow-hidden rounded-md bg-muted">
                     <img
                       src={article.thumbnail}
                       alt={article.title}
@@ -130,12 +130,12 @@ function CategoryCardList({ cat, articles, readUrls }: { cat: string; articles: 
               <div className="flex-1 min-w-0">
                 <a
                   href={articleLink(article.url, article.title, article.publisher.name)}
-                  className={`text-sm font-medium text-card-foreground hover:text-primary leading-snug transition-colors line-clamp-2 block ${readUrls.has(article.url) ? "opacity-60" : ""}`}
+                  className={`text-[15px] font-medium text-card-foreground hover:text-primary leading-snug transition-colors line-clamp-2 block ${readUrls.has(article.url) ? "opacity-60" : ""}`}
                 >
                   {article.title}
                   {readUrls.has(article.url) && <span className="ml-1 text-[10px] font-normal text-muted-foreground bg-muted px-1 py-0.5 rounded">읽음</span>}
                 </a>
-                <p className="text-xs text-muted-foreground/60 mt-0.5">
+                <p className="text-sm text-muted-foreground/60 mt-0.5">
                   {article.publisher.name} · {formatDate(article.date)}
                 </p>
               </div>

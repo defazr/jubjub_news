@@ -8,15 +8,15 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mb-8">
           <div className="col-span-2 md:col-span-1">
             <a href="/">
-              <span className="text-2xl font-bold tracking-tight" style={{ fontFamily: "Georgia, 'Nanum Myeongjo', serif" }}>JubJub 뉴스</span>
+              <span className="font-headline text-2xl tracking-tight">JubJub 뉴스</span>
             </a>
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <p className="text-base text-muted-foreground leading-relaxed mt-2">
               국내외 주요 뉴스를 한눈에 모아 보여드립니다.
             </p>
           </div>
           <div>
-            <h5 className="text-sm font-bold text-foreground mb-3">섹션</h5>
-            <ul className="text-sm space-y-1.5">
+            <h5 className="text-base font-bold text-foreground mb-3">섹션</h5>
+            <ul className="text-base space-y-2">
               {CATEGORIES.map((cat) => (
                 <li key={cat.slug}>
                   <a href={`/category/${cat.slug}`} className="text-muted-foreground hover:text-primary transition-colors">
@@ -37,8 +37,8 @@ export default function Footer() {
             </ul>
           </div>
           <div>
-            <h5 className="text-sm font-bold text-foreground mb-3">고객센터</h5>
-            <ul className="text-sm space-y-1.5">
+            <h5 className="text-base font-bold text-foreground mb-3">고객센터</h5>
+            <ul className="text-base space-y-2">
               <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">광고 문의</a></li>
               <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">제보하기</a></li>
               <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">이용약관</a></li>
@@ -47,7 +47,7 @@ export default function Footer() {
           </div>
         </div>
         <Separator className="mb-5" />
-        <p className="text-xs text-muted-foreground/60 text-center">
+        <p className="text-sm text-muted-foreground/60 text-center">
           &copy; 2026 줍줍뉴스. All rights reserved.
         </p>
       </div>

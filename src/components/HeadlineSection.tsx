@@ -49,7 +49,7 @@ export default function HeadlineSection({ articles }: Props) {
                 <Badge variant="secondary" className="mb-2 bg-primary text-primary-foreground border-0 text-xs">
                   {mainHeadline.publisher.name || "뉴스"}
                 </Badge>
-                <h2 className={`font-headline text-xl md:text-2xl font-bold text-white leading-tight line-clamp-2 ${readUrls.has(mainHeadline.url) ? "opacity-70" : ""}`}>
+                <h2 className={`font-headline text-2xl md:text-3xl font-bold text-white leading-tight line-clamp-2 ${readUrls.has(mainHeadline.url) ? "opacity-70" : ""}`}>
                   {mainHeadline.title}
                   {readUrls.has(mainHeadline.url) && <span className="ml-2 text-xs font-normal bg-white/20 text-white/80 px-1.5 py-0.5 rounded align-middle">읽음</span>}
                 </h2>
@@ -59,10 +59,10 @@ export default function HeadlineSection({ articles }: Props) {
           <CardContent className="p-4 md:p-5">
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1">
-                <p className="text-muted-foreground text-sm leading-relaxed line-clamp-2">
+                <p className="text-muted-foreground text-base leading-relaxed line-clamp-2">
                   {mainHeadline.excerpt}
                 </p>
-                <p className="text-xs text-muted-foreground/70 mt-3">
+                <p className="text-sm text-muted-foreground/70 mt-3">
                   {mainHeadline.authors?.[0] || mainHeadline.publisher.name} · {formatDate(mainHeadline.date)}
                 </p>
               </div>
@@ -93,7 +93,7 @@ export default function HeadlineSection({ articles }: Props) {
                       <Badge variant="outline" className="mb-2 text-xs text-primary border-primary/30">
                         {subHeadline.publisher.name || "뉴스"}
                       </Badge>
-                      <h3 className={`font-headline text-base md:text-lg font-bold text-card-foreground leading-snug line-clamp-2 hover:text-primary transition-colors ${readUrls.has(subHeadline.url) ? "opacity-60" : ""}`}>
+                      <h3 className={`font-headline text-lg md:text-xl font-bold text-card-foreground leading-snug line-clamp-2 hover:text-primary transition-colors ${readUrls.has(subHeadline.url) ? "opacity-60" : ""}`}>
                         {subHeadline.title}
                       </h3>
                       <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
@@ -113,22 +113,22 @@ export default function HeadlineSection({ articles }: Props) {
           {/* Numbered list */}
           <Card className="border-0 shadow-sm">
             <CardContent className="p-4">
-              <h4 className="text-sm font-bold text-card-foreground mb-3 flex items-center gap-2">
-                <span className="w-1 h-4 bg-primary rounded-full" />
+              <h4 className="text-base font-bold text-card-foreground mb-3 flex items-center gap-2">
+                <span className="w-1.5 h-5 bg-primary rounded-full" />
                 주요 뉴스
               </h4>
               <Separator className="mb-3" />
-              <ul className="space-y-2.5">
+              <ul className="space-y-3">
                 {articles.slice(2, 7).map((article, i) => (
-                  <li key={i} className="flex gap-2 text-sm group items-center">
-                    <span className={`font-bold shrink-0 w-5 text-center ${
+                  <li key={i} className="flex gap-2.5 text-[15px] group items-center">
+                    <span className={`font-bold shrink-0 w-6 text-center text-lg ${
                       i < 3 ? "text-primary" : "text-muted-foreground/50"
                     }`}>
                       {i + 1}
                     </span>
                     <a
                       href={articleLink(article.url, article.title, article.publisher.name)}
-                      className={`flex-1 text-card-foreground group-hover:text-primary line-clamp-1 transition-colors ${readUrls.has(article.url) ? "opacity-60" : ""}`}
+                      className={`flex-1 text-card-foreground group-hover:text-primary line-clamp-1 transition-colors leading-snug ${readUrls.has(article.url) ? "opacity-60" : ""}`}
                     >
                       {article.title}
                     </a>
