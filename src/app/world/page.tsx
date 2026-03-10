@@ -10,18 +10,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { fetchTrendingNews, translateTexts, formatDate, type ApiArticle } from "@/lib/api";
+import { translateTexts, formatDate, type ApiArticle } from "@/lib/api";
 import { articleLink } from "@/lib/link";
 import { Globe } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 const WORLD_TOPICS = [
-  { label: "전체", topic: "General" },
-  { label: "비즈니스", topic: "Business" },
-  { label: "테크", topic: "Technology" },
-  { label: "스포츠", topic: "Sports" },
-  { label: "엔터", topic: "Entertainment" },
-  { label: "과학", topic: "Science" },
-  { label: "건강", topic: "Health" },
+  { label: "전체", dbCategory: null },
+  { label: "비즈니스", dbCategory: "business" },
+  { label: "테크", dbCategory: "technology" },
+  { label: "스포츠", dbCategory: "sports" },
+  { label: "엔터", dbCategory: "entertainment" },
+  { label: "과학", dbCategory: "science" },
+  { label: "건강", dbCategory: "health" },
 ];
 
 function InlineAd({ slot, className = "" }: { slot: string; className?: string }) {
@@ -33,10 +34,23 @@ function InlineAd({ slot, className = "" }: { slot: string; className?: string }
   );
 }
 
+function dbArticleToApi(a: Record<string, unknown>): ApiArticle {
+  return {
+    title: (a.title as string) || "",
+    url: `/news/${a.slug as string}`,
+    excerpt: (a.excerpt as string) || "",
+    thumbnail: (a.image_url as string) || "",
+    language: "en",
+    date: (a.published_at as string) || (a.created_at as string) || "",
+    authors: [],
+    publisher: { name: (a.publisher as string) || "", url: "", favicon: "" },
+  };
+}
+
 export default function WorldNewsPage() {
   const [articles, setArticles] = useState<ApiArticle[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTopic, setActiveTopic] = useState("General");
+  const [activeIdx, setActiveIdx] = useState(0);
   const [translated, setTranslated] = useState(false);
   const [translating, setTranslating] = useState(false);
   const [originalArticles, setOriginalArticles] = useState<ApiArticle[]>([]);
@@ -49,13 +63,25 @@ export default function WorldNewsPage() {
     setLoading(true);
     setTranslated(false);
     async function load() {
-      const data = await fetchTrendingNews(activeTopic, "en");
-      setArticles(data);
-      setOriginalArticles(data);
+      const topic = WORLD_TOPICS[activeIdx];
+      let query = supabase
+        .from("articles")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+      if (topic.dbCategory) {
+        query = query.eq("category", topic.dbCategory);
+      }
+
+      const { data } = await query;
+      const mapped = (data || []).map(dbArticleToApi);
+      setArticles(mapped);
+      setOriginalArticles(mapped);
       setLoading(false);
     }
     load();
-  }, [activeTopic]);
+  }, [activeIdx]);
 
   async function handleTranslate() {
     if (translating) return;
@@ -109,12 +135,12 @@ export default function WorldNewsPage() {
 
         {/* Topic tabs */}
         <div className="flex gap-2 overflow-x-auto pb-2 mb-6 scrollbar-hide">
-          {WORLD_TOPICS.map((t) => (
+          {WORLD_TOPICS.map((t, idx) => (
             <Badge
-              key={t.topic}
-              variant={activeTopic === t.topic ? "default" : "outline"}
+              key={t.label}
+              variant={activeIdx === idx ? "default" : "outline"}
               className="cursor-pointer shrink-0 hover:bg-primary hover:text-primary-foreground transition-colors"
-              onClick={() => setActiveTopic(t.topic)}
+              onClick={() => setActiveIdx(idx)}
             >
               {t.label}
             </Badge>

@@ -61,17 +61,7 @@ export default function CategoryPageContent({ category, initialArticles }: Props
 
   useEffect(() => {
     document.title = `${category.name} - JubJub 뉴스`;
-    // If we have initialArticles from SSR, skip client-side fetch
-    if (initialArticles) return;
-    async function load() {
-      const { searchNews } = await import("@/lib/api");
-      const data = await searchNews(category.query);
-      setArticles(data);
-      setOriginalArticles(data);
-      setLoading(false);
-    }
-    load();
-  }, [category, initialArticles]);
+  }, [category]);
 
   async function handleTranslate() {
     if (translating) return;
