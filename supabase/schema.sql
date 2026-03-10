@@ -16,13 +16,12 @@ CREATE TABLE IF NOT EXISTS articles (
   keywords text[] DEFAULT '{}',
   published_at timestamptz,
   created_at timestamptz DEFAULT now(),
-  source_hash text NOT NULL
+  source_hash text UNIQUE NOT NULL
 );
 
 -- Indexes for common queries
 CREATE INDEX IF NOT EXISTS idx_articles_slug ON articles (slug);
 CREATE INDEX IF NOT EXISTS idx_articles_category ON articles (category);
-CREATE INDEX IF NOT EXISTS idx_articles_source_hash ON articles (source_hash);
 CREATE INDEX IF NOT EXISTS idx_articles_created_at ON articles (created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_articles_keywords ON articles USING GIN (keywords);
 
