@@ -12,10 +12,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { searchNews, translateTexts, formatDate, type ApiArticle } from "@/lib/api";
+import { translateTexts, formatDate, type ApiArticle } from "@/lib/api";
 import { articleLink } from "@/lib/link";
 import { SearchIcon } from "lucide-react";
 import { getReadUrls, addSearchHistory } from "@/lib/storage";
+import { supabase } from "@/lib/supabase";
 
 function InlineAd({ slot, className = "" }: { slot: string; className?: string }) {
   return (
@@ -24,6 +25,29 @@ function InlineAd({ slot, className = "" }: { slot: string; className?: string }
       <AdUnit slot={slot} />
     </div>
   );
+}
+
+function dbArticleToApi(a: Record<string, unknown>): ApiArticle {
+  return {
+    title: (a.title as string) || "",
+    url: `/news/${a.slug as string}`,
+    excerpt: (a.excerpt as string) || "",
+    thumbnail: (a.image_url as string) || "",
+    language: "en",
+    date: (a.published_at as string) || (a.created_at as string) || "",
+    authors: [],
+    publisher: { name: (a.publisher as string) || "", url: "", favicon: "" },
+  };
+}
+
+async function searchArticlesFromDB(query: string): Promise<ApiArticle[]> {
+  const { data } = await supabase
+    .from("articles")
+    .select("*")
+    .or(`title.ilike.%${query}%,excerpt.ilike.%${query}%`)
+    .order("created_at", { ascending: false })
+    .limit(20);
+  return (data || []).map(dbArticleToApi);
 }
 
 function SearchContent() {
@@ -52,7 +76,7 @@ function SearchContent() {
     setLoading(true);
     setTranslated(false);
     async function load() {
-      const data = await searchNews(query);
+      const data = await searchArticlesFromDB(query);
       setArticles(data);
       setOriginalArticles(data);
       setLoading(false);
