@@ -163,150 +163,188 @@ async function fetchByCategory(query: string, language: string = "en"): Promise<
 }
 
 export default async (req: Request) => {
-  // Simple auth check — only allow scheduled or manual trigger with secret
-  const url = new URL(req.url);
-  const secret = url.searchParams.get("secret");
-  const isScheduled = req.headers.get("x-netlify-event") === "schedule";
-
-  if (!isScheduled && secret !== SUPABASE_SERVICE_KEY.slice(0, 16)) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-  const stats = { fetched: 0, inserted: 0, duplicates: 0, errors: 0, summaries: 0 };
-
-  // 1. Fetch trending articles
-  const trending = await fetchTrending("en");
-  const allArticles: { article: RawArticle; category: string }[] =
-    trending.map((a) => ({ article: a, category: "trending" }));
-
-  // 2. Fetch by category (with delay between calls to avoid rate limiting)
-  for (const cat of CATEGORIES) {
-    const articles = await fetchByCategory(cat.query, "en");
-    for (const a of articles) {
-      allArticles.push({ article: a, category: cat.name });
-    }
-    await new Promise((r) => setTimeout(r, 300));
-  }
-
-  stats.fetched = allArticles.length;
-
-  // 3. Get existing hashes to avoid duplicates
-  const hashes = allArticles.map((a) => createSourceHash(a.article.url));
-  const { data: existing } = await supabase
-    .from("articles")
-    .select("source_hash")
-    .in("source_hash", hashes);
-
-  const existingHashes = new Set((existing || []).map((e) => e.source_hash));
-
-  // 4. Prepare new articles (without summaries yet)
-  interface PreparedArticle {
-    title: string;
-    slug: string;
-    summary: string | null;
-    excerpt: string | null;
-    source_url: string;
-    image_url: string | null;
-    publisher: string | null;
-    category: string;
-    keywords: string[];
-    published_at: string | null;
-    source_hash: string;
-  }
-
-  const prepared: PreparedArticle[] = [];
-  const seenSlugs = new Set<string>();
-
-  for (const { article, category } of allArticles) {
-    if (!article.title || !article.url) continue;
-
-    const hash = createSourceHash(article.url);
-    if (existingHashes.has(hash)) {
-      stats.duplicates++;
-      continue;
+  try {
+    // Validate required environment variables
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+      console.error("Missing env vars: NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+      return new Response(
+        JSON.stringify({ error: "Server misconfiguration: missing environment variables" }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
     }
 
-    let slug = generateSlug(article.title);
-    if (!slug) continue;
-
-    if (seenSlugs.has(slug)) {
-      slug = `${slug}-${hash.slice(0, 4)}`;
+    if (!RAPIDAPI_KEY) {
+      console.error("Missing env var: RAPIDAPI_KEY");
+      return new Response(
+        JSON.stringify({ error: "Server misconfiguration: missing RAPIDAPI_KEY" }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
     }
-    seenSlugs.add(slug);
 
-    const cleanTitle = sanitizeText(article.title);
-    const cleanExcerpt = article.excerpt ? sanitizeText(article.excerpt) : null;
-    const keywords = extractKeywords(cleanTitle, cleanExcerpt || "");
+    // Simple auth check — only allow scheduled or manual trigger with secret
+    const url = new URL(req.url);
+    const secret = url.searchParams.get("secret");
+    const isScheduled = req.headers.get("x-netlify-event") === "schedule";
 
-    prepared.push({
-      title: cleanTitle,
-      slug,
-      summary: null,
-      excerpt: cleanExcerpt,
-      source_url: article.url,
-      image_url: article.thumbnail || null,
-      publisher: article.publisher?.name || null,
-      category,
-      keywords,
-      published_at: article.date || null,
-      source_hash: hash,
-    });
+    if (!isScheduled && secret !== SUPABASE_SERVICE_KEY.slice(0, 16)) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
-    existingHashes.add(hash);
-  }
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+    const stats = { fetched: 0, inserted: 0, duplicates: 0, errors: 0, summaries: 0 };
 
-  // 5. Generate AI summaries in batches of 10 (parallel within each batch)
-  const BATCH_SIZE = 10;
-  for (const batch of chunks(prepared, BATCH_SIZE)) {
-    const results = await Promise.allSettled(
-      batch.map(async (item) => {
-        if (!item.excerpt) return;
-        const summary = await generateSummary(item.title, item.excerpt);
-        if (summary) {
-          item.summary = summary;
-          stats.summaries++;
-        }
-      })
-    );
-    for (const r of results) {
-      if (r.status === "rejected") {
-        console.error("Summary generation failed:", r.reason);
+    // 1. Fetch trending articles
+    const trending = await fetchTrending("en");
+    const allArticles: { article: RawArticle; category: string }[] =
+      trending.map((a) => ({ article: a, category: "trending" }));
+
+    // 2. Fetch by category (with delay between calls to avoid rate limiting)
+    for (const cat of CATEGORIES) {
+      const articles = await fetchByCategory(cat.query, "en");
+      for (const a of articles) {
+        allArticles.push({ article: a, category: cat.name });
       }
+      await new Promise((r) => setTimeout(r, 300));
     }
-  }
 
-  // 6. Batch insert (Supabase upsert)
-  if (prepared.length > 0) {
-    for (let i = 0; i < prepared.length; i += 50) {
-      const chunk = prepared.slice(i, i + 50);
-      const { error } = await supabase
+    stats.fetched = allArticles.length;
+
+    // 3. Get existing hashes to avoid duplicates
+    const hashes = allArticles.map((a) => createSourceHash(a.article.url));
+    let existingHashes = new Set<string>();
+
+    if (hashes.length > 0) {
+      const { data: existing, error: hashError } = await supabase
         .from("articles")
-        .upsert(chunk, { onConflict: "slug", ignoreDuplicates: true });
+        .select("source_hash")
+        .in("source_hash", hashes);
 
-      if (error) {
-        console.error("Insert error:", error);
-        stats.errors++;
-      } else {
-        stats.inserted += chunk.length;
+      if (hashError) {
+        console.error("Hash lookup error:", hashError);
+      }
+      existingHashes = new Set((existing || []).map((e) => e.source_hash));
+    }
+
+    // 4. Prepare new articles (without summaries yet)
+    interface PreparedArticle {
+      title: string;
+      slug: string;
+      summary: string | null;
+      excerpt: string | null;
+      source_url: string;
+      image_url: string | null;
+      publisher: string | null;
+      category: string;
+      keywords: string[];
+      published_at: string | null;
+      source_hash: string;
+    }
+
+    const prepared: PreparedArticle[] = [];
+    const seenSlugs = new Set<string>();
+
+    for (const { article, category } of allArticles) {
+      if (!article.title || !article.url) continue;
+
+      const hash = createSourceHash(article.url);
+      if (existingHashes.has(hash)) {
+        stats.duplicates++;
+        continue;
+      }
+
+      let slug = generateSlug(article.title);
+      if (!slug) continue;
+
+      if (seenSlugs.has(slug)) {
+        slug = `${slug}-${hash.slice(0, 4)}`;
+      }
+      seenSlugs.add(slug);
+
+      const cleanTitle = sanitizeText(article.title);
+      const cleanExcerpt = article.excerpt ? sanitizeText(article.excerpt) : null;
+      const keywords = extractKeywords(cleanTitle, cleanExcerpt || "");
+
+      prepared.push({
+        title: cleanTitle,
+        slug,
+        summary: null,
+        excerpt: cleanExcerpt,
+        source_url: article.url,
+        image_url: article.thumbnail || null,
+        publisher: article.publisher?.name || null,
+        category,
+        keywords,
+        published_at: article.date || null,
+        source_hash: hash,
+      });
+
+      existingHashes.add(hash);
+    }
+
+    // 5. Generate AI summaries in batches of 10 (parallel within each batch)
+    const BATCH_SIZE = 10;
+    for (const batch of chunks(prepared, BATCH_SIZE)) {
+      const results = await Promise.allSettled(
+        batch.map(async (item) => {
+          if (!item.excerpt) return;
+          const summary = await generateSummary(item.title, item.excerpt);
+          if (summary) {
+            item.summary = summary;
+            stats.summaries++;
+          }
+        })
+      );
+      for (const r of results) {
+        if (r.status === "rejected") {
+          console.error("Summary generation failed:", r.reason);
+        }
       }
     }
-  }
 
-  return new Response(
-    JSON.stringify({
-      success: true,
-      stats,
-      timestamp: new Date().toISOString(),
-    }),
-    {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
+    // 6. Batch insert (Supabase upsert)
+    if (prepared.length > 0) {
+      for (let i = 0; i < prepared.length; i += 50) {
+        const chunk = prepared.slice(i, i + 50);
+        const { error } = await supabase
+          .from("articles")
+          .upsert(chunk, { onConflict: "slug", ignoreDuplicates: true });
+
+        if (error) {
+          console.error("Insert error:", error);
+          stats.errors++;
+        } else {
+          stats.inserted += chunk.length;
+        }
+      }
     }
-  );
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        stats,
+        timestamp: new Date().toISOString(),
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  } catch (err) {
+    console.error("news-ingest unhandled error:", err);
+    return new Response(
+      JSON.stringify({
+        error: "Internal server error",
+        message: err instanceof Error ? err.message : String(err),
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
 };
 
 // Netlify Scheduled Function config
