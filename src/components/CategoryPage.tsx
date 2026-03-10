@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronDown, LayoutGrid, List } from "lucide-react";
-import { searchNews, translateTexts, formatDate, type ApiArticle } from "@/lib/api";
+import { translateTexts, formatDate, type ApiArticle } from "@/lib/api";
 import { CATEGORIES, type CategoryInfo } from "@/lib/categories";
 import { articleLink } from "@/lib/link";
 import { getReadUrls, getLayout, setLayoutPref } from "@/lib/storage";
@@ -34,14 +34,16 @@ const LOAD_MORE_COUNT = 6;
 
 interface Props {
   category: CategoryInfo;
+  /** Pre-fetched articles from Supabase (SSR) */
+  initialArticles?: ApiArticle[];
 }
 
-export default function CategoryPageContent({ category }: Props) {
-  const [articles, setArticles] = useState<ApiArticle[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function CategoryPageContent({ category, initialArticles }: Props) {
+  const [articles, setArticles] = useState<ApiArticle[]>(initialArticles || []);
+  const [loading, setLoading] = useState(!initialArticles);
   const [translated, setTranslated] = useState(false);
   const [translating, setTranslating] = useState(false);
-  const [originalArticles, setOriginalArticles] = useState<ApiArticle[]>([]);
+  const [originalArticles, setOriginalArticles] = useState<ApiArticle[]>(initialArticles || []);
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
   const [readUrls, setReadUrls] = useState<Set<string>>(new Set());
   const [layout, setLayout] = useState<"grid" | "list">("grid");
@@ -59,14 +61,17 @@ export default function CategoryPageContent({ category }: Props) {
 
   useEffect(() => {
     document.title = `${category.name} - JubJub 뉴스`;
+    // If we have initialArticles from SSR, skip client-side fetch
+    if (initialArticles) return;
     async function load() {
+      const { searchNews } = await import("@/lib/api");
       const data = await searchNews(category.query);
       setArticles(data);
       setOriginalArticles(data);
       setLoading(false);
     }
     load();
-  }, [category]);
+  }, [category, initialArticles]);
 
   async function handleTranslate() {
     if (translating) return;
