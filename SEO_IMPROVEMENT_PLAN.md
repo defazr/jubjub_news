@@ -134,4 +134,4 @@ export default async function sitemap() {
 - Next.js (App Router)
 - Tailwind CSS + shadcn/ui
 - 클라이언트 사이드 API 호출 (gnews API)
-- Vercel 배포
+- Netlify 배포 (정적 빌드 + Netlify Functions)
