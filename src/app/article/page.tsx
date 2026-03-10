@@ -76,7 +76,7 @@ function ArticleRedirectContent() {
             href="/"
             className="hover:opacity-80 transition-opacity"
           >
-            <span className="text-lg font-bold tracking-tight" style={{ fontFamily: "Georgia, 'Nanum Myeongjo', serif" }}>JubJub</span>
+            <span className="font-headline text-lg tracking-tight">JubJub</span>
           </a>
           <Button variant="ghost" size="sm" asChild>
             <a href="/" className="gap-1.5">

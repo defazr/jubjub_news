@@ -27,18 +27,18 @@ export default function Sidebar({ articles }: Props) {
       {/* Most read */}
       <Card className="border-0 shadow-sm overflow-hidden py-0 gap-0">
         <CardHeader className="bg-primary/5 dark:bg-primary/10 pt-4 pb-3 px-4">
-          <CardTitle className="text-sm font-bold flex items-center gap-2">
+          <CardTitle className="text-base font-bold flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-primary" />
             많이 본 뉴스
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4">
-          <ol className="space-y-3">
+          <ol className="space-y-3.5">
             {articles.slice(0, 8).map((article, i) => (
-              <li key={i} className="flex gap-2 items-start group">
+              <li key={i} className="flex gap-2.5 items-start group">
                 <Badge
                   variant={i < 3 ? "default" : "secondary"}
-                  className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center p-0 text-xs font-bold ${
+                  className={`shrink-0 w-7 h-7 rounded-full flex items-center justify-center p-0 text-sm font-bold ${
                     i < 3 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                   }`}
                 >
@@ -46,7 +46,7 @@ export default function Sidebar({ articles }: Props) {
                 </Badge>
                 <a
                   href={articleLink(article.url, article.title, article.publisher.name)}
-                  className={`flex-1 text-sm text-card-foreground group-hover:text-primary leading-snug transition-colors line-clamp-2 ${readUrls.has(article.url) ? "opacity-60" : ""}`}
+                  className={`flex-1 text-[15px] text-card-foreground group-hover:text-primary leading-snug transition-colors line-clamp-2 ${readUrls.has(article.url) ? "opacity-60" : ""}`}
                 >
                   {article.title}
                 </a>
@@ -61,7 +61,7 @@ export default function Sidebar({ articles }: Props) {
       {/* Publisher sources */}
       <Card className="border-0 shadow-sm py-0 gap-0">
         <CardHeader className="pt-4 pb-3 px-4">
-          <CardTitle className="text-sm font-bold flex items-center gap-2">
+          <CardTitle className="text-base font-bold flex items-center gap-2">
             <Globe className="h-4 w-4 text-primary" />
             뉴스 출처
           </CardTitle>
