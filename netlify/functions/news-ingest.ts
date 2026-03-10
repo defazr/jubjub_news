@@ -13,16 +13,26 @@ export default async () => {
 
   try {
     const res = await fetch(url);
-    const data = await res.json();
-    console.log("news-ingest result:", JSON.stringify(data));
+    const text = await res.text();
+    console.log(`news-ingest response [${res.status}]:`, text.slice(0, 500));
+
+    // Try to parse as JSON, fallback to raw text
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = { error: "Non-JSON response from API route", status: res.status, body: text.slice(0, 200) };
+    }
+
     return new Response(JSON.stringify(data), {
-      status: res.status,
+      status: res.status >= 200 && res.status < 300 ? 200 : res.status,
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error("Failed to trigger news-ingest:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("Failed to trigger news-ingest:", message);
     return new Response(
-      JSON.stringify({ error: "Failed to trigger news-ingest" }),
+      JSON.stringify({ error: "Failed to trigger news-ingest", message }),
       { status: 500 }
     );
   }
