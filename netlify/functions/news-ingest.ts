@@ -4,6 +4,7 @@ const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || "";
 const RAPIDAPI_HOST = "news-api14.p.rapidapi.com";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || "";
 
 const CATEGORIES = [
   { name: "technology", query: "technology" },
@@ -85,6 +86,39 @@ function extractKeywords(title: string, excerpt: string): string[] {
     .map(([word]) => word);
 }
 
+async function generateSummary(title: string, excerpt: string): Promise<string | null> {
+  if (!ANTHROPIC_API_KEY || !excerpt) return null;
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 300,
+        messages: [
+          {
+            role: "user",
+            content: `Summarize this news article in 150-200 words. Write a clear, informative summary suitable for a news website. Focus on key facts and context.\n\nTitle: ${title}\n\nExcerpt: ${excerpt}`,
+          },
+        ],
+      }),
+    });
+
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    const text = data.content?.[0]?.text;
+    return text || null;
+  } catch {
+    return null;
+  }
+}
+
 async function fetchTrending(language: string = "en"): Promise<RawArticle[]> {
   const url = `https://${RAPIDAPI_HOST}/v2/trendings?topic=General&language=${language}`;
   try {
@@ -133,7 +167,7 @@ export default async (req: Request) => {
   }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-  const stats = { fetched: 0, inserted: 0, duplicates: 0, errors: 0 };
+  const stats = { fetched: 0, inserted: 0, duplicates: 0, errors: 0, summaries: 0 };
 
   // 1. Fetch trending articles
   const trending = await fetchTrending("en");
@@ -185,10 +219,23 @@ export default async (req: Request) => {
 
     const keywords = extractKeywords(article.title, article.excerpt || "");
 
+    // Generate AI summary
+    const cleanTitle = sanitizeText(article.title);
+    const cleanExcerpt = article.excerpt ? sanitizeText(article.excerpt) : null;
+    let summary: string | null = null;
+
+    if (cleanExcerpt) {
+      summary = await generateSummary(cleanTitle, cleanExcerpt);
+      if (summary) stats.summaries++;
+      // Small delay between AI calls to avoid rate limiting
+      await new Promise((r) => setTimeout(r, 200));
+    }
+
     toInsert.push({
-      title: sanitizeText(article.title),
+      title: cleanTitle,
       slug,
-      excerpt: article.excerpt ? sanitizeText(article.excerpt) : null,
+      summary,
+      excerpt: cleanExcerpt,
       source_url: article.url,
       image_url: article.thumbnail || null,
       publisher: article.publisher?.name || null,
