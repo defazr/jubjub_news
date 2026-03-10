@@ -16,7 +16,6 @@ import { translateTexts, formatDate, type ApiArticle } from "@/lib/api";
 import { articleLink } from "@/lib/link";
 import { SearchIcon } from "lucide-react";
 import { getReadUrls, addSearchHistory } from "@/lib/storage";
-import { supabase } from "@/lib/supabase";
 
 function InlineAd({ slot, className = "" }: { slot: string; className?: string }) {
   return (
@@ -41,13 +40,9 @@ function dbArticleToApi(a: Record<string, unknown>): ApiArticle {
 }
 
 async function searchArticlesFromDB(query: string): Promise<ApiArticle[]> {
-  const { data } = await supabase
-    .from("articles")
-    .select("*")
-    .or(`title.ilike.%${query}%,excerpt.ilike.%${query}%`)
-    .order("created_at", { ascending: false })
-    .limit(20);
-  return (data || []).map(dbArticleToApi);
+  const res = await fetch(`/api/articles?action=search&q=${encodeURIComponent(query)}&limit=20`);
+  const json = await res.json();
+  return ((json.data || []) as Record<string, unknown>[]).map(dbArticleToApi);
 }
 
 function SearchContent() {

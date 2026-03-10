@@ -1,5 +1,8 @@
-import { supabase } from "./supabase";
+import { createAdminClient } from "./supabase";
 import type { Article } from "@/types/database";
+
+// Use admin client (service_role) for server-side queries to bypass RLS
+const supabase = createAdminClient();
 
 /** Convert a DB Article to the ApiArticle shape used by UI components */
 export function articleToApiArticle(article: Article) {
