@@ -1,8 +1,13 @@
-import { createAdminClient } from "./supabase";
+import { supabase as anonClient, createAdminClient } from "./supabase";
 import type { Article } from "@/types/database";
 
-// Use admin client (service_role) for server-side queries to bypass RLS
-const supabase = createAdminClient();
+// Use admin client if service_role key is available (bypasses RLS), else anon
+function getClient() {
+  if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return createAdminClient();
+  }
+  return anonClient;
+}
 
 /** Convert a DB Article to the ApiArticle shape used by UI components */
 export function articleToApiArticle(article: Article) {
@@ -23,20 +28,22 @@ export function articleToApiArticle(article: Article) {
 }
 
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
-  const { data } = await supabase
+  const { data, error } = await getClient()
     .from("articles")
     .select("*")
     .eq("slug", slug)
     .single();
+  if (error) console.error("[articles] getArticleBySlug error:", error.message);
   return data;
 }
 
 export async function getLatestArticles(limit: number = 20): Promise<Article[]> {
-  const { data } = await supabase
+  const { data, error } = await getClient()
     .from("articles")
     .select("*")
     .order("created_at", { ascending: false })
     .limit(limit);
+  if (error) console.error("[articles] getLatestArticles error:", error.message);
   return data || [];
 }
 
@@ -44,12 +51,13 @@ export async function getArticlesByCategory(
   category: string,
   limit: number = 20
 ): Promise<Article[]> {
-  const { data } = await supabase
+  const { data, error } = await getClient()
     .from("articles")
     .select("*")
     .eq("category", category)
     .order("created_at", { ascending: false })
     .limit(limit);
+  if (error) console.error("[articles] getArticlesByCategory error:", error.message, category);
   return data || [];
 }
 
@@ -57,12 +65,13 @@ export async function getArticlesByKeyword(
   keyword: string,
   limit: number = 20
 ): Promise<Article[]> {
-  const { data } = await supabase
+  const { data, error } = await getClient()
     .from("articles")
     .select("*")
     .contains("keywords", [keyword])
     .order("created_at", { ascending: false })
     .limit(limit);
+  if (error) console.error("[articles] getArticlesByKeyword error:", error.message, keyword);
   return data || [];
 }
 
@@ -70,24 +79,25 @@ export async function getRelatedArticles(
   article: Article,
   limit: number = 5
 ): Promise<Article[]> {
-  // Find articles with overlapping keywords, excluding current article
-  const { data } = await supabase
+  const { data, error } = await getClient()
     .from("articles")
     .select("*")
     .neq("id", article.id)
     .eq("category", article.category)
     .order("created_at", { ascending: false })
     .limit(limit);
+  if (error) console.error("[articles] getRelatedArticles error:", error.message);
   return data || [];
 }
 
 export async function getPopularKeywords(limit: number = 20): Promise<string[]> {
-  const { data } = await supabase
+  const { data, error } = await getClient()
     .from("articles")
     .select("keywords")
     .order("created_at", { ascending: false })
     .limit(200);
 
+  if (error) console.error("[articles] getPopularKeywords error:", error.message);
   if (!data) return [];
 
   const freq = new Map<string, number>();
@@ -104,22 +114,24 @@ export async function getPopularKeywords(limit: number = 20): Promise<string[]> 
 }
 
 export async function getArticlesWithSummary(limit: number = 30): Promise<Article[]> {
-  const { data } = await supabase
+  const { data, error } = await getClient()
     .from("articles")
     .select("*")
     .not("summary", "is", null)
     .neq("summary", "")
     .order("created_at", { ascending: false })
     .limit(limit);
+  if (error) console.error("[articles] getArticlesWithSummary error:", error.message);
   return data || [];
 }
 
 export async function getTrendingArticles(limit: number = 10): Promise<Article[]> {
-  const { data } = await supabase
+  const { data, error } = await getClient()
     .from("articles")
     .select("*")
     .eq("category", "trending")
     .order("created_at", { ascending: false })
     .limit(limit);
+  if (error) console.error("[articles] getTrendingArticles error:", error.message);
   return data || [];
 }

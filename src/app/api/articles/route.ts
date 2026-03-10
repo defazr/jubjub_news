@@ -1,12 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase";
+import { supabase as anonClient, createAdminClient } from "@/lib/supabase";
 
-const supabase = createAdminClient();
+function getClient() {
+  if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return createAdminClient();
+  }
+  return anonClient;
+}
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const action = searchParams.get("action");
   const limit = Math.min(Number(searchParams.get("limit") || "20"), 50);
+  const supabase = getClient();
+
+  // Debug endpoint to check DB status
+  if (action === "debug") {
+    const { count, error } = await supabase
+      .from("articles")
+      .select("*", { count: "exact", head: true });
+
+    const { data: sample } = await supabase
+      .from("articles")
+      .select("title, category, created_at")
+      .order("created_at", { ascending: false })
+      .limit(3);
+
+    return NextResponse.json({
+      totalArticles: count,
+      error: error?.message || null,
+      hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || "NOT SET",
+      latestArticles: sample || [],
+    });
+  }
 
   if (action === "search") {
     const query = searchParams.get("q") || "";
