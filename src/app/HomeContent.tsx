@@ -12,7 +12,7 @@ import AdUnit from "@/components/AdUnit";
 import { type ApiArticle } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import SafeImage from "@/components/SafeImage";
-import { Sparkles, Zap } from "lucide-react";
+import { Sparkles, Zap, Newspaper } from "lucide-react";
 import TrendingTopics from "@/components/TrendingTopics";
 
 function InlineAd({ slot, className = "" }: { slot: string; className?: string }) {
@@ -110,6 +110,18 @@ export default function HomeContent({ trending, breaking, categoryData, aiArticl
 
         {/* Trending Topics */}
         <TrendingTopics keywords={popularKeywords} className="mb-6" />
+
+        {/* Daily Digest link */}
+        <a
+          href="/digest"
+          className="flex items-center gap-2 mb-6 p-3 rounded-lg border border-border hover:border-primary/30 hover:bg-accent/50 transition-all"
+        >
+          <Newspaper className="h-5 w-5 text-primary shrink-0" />
+          <div>
+            <span className="text-sm font-semibold">Daily Digest</span>
+            <span className="text-xs text-muted-foreground ml-2">Today&apos;s top stories summarized by AI</span>
+          </div>
+        </a>
 
         {/* Ad: top-home */}
         <InlineAd slot="top-home" className="my-5" />

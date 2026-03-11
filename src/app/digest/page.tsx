@@ -22,14 +22,20 @@ const CATEGORY_LABELS: Record<string, { label: string; color: string }> = {
 };
 
 export const metadata: Metadata = {
-  title: "Daily Digest - Today's Top News | Headlines Fazr",
-  description: "Your daily news digest: top stories across AI, technology, economy, and world affairs, summarized by AI.",
+  title: "Daily AI News Digest | Headlines Fazr",
+  description: "AI curated daily news digest covering technology, economy, world news and AI developments.",
   alternates: { canonical: `${SITE_URL}/digest` },
   openGraph: {
-    title: "Daily Digest - Today's Top News",
-    description: "Your daily news digest: top stories across AI, technology, economy, and world affairs.",
+    title: "Daily AI News Digest | Headlines Fazr",
+    description: "AI curated daily news digest covering technology, economy, world news and AI developments.",
     url: `${SITE_URL}/digest`,
     type: "website",
+    images: [{ url: `${SITE_URL}/Headlines_Fazr_OG_image.png`, width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Daily AI News Digest | Headlines Fazr",
+    description: "AI curated daily news digest covering technology, economy, world news and AI developments.",
   },
 };
 
