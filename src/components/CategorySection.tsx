@@ -198,7 +198,7 @@ export default function CategorySection({ categoryData, renderMidAd }: Props) {
   const secondHalf = displayCategories.slice(4);
 
   const gridClass = layout === "list"
-    ? "grid grid-cols-1 gap-4 md:gap-5"
+    ? "grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5"
     : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5";
 
   return (

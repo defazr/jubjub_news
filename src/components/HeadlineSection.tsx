@@ -37,7 +37,7 @@ export default function HeadlineSection({ articles }: Props) {
               <SafeImage
                 src={mainHeadline.thumbnail}
                 alt={mainHeadline.title}
-                className="w-full h-48 md:h-64 object-cover"
+                className="w-full h-48 md:h-56 object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6">

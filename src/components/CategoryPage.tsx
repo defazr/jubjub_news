@@ -179,28 +179,28 @@ export default function CategoryPageContent({ category, initialArticles }: Props
               </button>
             </div>
 
-            <div className={layout === "list" ? "grid grid-cols-1 gap-5" : "grid grid-cols-1 md:grid-cols-2 gap-5"}>
+            <div className={layout === "list" ? "grid grid-cols-1 gap-4" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"}>
               {visibleArticles.slice(1).map((article, i) => (
-                <Card key={i} className="border-0 shadow-sm hover:shadow-md transition-shadow py-0 gap-0">
-                  <a href={articleLink(article.url, article.title, article.publisher.name)} className="block">
+                <Card key={i} className="border-0 shadow-sm hover:shadow-md transition-shadow py-0 gap-0 overflow-hidden">
+                  <a href={articleLink(article.url, article.title, article.publisher.name)} className={layout === "list" ? "flex" : "block"}>
                     <SafeImage
                       src={article.thumbnail}
                       alt={article.title}
-                      className="w-full h-40 object-cover rounded-t-lg"
+                      className={layout === "list" ? "w-40 md:w-52 h-28 md:h-32 object-cover shrink-0" : "w-full h-40 object-cover"}
                       loading="lazy"
                     />
-                    <CardContent className="p-4">
+                    <CardContent className="p-3 md:p-4 flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
-                        <h3 className={`text-sm font-semibold text-card-foreground leading-snug mb-1.5 hover:text-primary transition-colors line-clamp-2 flex-1 ${readUrls.has(article.url) ? "opacity-60" : ""}`}>
+                        <h3 className={`text-sm font-semibold text-card-foreground leading-snug mb-1 hover:text-primary transition-colors line-clamp-2 flex-1 ${readUrls.has(article.url) ? "opacity-60" : ""}`}>
                           {article.title}
                           {readUrls.has(article.url) && <span className="ml-1 text-[10px] font-normal text-muted-foreground bg-muted px-1 py-0.5 rounded">Read</span>}
                         </h3>
-                        <div className="flex items-center gap-0.5">
+                        <div className="flex items-center gap-0.5 shrink-0">
                           <ShareButton url={article.url} title={article.title} />
                           <BookmarkButton article={article} />
                         </div>
                       </div>
-                      <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                      <p className="text-xs text-muted-foreground line-clamp-2 mb-1.5">
                         {article.excerpt}
                       </p>
                       <p className="text-xs text-muted-foreground/60">
