@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Header from "@/components/Header";
 import BreakingNewsTicker from "@/components/BreakingNewsTicker";
 import HeadlineSection from "@/components/HeadlineSection";
@@ -10,8 +9,7 @@ import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
 import ReadingProgress from "@/components/ReadingProgress";
 import AdUnit from "@/components/AdUnit";
-import TranslateButton from "@/components/TranslateButton";
-import { translateTexts, type ApiArticle } from "@/lib/api";
+import { type ApiArticle } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import SafeImage from "@/components/SafeImage";
 import { Sparkles, Zap } from "lucide-react";
@@ -34,57 +32,8 @@ interface Props {
 }
 
 export default function HomeContent({ trending, categoryData, aiArticles, popularKeywords }: Props) {
-  const [currentTrending, setCurrentTrending] = useState(trending);
-  const [currentCategories, setCurrentCategories] = useState(categoryData);
-  const [translated, setTranslated] = useState(false);
-  const [translating, setTranslating] = useState(false);
-
-  async function handleTranslate() {
-    if (translating) return;
-
-    if (translated) {
-      setCurrentTrending(trending);
-      setCurrentCategories(categoryData);
-      setTranslated(false);
-      return;
-    }
-
-    setTranslating(true);
-
-    // Translate trending headlines
-    const trendingTexts = currentTrending.slice(0, 10).flatMap((a) => [a.title, a.excerpt]);
-    const trendingResult = await translateTexts(trendingTexts, "ko");
-    const updatedTrending = currentTrending.map((a, i) => {
-      if (i >= 10) return a;
-      return {
-        ...a,
-        title: trendingResult[i * 2] || a.title,
-        excerpt: trendingResult[i * 2 + 1] || a.excerpt,
-      };
-    });
-    setCurrentTrending(updatedTrending);
-
-    // Translate category articles in parallel
-    const catEntries = Object.entries(currentCategories);
-    const catResults = await Promise.all(
-      catEntries.map(async ([cat, articles]) => {
-        const catTexts = articles.flatMap((a) => [a.title, a.excerpt]);
-        const catResult = await translateTexts(catTexts, "ko");
-        return [cat, articles.map((a, i) => ({
-          ...a,
-          title: catResult[i * 2] || a.title,
-          excerpt: catResult[i * 2 + 1] || a.excerpt,
-        }))] as [string, ApiArticle[]];
-      })
-    );
-    setCurrentCategories(Object.fromEntries(catResults));
-
-    setTranslated(true);
-    setTranslating(false);
-  }
-
-  const headlines = currentTrending.slice(0, 5);
-  const breakingTitles = currentTrending.slice(0, 4).map((a) => a.title);
+  const headlines = trending.slice(0, 5);
+  const breakingTitles = trending.slice(0, 4).map((a) => a.title);
 
   return (
     <div className="min-h-screen bg-background">
@@ -92,20 +41,10 @@ export default function HomeContent({ trending, categoryData, aiArticles, popula
       <BreakingNewsTicker items={breakingTitles} />
 
       <main className="max-w-[1200px] mx-auto px-3 md:px-4 py-5 md:py-8">
-        {/* Translate button */}
-        <div className="flex justify-end mb-4">
-          <TranslateButton
-            translated={translated}
-            translating={translating}
-            targetLabel="한국어 번역"
-            onToggle={handleTranslate}
-          />
-        </div>
-
         <HeadlineSection articles={headlines} />
 
         {/* Breaking — Latest global headlines updated by AI */}
-        {currentTrending.length > 0 && (
+        {trending.length > 0 && (
           <section className="mb-6 md:mb-8">
             <div className="flex items-center gap-2 mb-3">
               <Zap className="h-5 w-5 text-red-500 fill-red-500" />
@@ -113,7 +52,7 @@ export default function HomeContent({ trending, categoryData, aiArticles, popula
               <span className="text-xs text-muted-foreground">Latest global headlines updated by AI</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-              {currentTrending.slice(0, 5).map((article, i) => (
+              {trending.slice(0, 5).map((article, i) => (
                 <a
                   key={`breaking-${i}`}
                   href={article.url}
@@ -175,14 +114,14 @@ export default function HomeContent({ trending, categoryData, aiArticles, popula
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3">
             <CategorySection
-              categoryData={currentCategories}
+              categoryData={categoryData}
               renderMidAd={
                 <InlineAd slot="bottom-home" className="my-5" />
               }
             />
           </div>
           <div className="lg:col-span-1">
-            <Sidebar articles={currentTrending.slice(0, 10)} />
+            <Sidebar articles={trending.slice(0, 10)} />
           </div>
         </div>
       </main>

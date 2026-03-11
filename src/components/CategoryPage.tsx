@@ -6,7 +6,6 @@ import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
 import ReadingProgress from "@/components/ReadingProgress";
 import AdUnit from "@/components/AdUnit";
-import TranslateButton from "@/components/TranslateButton";
 import BookmarkButton from "@/components/BookmarkButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronDown, LayoutGrid, List } from "lucide-react";
-import { translateTexts, formatDate, type ApiArticle } from "@/lib/api";
+import { formatDate, type ApiArticle } from "@/lib/api";
 import { CATEGORIES, type CategoryInfo } from "@/lib/categories";
 import { articleLink } from "@/lib/link";
 import { getReadUrls, getLayout, setLayoutPref } from "@/lib/storage";
@@ -40,11 +39,8 @@ interface Props {
 }
 
 export default function CategoryPageContent({ category, initialArticles }: Props) {
-  const [articles, setArticles] = useState<ApiArticle[]>(initialArticles || []);
-  const [loading, setLoading] = useState(!initialArticles);
-  const [translated, setTranslated] = useState(false);
-  const [translating, setTranslating] = useState(false);
-  const [originalArticles, setOriginalArticles] = useState<ApiArticle[]>(initialArticles || []);
+  const [articles] = useState<ApiArticle[]>(initialArticles || []);
+  const [loading] = useState(!initialArticles);
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
   const [readUrls, setReadUrls] = useState<Set<string>>(new Set());
   const [layout, setLayout] = useState<"grid" | "list">("grid");
@@ -63,26 +59,6 @@ export default function CategoryPageContent({ category, initialArticles }: Props
   useEffect(() => {
     document.title = `${category.name} - Headlines Fazr`;
   }, [category]);
-
-  async function handleTranslate() {
-    if (translating) return;
-    if (translated) {
-      setArticles(originalArticles);
-      setTranslated(false);
-      return;
-    }
-    setTranslating(true);
-    const texts = articles.flatMap((a) => [a.title, a.excerpt]);
-    const result = await translateTexts(texts, "ko");
-    const updated = articles.map((a, i) => ({
-      ...a,
-      title: result[i * 2] || a.title,
-      excerpt: result[i * 2 + 1] || a.excerpt,
-    }));
-    setArticles(updated);
-    setTranslated(true);
-    setTranslating(false);
-  }
 
   function handleLoadMore() {
     setVisibleCount((prev) => prev + LOAD_MORE_COUNT);
@@ -109,12 +85,6 @@ export default function CategoryPageContent({ category, initialArticles }: Props
             </h1>
             <p className="text-sm text-muted-foreground mt-1">{category.description}</p>
           </div>
-          <TranslateButton
-            translated={translated}
-            translating={translating}
-            targetLabel="한국어 번역"
-            onToggle={handleTranslate}
-          />
         </div>
 
         <Separator className="mb-6" />
@@ -166,7 +136,7 @@ export default function CategoryPageContent({ category, initialArticles }: Props
               </Card>
             )}
 
-            <InlineAd slot="9121339058" className="mb-6" />
+            <InlineAd slot="top-topic" className="mb-6" />
 
             <div className="flex justify-end mb-3">
               <button
@@ -226,7 +196,7 @@ export default function CategoryPageContent({ category, initialArticles }: Props
               </div>
             )}
 
-            <InlineAd slot="2248808942" className="mt-6" />
+            <InlineAd slot="bottom-topic" className="mt-6" />
 
             <div className="mt-8">
               <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">

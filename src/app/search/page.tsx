@@ -6,16 +6,16 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
 import AdUnit from "@/components/AdUnit";
-import TranslateButton from "@/components/TranslateButton";
 import BookmarkButton from "@/components/BookmarkButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { translateTexts, formatDate, type ApiArticle } from "@/lib/api";
+import { formatDate, type ApiArticle } from "@/lib/api";
 import { articleLink } from "@/lib/link";
 import { SearchIcon } from "lucide-react";
 import { getReadUrls, addSearchHistory } from "@/lib/storage";
+import SafeImage from "@/components/SafeImage";
 
 function InlineAd({ slot, className = "" }: { slot: string; className?: string }) {
   return (
@@ -51,9 +51,6 @@ function SearchContent() {
 
   const [articles, setArticles] = useState<ApiArticle[]>([]);
   const [loading, setLoading] = useState(true);
-  const [translated, setTranslated] = useState(false);
-  const [translating, setTranslating] = useState(false);
-  const [originalArticles, setOriginalArticles] = useState<ApiArticle[]>([]);
   const [readUrls, setReadUrls] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -69,35 +66,13 @@ function SearchContent() {
     document.title = `"${query}" Search Results - Headlines Fazr`;
     addSearchHistory(query);
     setLoading(true);
-    setTranslated(false);
     async function load() {
       const data = await searchArticlesFromDB(query);
       setArticles(data);
-      setOriginalArticles(data);
       setLoading(false);
     }
     load();
   }, [query]);
-
-  async function handleTranslate() {
-    if (translating) return;
-    if (translated) {
-      setArticles(originalArticles);
-      setTranslated(false);
-      return;
-    }
-    setTranslating(true);
-    const texts = articles.flatMap((a) => [a.title, a.excerpt]);
-    const result = await translateTexts(texts, "ko");
-    const updated = articles.map((a, i) => ({
-      ...a,
-      title: result[i * 2] || a.title,
-      excerpt: result[i * 2 + 1] || a.excerpt,
-    }));
-    setArticles(updated);
-    setTranslated(true);
-    setTranslating(false);
-  }
 
   function handleSearch(newQuery: string) {
     window.location.href = `/search?q=${encodeURIComponent(newQuery)}`;
@@ -123,14 +98,6 @@ function SearchContent() {
               {loading ? "Searching..." : `${articles.length} results`}
             </p>
           </div>
-          {articles.length > 0 && (
-            <TranslateButton
-              translated={translated}
-              translating={translating}
-              targetLabel="한국어 번역"
-              onToggle={handleTranslate}
-            />
-          )}
         </div>
 
         <Separator className="mb-6" />
@@ -162,20 +129,18 @@ function SearchContent() {
           </div>
         ) : (
           <>
-            <InlineAd slot="9121339058" className="mb-6" />
+            <InlineAd slot="top-topic" className="mb-6" />
 
             <div className="space-y-4">
               {articles.map((article, i) => (
                 <Card key={i} className="border-0 shadow-sm hover:shadow-md transition-shadow py-0 gap-0">
                   <a href={articleLink(article.url, article.title, article.publisher.name)} className="block sm:flex">
-                    {article.thumbnail && (
-                      <img
-                        src={article.thumbnail}
-                        alt={article.title}
-                        className="w-full sm:w-48 h-32 sm:h-auto object-cover rounded-t-lg sm:rounded-t-none sm:rounded-l-lg shrink-0"
-                        loading="lazy"
-                      />
-                    )}
+                    <SafeImage
+                      src={article.thumbnail}
+                      alt={article.title}
+                      className="w-full sm:w-48 h-32 sm:h-auto object-cover rounded-t-lg sm:rounded-t-none sm:rounded-l-lg shrink-0"
+                      loading="lazy"
+                    />
                     <CardContent className="p-4 flex flex-col justify-center flex-1">
                       <div className="flex items-start justify-between gap-2">
                         <Badge variant="outline" className="mb-1.5 w-fit text-xs text-primary border-primary/30">
@@ -198,7 +163,7 @@ function SearchContent() {
               ))}
             </div>
 
-            <InlineAd slot="2248808942" className="mt-6" />
+            <InlineAd slot="bottom-topic" className="mt-6" />
           </>
         )}
       </main>

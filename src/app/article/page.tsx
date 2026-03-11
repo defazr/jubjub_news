@@ -166,7 +166,7 @@ function ArticleRedirectContent() {
         {/* 하단 Ad */}
         <div className="mb-6">
           <p className="text-[10px] text-muted-foreground/50 text-center mb-1">Ad</p>
-          <AdUnit slot="9121339058" format="rectangle" />
+          <AdUnit slot="2658112296" format="rectangle" />
         </div>
 
         <div className="text-center">

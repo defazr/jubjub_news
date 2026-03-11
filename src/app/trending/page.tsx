@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AdUnit from "@/components/AdUnit";
 import { Badge } from "@/components/ui/badge";
+import SafeImage from "@/components/SafeImage";
 import { TrendingUp, Flame, Hash } from "lucide-react";
 
 export const revalidate = 600; // ISR: 10 minutes
@@ -127,13 +128,11 @@ export default async function TrendingPage() {
                 href={article.url}
                 className="flex gap-3 p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors"
               >
-                {article.thumbnail && (
-                  <img
-                    src={article.thumbnail}
-                    alt=""
-                    className="w-20 h-14 object-cover rounded flex-shrink-0"
-                  />
-                )}
+                <SafeImage
+                  src={article.thumbnail}
+                  alt={article.title}
+                  className="w-20 h-14 object-cover rounded flex-shrink-0"
+                />
                 <div className="min-w-0">
                   <h3 className="text-sm font-medium line-clamp-2">{article.title}</h3>
                   <p className="text-xs text-muted-foreground mt-1">

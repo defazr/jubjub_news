@@ -5,14 +5,14 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
 import AdUnit from "@/components/AdUnit";
-import TranslateButton from "@/components/TranslateButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { translateTexts, formatDate, type ApiArticle } from "@/lib/api";
+import { formatDate, type ApiArticle } from "@/lib/api";
 import { articleLink } from "@/lib/link";
 import { Globe } from "lucide-react";
+import SafeImage from "@/components/SafeImage";
 
 const WORLD_TOPICS = [
   { label: "All", dbCategory: null },
@@ -50,9 +50,6 @@ export default function WorldNewsPage() {
   const [articles, setArticles] = useState<ApiArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeIdx, setActiveIdx] = useState(0);
-  const [translated, setTranslated] = useState(false);
-  const [translating, setTranslating] = useState(false);
-  const [originalArticles, setOriginalArticles] = useState<ApiArticle[]>([]);
 
   useEffect(() => {
     document.title = "World News - Headlines Fazr";
@@ -60,7 +57,6 @@ export default function WorldNewsPage() {
 
   useEffect(() => {
     setLoading(true);
-    setTranslated(false);
     async function load() {
       const topic = WORLD_TOPICS[activeIdx];
       const params = new URLSearchParams({ action: "by-category", limit: "20" });
@@ -70,34 +66,10 @@ export default function WorldNewsPage() {
       const json = await res.json();
       const mapped = ((json.data || []) as Record<string, unknown>[]).map(dbArticleToApi);
       setArticles(mapped);
-      setOriginalArticles(mapped);
       setLoading(false);
     }
     load();
   }, [activeIdx]);
-
-  async function handleTranslate() {
-    if (translating) return;
-
-    if (translated) {
-      setArticles(originalArticles);
-      setTranslated(false);
-      return;
-    }
-
-    setTranslating(true);
-    const texts = articles.flatMap((a) => [a.title, a.excerpt]);
-    const result = await translateTexts(texts, "ko");
-
-    const updated = articles.map((a, i) => ({
-      ...a,
-      title: result[i * 2] || a.title,
-      excerpt: result[i * 2 + 1] || a.excerpt,
-    }));
-    setArticles(updated);
-    setTranslated(true);
-    setTranslating(false);
-  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -118,12 +90,6 @@ export default function WorldNewsPage() {
             </h1>
             <p className="text-sm text-muted-foreground mt-1">Stay informed with the latest global news</p>
           </div>
-          <TranslateButton
-            translated={translated}
-            translating={translating}
-            targetLabel="한국어 번역"
-            onToggle={handleTranslate}
-          />
         </div>
 
         {/* Topic tabs */}
@@ -160,13 +126,11 @@ export default function WorldNewsPage() {
             {articles[0] && (
               <Card className="border-0 shadow-sm hover:shadow-md transition-shadow mb-6 overflow-hidden py-0">
                 <a href={articleLink(articles[0].url, articles[0].title, articles[0].publisher.name)} className="block md:flex">
-                  {articles[0].thumbnail && (
-                    <img
-                      src={articles[0].thumbnail}
-                      alt={articles[0].title}
-                      className="w-full md:w-1/2 h-48 md:h-64 object-cover"
-                    />
-                  )}
+                  <SafeImage
+                    src={articles[0].thumbnail}
+                    alt={articles[0].title}
+                    className="w-full md:w-1/2 h-48 md:h-64 object-cover"
+                  />
                   <CardContent className="p-5 md:p-6 flex flex-col justify-center">
                     <Badge variant="outline" className="mb-2 w-fit text-xs text-primary border-primary/30">
                       {articles[0].publisher.name}
@@ -185,21 +149,19 @@ export default function WorldNewsPage() {
               </Card>
             )}
 
-            <InlineAd slot="9121339058" className="mb-6" />
+            <InlineAd slot="top-topic" className="mb-6" />
 
             {/* Article grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {articles.slice(1).map((article, i) => (
                 <Card key={i} className="border-0 shadow-sm hover:shadow-md transition-shadow py-0 gap-0">
                   <a href={articleLink(article.url, article.title, article.publisher.name)} className="block">
-                    {article.thumbnail && (
-                      <img
-                        src={article.thumbnail}
-                        alt={article.title}
-                        className="w-full h-40 object-cover rounded-t-lg"
-                        loading="lazy"
-                      />
-                    )}
+                    <SafeImage
+                      src={article.thumbnail}
+                      alt={article.title}
+                      className="w-full h-40 object-cover rounded-t-lg"
+                      loading="lazy"
+                    />
                     <CardContent className="p-4">
                       <h3 className="text-sm font-semibold text-card-foreground leading-snug mb-1.5 hover:text-primary transition-colors line-clamp-2">
                         {article.title}
@@ -216,7 +178,7 @@ export default function WorldNewsPage() {
               ))}
             </div>
 
-            <InlineAd slot="2248808942" className="mt-6" />
+            <InlineAd slot="bottom-topic" className="mt-6" />
           </>
         )}
       </main>
