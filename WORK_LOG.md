@@ -188,5 +188,26 @@ vercel.json                         # Cron 설정 ✨ NEW
 
 ---
 
-*마지막 업데이트: 2026-03-11 세션*
+## 4. UI 안정화 (최신)
+
+**커밋**: `2f35281` - UI stabilization
+
+### 변경 내용
+- **Header 검색 아이콘 제거**: 🔍 제거, ☰ 메뉴만 남김
+  - 검색은 FullMenu 내부에서만 접근
+  - `onSearch` prop 제거, search 페이지 정리
+- **Breaking 텍스트**: "Breaking" → "BREAKING" 대문자
+- **FullMenu 스크롤**: `overscroll-behavior: contain` + body scroll lock 이미 적용됨
+
+### 최종 Header 구조
+```
+[Headlines Fazr                    ☰]   ← Top Header (56px)
+[☀️ 5° | USD/KRW 1473 | BTC 69.6K]    ← InfoBar (32px)
+[🔥 Trending  AI · Nvidia · Tesla]     ← TrendingBar (32px)
+```
+총 높이: ~120px
+
+---
+
+*마지막 업데이트: 2026-03-11 세션 (UI 안정화 완료)*
 *브랜치: claude/review-markdown-files-Pawh5*
