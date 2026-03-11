@@ -42,13 +42,15 @@ export function parseSummary(summary: string | null): { seoHeadline: string | nu
   return { seoHeadline: null, summaryText: summary };
 }
 
+const FALLBACK_IMAGE = "https://headlines.fazr.co.kr/Headlines_Fazr_OG_image.png";
+
 /** Convert a DB Article to the ApiArticle shape used by UI components */
 export function articleToApiArticle(article: Article) {
   return {
     title: article.title,
     url: `/news/${article.slug}`,
     excerpt: article.excerpt || "",
-    thumbnail: article.image_url || "",
+    thumbnail: article.image_url || FALLBACK_IMAGE,
     language: "en",
     date: article.published_at || article.created_at,
     authors: [] as string[],

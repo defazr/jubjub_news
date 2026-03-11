@@ -109,17 +109,15 @@ export default function ArticleContent({ article, relatedArticles }: Props) {
       <Separator className="mb-6" />
 
       {/* Featured image — 16:9 aspect ratio, min 1200px wide for Discover */}
-      {article.image_url && (
-        <div className="mb-6 rounded-lg overflow-hidden aspect-video">
-          <img
-            src={article.image_url}
-            alt={article.title}
-            className="w-full h-full object-cover"
-            width={1200}
-            height={675}
-          />
-        </div>
-      )}
+      <div className="mb-6 rounded-lg overflow-hidden aspect-video">
+        <img
+          src={article.image_url || "https://headlines.fazr.co.kr/Headlines_Fazr_OG_image.png"}
+          alt={article.title}
+          className="w-full h-full object-cover"
+          width={1200}
+          height={675}
+        />
+      </div>
 
       {/* AI Summary — Enhanced for Discover quality signal */}
       {(summaryText || article.summary) && (
@@ -215,13 +213,11 @@ export default function ArticleContent({ article, relatedArticles }: Props) {
               <a key={rel.id} href={`/news/${rel.slug}`}>
                 <Card className="p-4 hover:bg-accent/50 transition-colors cursor-pointer">
                   <div className="flex gap-3">
-                    {rel.image_url && (
-                      <img
-                        src={rel.image_url}
-                        alt=""
-                        className="w-20 h-14 object-cover rounded flex-shrink-0"
-                      />
-                    )}
+                    <img
+                      src={rel.image_url || "https://headlines.fazr.co.kr/Headlines_Fazr_OG_image.png"}
+                      alt=""
+                      className="w-20 h-14 object-cover rounded flex-shrink-0"
+                    />
                     <div className="min-w-0">
                       <h3 className="text-sm font-medium line-clamp-2">
                         {rel.title}
