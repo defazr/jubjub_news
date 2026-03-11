@@ -9,24 +9,57 @@ import {
   Menu,
   Sun,
   Moon,
-  Sunrise,
-  Sunset,
   Home,
   Search,
   X,
-  Globe,
   Bookmark,
   Clock,
-  AArrowUp,
-  AArrowDown,
   Sparkles,
   TrendingUp,
+  CloudSun,
+  CloudRain,
+  CloudSnow,
+  Cloud,
+  CloudLightning,
+  CloudDrizzle,
+  CloudFog,
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/categories";
 import { getSearchHistory, addSearchHistory, removeSearchHistoryItem, clearSearchHistory, getFontSize, setFontSize as saveFontSize } from "@/lib/storage";
 
 interface Props {
   onSearch?: (query: string) => void;
+}
+
+interface WeatherData {
+  temp: string;
+  icon: "sun" | "cloud" | "rain" | "snow" | "thunder" | "drizzle" | "fog" | "cloudsun";
+  city: string;
+}
+
+const WEATHER_ICONS = {
+  sun: Sun,
+  cloud: Cloud,
+  rain: CloudRain,
+  snow: CloudSnow,
+  thunder: CloudLightning,
+  drizzle: CloudDrizzle,
+  fog: CloudFog,
+  cloudsun: CloudSun,
+} as const;
+
+function mapWeatherCode(code: number): WeatherData["icon"] {
+  if (code === 0 || code === 1) return "sun";
+  if (code === 2) return "cloudsun";
+  if (code === 3) return "cloud";
+  if (code >= 51 && code <= 57) return "drizzle";
+  if (code >= 61 && code <= 67) return "rain";
+  if (code >= 71 && code <= 77) return "snow";
+  if (code >= 80 && code <= 82) return "rain";
+  if (code >= 85 && code <= 86) return "snow";
+  if (code >= 95) return "thunder";
+  if (code === 45 || code === 48) return "fog";
+  return "cloud";
 }
 
 export default function Header({ onSearch }: Props) {
@@ -41,41 +74,82 @@ export default function Header({ onSearch }: Props) {
   const [mounted, setMounted] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const [currentDate, setCurrentDate] = useState("");
-  const [timeOfDay, setTimeOfDay] = useState<"morning" | "afternoon" | "evening" | "night">("morning");
-
-  const timeMeta = {
-    morning: { label: "Good morning", Icon: Sunrise },
-    afternoon: { label: "Good afternoon", Icon: Sun },
-    evening: { label: "Good evening", Icon: Sunset },
-    night: { label: "Good night", Icon: Moon },
-  } as const;
-  const { label: timeLabel, Icon: TimeIcon } = timeMeta[timeOfDay];
+  const [weather, setWeather] = useState<WeatherData | null>(null);
 
   useEffect(() => {
     setMounted(true);
     setFontSizeState(getFontSize());
 
-    // Set date/time on client only to avoid hydration mismatch
     const now = new Date();
     const days = ["일", "월", "화", "수", "목", "금", "토"];
-    setCurrentDate(`${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 (${days[now.getDay()]})`);
-    const hour = now.getHours();
-    if (hour >= 6 && hour < 12) setTimeOfDay("morning");
-    else if (hour >= 12 && hour < 17) setTimeOfDay("afternoon");
-    else if (hour >= 17 && hour < 20) setTimeOfDay("evening");
-    else setTimeOfDay("night");
+    setCurrentDate(`${now.getMonth() + 1}/${now.getDate()} (${days[now.getDay()]})`);
 
     const handleScroll = () => {
       const y = window.scrollY;
       setScrolled((prev) => {
-        if (!prev && y > 140) return true;
-        if (prev && y < 80) return false;
+        if (!prev && y > 60) return true;
+        if (prev && y < 30) return false;
         return prev;
       });
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
+
+    // Fetch weather using Open-Meteo (free, no API key)
+    fetchWeather();
+
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  async function fetchWeather() {
+    try {
+      // Default: Seoul. Try geolocation first.
+      let lat = 37.5665;
+      let lon = 126.978;
+      let city = "Seoul";
+
+      if (navigator.geolocation) {
+        try {
+          const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 3000 })
+          );
+          lat = pos.coords.latitude;
+          lon = pos.coords.longitude;
+          city = "";
+        } catch {
+          // Use default Seoul
+        }
+      }
+
+      const res = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto`
+      );
+      if (!res.ok) return;
+      const data = await res.json();
+      const temp = Math.round(data.current.temperature_2m);
+      const code = data.current.weather_code;
+
+      // Reverse geocode city name if we used geolocation
+      if (!city) {
+        try {
+          const geoRes = await fetch(
+            `https://geocoding-api.open-meteo.com/v1/search?latitude=${lat}&longitude=${lon}&count=1&format=json&name=${lat.toFixed(1)}`
+          );
+          // Fallback: just show temp without city
+          city = "";
+        } catch {
+          city = "";
+        }
+      }
+
+      setWeather({
+        temp: `${temp}°`,
+        icon: mapWeatherCode(code),
+        city,
+      });
+    } catch {
+      // Weather fetch failed silently
+    }
+  }
 
   function changeFontSize(delta: number) {
     const newSize = Math.max(12, Math.min(22, fontSize + delta));
@@ -139,61 +213,33 @@ export default function Header({ onSearch }: Props) {
     ? searchHistory.filter((h) => h.toLowerCase().includes(searchQuery.toLowerCase()))
     : searchHistory;
 
+  const WeatherIcon = weather ? WEATHER_ICONS[weather.icon] : null;
+
   return (
     <>
       <header className="relative z-50">
-        {/* Top info bar */}
-        <div className="bg-muted/50 border-b border-border">
-          <div className="max-w-[1200px] mx-auto px-4 py-1.5 flex justify-between items-center text-xs text-muted-foreground">
-            <div className="flex items-center gap-3">
-              {mounted && currentDate && <span>{currentDate}</span>}
-              {mounted && (
-                <span className="hidden sm:flex items-center gap-1 text-primary/70">
-                  <TimeIcon className="h-3 w-3" />
-                  {timeLabel}
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-3">
-              <a href="/bookmarks" className="hover:text-primary transition-colors flex items-center gap-1">
-                <Bookmark className="h-3 w-3" />
-                Saved
-              </a>
-              <a href="/ai" className="hover:text-primary transition-colors flex items-center gap-1">
-                <Sparkles className="h-3 w-3" />
-                AI News
-              </a>
-              <a href="/trending" className="hover:text-primary transition-colors flex items-center gap-1">
-                <TrendingUp className="h-3 w-3" />
-                Trending
-              </a>
-              <span className="flex items-center gap-0.5 border-l border-border pl-3">
-                <button onClick={() => changeFontSize(-1)} className="hover:text-foreground transition-colors p-0.5" title="글자 줄이기">
-                  <AArrowDown className="h-3.5 w-3.5" />
-                </button>
-                <button onClick={() => changeFontSize(1)} className="hover:text-foreground transition-colors p-0.5" title="글자 키우기">
-                  <AArrowUp className="h-3.5 w-3.5" />
-                </button>
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Logo area - hides on scroll */}
+        {/* Top bar: Logo + Date/Weather */}
         <div
-          className={`bg-card border-b border-border overflow-hidden ${
+          className={`bg-card border-b border-border transition-all duration-300 ${
             scrolled ? "hidden" : ""
           }`}
         >
-          <div className="max-w-[1200px] mx-auto px-4 py-4 md:py-6 text-center">
-            <a href="/" className="inline-block">
-              <h1 className="font-headline text-3xl md:text-4xl tracking-tight">
-                Headlines Fazr
-              </h1>
+          <div className="max-w-[1200px] mx-auto px-4 h-14 flex items-center justify-between">
+            <a href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <span className="font-headline text-xl md:text-2xl tracking-tight">Headlines Fazr</span>
             </a>
-            <p className="text-sm md:text-base text-muted-foreground mt-1.5">
-              Global News Curated by AI
-            </p>
+
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              {mounted && weather && WeatherIcon && (
+                <span className="flex items-center gap-1">
+                  <WeatherIcon className="h-3.5 w-3.5 text-primary/70" />
+                  <span className="font-medium text-foreground/70">{weather.temp}</span>
+                </span>
+              )}
+              {mounted && currentDate && (
+                <span>{currentDate}</span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -204,9 +250,9 @@ export default function Header({ onSearch }: Props) {
           }`}
         >
           <div className="max-w-[1200px] mx-auto px-4">
-            <div className="flex items-center justify-between h-12">
+            <div className="flex items-center justify-between h-11">
               {/* Mobile: hamburger */}
-              <div className="flex md:hidden items-center gap-2">
+              <div className="flex md:hidden items-center">
                 <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                   <SheetTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-9 w-9">
@@ -264,9 +310,15 @@ export default function Header({ onSearch }: Props) {
               {scrolled && (
                 <a
                   href="/"
-                  className="hover:opacity-80 transition-opacity hidden md:block"
+                  className="hover:opacity-80 transition-opacity hidden md:flex items-center gap-2"
                 >
                   <span className="font-headline text-lg tracking-tight">Headlines Fazr</span>
+                  {mounted && weather && WeatherIcon && (
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground ml-1">
+                      <WeatherIcon className="h-3 w-3 text-primary/70" />
+                      <span className="text-foreground/70">{weather.temp}</span>
+                    </span>
+                  )}
                 </a>
               )}
 
@@ -326,7 +378,7 @@ export default function Header({ onSearch }: Props) {
               </ul>
 
               {/* Right actions */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0.5">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -429,7 +481,7 @@ export default function Header({ onSearch }: Props) {
       </header>
 
       {/* Spacer when nav is fixed */}
-      {scrolled && <div className="h-12" />}
+      {scrolled && <div className="h-11" />}
     </>
   );
 }
