@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import SafeImage from "@/components/SafeImage";
 import type { Article } from "@/types/database";
 
 function formatDate(dateStr: string): string {
@@ -24,13 +25,11 @@ export default function TopicArticleList({ articles }: { articles: Article[] }) 
       {articles.map((article) => (
         <a key={article.id} href={`/news/${article.slug}`}>
           <Card className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer h-full">
-            {article.image_url && (
-              <img
-                src={article.image_url}
-                alt=""
-                className="w-full h-40 object-cover"
-              />
-            )}
+            <SafeImage
+              src={article.image_url}
+              alt={article.title}
+              className="w-full h-40 object-cover"
+            />
             <div className="p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Badge variant="secondary" className="capitalize text-xs">

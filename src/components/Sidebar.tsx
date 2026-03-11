@@ -72,7 +72,7 @@ export default function Sidebar({ articles }: Props) {
             {[...new Set(articles.map((a) => a.publisher.name).filter(Boolean))]
               .slice(0, 8)
               .map((name, i) => (
-                <Badge key={i} variant="outline" className="text-xs font-normal">
+                <Badge key={i} variant="outline" className="text-xs font-normal max-w-[200px] truncate">
                   {name}
                 </Badge>
               ))}
