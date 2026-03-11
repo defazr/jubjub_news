@@ -51,7 +51,7 @@ export default function HomeContent({ trending, categoryData, aiArticles, popula
 
     // Translate trending headlines
     const trendingTexts = currentTrending.slice(0, 10).flatMap((a) => [a.title, a.excerpt]);
-    const trendingResult = await translateTexts(trendingTexts, "en");
+    const trendingResult = await translateTexts(trendingTexts, "ko");
     const updatedTrending = currentTrending.map((a, i) => {
       if (i >= 10) return a;
       return {
@@ -67,7 +67,7 @@ export default function HomeContent({ trending, categoryData, aiArticles, popula
     const catResults = await Promise.all(
       catEntries.map(async ([cat, articles]) => {
         const catTexts = articles.flatMap((a) => [a.title, a.excerpt]);
-        const catResult = await translateTexts(catTexts, "en");
+        const catResult = await translateTexts(catTexts, "ko");
         return [cat, articles.map((a, i) => ({
           ...a,
           title: catResult[i * 2] || a.title,
