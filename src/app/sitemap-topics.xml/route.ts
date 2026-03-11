@@ -2,12 +2,32 @@ import { getPopularKeywords } from "@/lib/articles";
 
 const SITE_URL = "https://headlines.fazr.co.kr";
 
+// Core SEO keywords — always included in sitemap
+const CORE_KEYWORDS = [
+  "ai", "chatgpt", "openai", "nvidia", "apple", "tesla", "microsoft",
+  "google", "meta", "amazon", "bitcoin", "crypto", "startup",
+  "semiconductor", "iphone", "android", "robot", "space", "quantum", "gpu",
+  "gpt5", "gemini", "copilot", "deepseek", "anthropic", "samsung",
+  "economy", "climate", "cybersecurity", "5g", "ev", "cloud",
+];
+
 export const revalidate = 3600; // Revalidate hourly
 
 export async function GET() {
-  const keywords = await getPopularKeywords(200);
+  const dbKeywords = await getPopularKeywords(200);
 
-  const urls = keywords
+  // Merge: DB keywords + core keywords (deduplicated, case-insensitive)
+  const seen = new Set<string>();
+  const allKeywords: string[] = [];
+  for (const kw of [...dbKeywords, ...CORE_KEYWORDS]) {
+    const lower = kw.toLowerCase();
+    if (!seen.has(lower)) {
+      seen.add(lower);
+      allKeywords.push(kw);
+    }
+  }
+
+  const urls = allKeywords
     .map(
       (kw) => `  <url>
     <loc>${SITE_URL}/topic/${encodeURIComponent(kw)}</loc>
