@@ -116,12 +116,12 @@ export default function RootLayout({
           {children}
         </ThemeProvider>
         <AdSenseScript />
-        {/* Google Analytics 4 */}
+        {/* Google Analytics 4 — lazyOnload to avoid preload warning */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-Z5K4EG4DNE"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
         />
-        <Script id="ga4-init" strategy="afterInteractive">{`
+        <Script id="ga4-init" strategy="lazyOnload">{`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
