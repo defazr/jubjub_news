@@ -76,7 +76,7 @@ function ArticleRedirectContent() {
             href="/"
             className="hover:opacity-80 transition-opacity"
           >
-            <span className="font-headline text-lg tracking-tight">JubJub</span>
+            <span className="font-headline text-lg tracking-tight">Headlines Fazr</span>
           </a>
           <Button variant="ghost" size="sm" asChild>
             <a href="/" className="gap-1.5">
@@ -171,13 +171,13 @@ function ArticleRedirectContent() {
 
         <div className="text-center">
           <Button variant="link" asChild className="text-muted-foreground">
-            <a href="/">Back to JubJub News</a>
+            <a href="/">Back to Headlines Fazr</a>
           </Button>
         </div>
       </main>
 
       <footer className="bg-card border-t border-border text-muted-foreground/60 text-xs text-center py-4 mt-8">
-        &copy; 2026 JubJub News. All rights reserved.
+        &copy; 2026 Headlines Fazr. All rights reserved.
       </footer>
     </div>
   );

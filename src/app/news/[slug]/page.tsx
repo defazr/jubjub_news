@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!article) return { title: "기사를 찾을 수 없습니다" };
 
   const description = article.summary || article.excerpt || "";
-  const ogImage = article.image_url || "https://headlines.fazr.co.kr/og-default.png";
+  const ogImage = article.image_url || "https://headlines.fazr.co.kr/Headlines_Fazr_OG_image.png";
 
   return {
     title: article.title,

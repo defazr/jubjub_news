@@ -180,11 +180,11 @@ export default function Header({ onSearch }: Props) {
           <div className="max-w-[1200px] mx-auto px-4 py-4 md:py-6 text-center">
             <a href="/" className="inline-block">
               <h1 className="font-headline text-3xl md:text-4xl tracking-tight">
-                JubJub News
+                Headlines Fazr
               </h1>
             </a>
             <p className="text-sm md:text-base text-muted-foreground mt-1.5">
-              AI Curated Global News · Updated every 4 hours
+              Global News Curated by AI
             </p>
           </div>
         </div>
@@ -208,8 +208,8 @@ export default function Header({ onSearch }: Props) {
                   <SheetContent side="left" className="w-72 p-0">
                     <SheetTitle className="sr-only">메뉴</SheetTitle>
                     <div className="p-5 border-b border-border">
-                      <span className="font-headline text-xl tracking-tight">JubJub News</span>
-                      <p className="text-xs text-muted-foreground mt-1">AI Curated Global News</p>
+                      <span className="font-headline text-xl tracking-tight">Headlines Fazr</span>
+                      <p className="text-xs text-muted-foreground mt-1">Global News Curated by AI</p>
                     </div>
                     <div className="py-2">
                       <a
@@ -258,7 +258,7 @@ export default function Header({ onSearch }: Props) {
                   href="/"
                   className="hover:opacity-80 transition-opacity hidden md:block"
                 >
-                  <span className="font-headline text-lg tracking-tight">JubJub</span>
+                  <span className="font-headline text-lg tracking-tight">Headlines Fazr</span>
                 </a>
               )}
 
