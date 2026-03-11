@@ -10,7 +10,7 @@ import {
 import { HOMEPAGE_CATEGORIES } from "@/lib/categories";
 import HomeContent from "./HomeContent";
 
-export const revalidate = 300; // ISR: revalidate every 5 minutes
+export const revalidate = 60; // ISR: revalidate every 1 minute
 
 export default async function Home() {
   const [trendingRaw, latestRaw, aiRaw, breakingRaw, popularKeywords, ...categoryResults] = await Promise.all([
