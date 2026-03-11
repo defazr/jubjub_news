@@ -2,6 +2,18 @@
 
 const FALLBACK = "/Headlines_Fazr_OG_image.png";
 
+/** Strip query params from external image URLs (fixes CDN 422 errors) */
+function sanitizeImageUrl(url: string): string {
+  if (!url || url.startsWith("/")) return url;
+  try {
+    const u = new URL(url);
+    if (u.search) return u.origin + u.pathname;
+  } catch {
+    // not a valid URL, return as-is
+  }
+  return url;
+}
+
 function isFallback(el: HTMLImageElement) {
   return el.src === window.location.origin + FALLBACK || el.src === FALLBACK;
 }
@@ -24,7 +36,7 @@ export default function SafeImage({
   className?: string;
   loading?: "lazy" | "eager";
 }) {
-  const imgSrc = src || FALLBACK;
+  const imgSrc = src ? sanitizeImageUrl(src) : FALLBACK;
 
   return (
     <img
