@@ -44,6 +44,16 @@ export function parseSummary(summary: string | null): { seoHeadline: string | nu
 
 const FALLBACK_IMAGE = "https://headlines.fazr.co.kr/Headlines_Fazr_OG_image.png";
 
+/** Remove duplicate articles by source_url, keeping the first (newest) occurrence */
+function dedup(articles: Article[]): Article[] {
+  const seen = new Set<string>();
+  return articles.filter((a) => {
+    if (seen.has(a.source_url)) return false;
+    seen.add(a.source_url);
+    return true;
+  });
+}
+
 /** Convert a DB Article to the ApiArticle shape used by UI components */
 export function articleToApiArticle(article: Article) {
   return {
@@ -79,7 +89,7 @@ export async function getLatestArticles(limit: number = 20): Promise<Article[]> 
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) console.error("[articles] getLatestArticles error:", error.message);
-  return data || [];
+  return dedup(data || []);
 }
 
 export async function getArticlesByCategory(
@@ -93,7 +103,7 @@ export async function getArticlesByCategory(
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) console.error("[articles] getArticlesByCategory error:", error.message, category);
-  return data || [];
+  return dedup(data || []);
 }
 
 export async function getArticlesByKeyword(
@@ -107,7 +117,7 @@ export async function getArticlesByKeyword(
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) console.error("[articles] getArticlesByKeyword error:", error.message, keyword);
-  return data || [];
+  return dedup(data || []);
 }
 
 export async function getRelatedArticles(
@@ -122,7 +132,7 @@ export async function getRelatedArticles(
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) console.error("[articles] getRelatedArticles error:", error.message);
-  return data || [];
+  return dedup(data || []);
 }
 
 export async function getPopularKeywords(limit: number = 20): Promise<string[]> {
@@ -157,7 +167,7 @@ export async function getArticlesWithSummary(limit: number = 30): Promise<Articl
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) console.error("[articles] getArticlesWithSummary error:", error.message);
-  return data || [];
+  return dedup(data || []);
 }
 
 export async function getTrendingArticles(limit: number = 10): Promise<Article[]> {
@@ -168,7 +178,7 @@ export async function getTrendingArticles(limit: number = 10): Promise<Article[]
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) console.error("[articles] getTrendingArticles error:", error.message);
-  return data || [];
+  return dedup(data || []);
 }
 
 /** Get popular keywords grouped by category */
