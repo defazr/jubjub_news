@@ -1,24 +1,74 @@
-# Headlines Fazr - Claude 작업 지시서
+# Headlines Fazr - SSOT 운영 지시서 v1.1
 
 ## 프로젝트 정보
 
 - **사이트**: https://headlines.fazr.co.kr
 - **아키텍처**: RapidAPI → /api/news-ingest → Claude AI summary → Supabase → Next.js ISR
 - **상태**: 개발 완료. 운영 단계.
+- **완성도**: 95%
+- **개발 단계**: 사실상 종료. 이제 필요한 것은 뉴스 축적 + Discover 진입.
 
-## 현재 시스템 상태 (2026-03-11 기준)
+## 현재 시스템 상태 (확인 완료)
 
 | 영역 | 상태 |
 |------|------|
 | 뉴스 수집 | 정상 (/api/news-ingest) |
 | AI 요약 | 정상 (Claude Haiku) |
 | 번역 | 정상 (/api/translate) |
-| DB | articles 231+ / summary backfill 필요 |
+| DB | articles 231+ |
 | SEO 메타 | 정상 (og, twitter, canonical) |
 | sitemap | 정상 (sitemap.xml, sitemap-news.xml, sitemap-topics.xml) |
 | robots.txt | 정상 |
 | 광고 | 정상 (AdSense - top/mid/bottom) |
 | 검색엔진 등록 | 완료 (Google, Naver, Bing) |
+| TypeScript error | 0 |
+| Hydration error | 해결 |
+| Image CDN error | 해결 |
+| 캐시 | 안정 |
+
+### 뉴스 파이프라인 상태
+
+```
+fetched: 217  inserted: 31  duplicates: 186  errors: 0  summaries: 31
+```
+
+- 예상 기사 생산량: 하루 150~250 기사
+- 정상 운영 패턴: inserted 20~40, duplicates 100+, errors 0
+
+## 이미 해결된 문제 (수정 금지)
+
+### 1. React Hydration 오류
+
+- **문제**: React error #418
+- **원인**: InfoBar 날씨/client 데이터 mismatch
+- **해결**: mounted guard + skeleton placeholder 적용
+- **파일**: `InfoBar.tsx`
+- **수정 금지**
+
+### 2. CDN 이미지 422 오류
+
+- **문제**: 422 Unprocessable Content (contentstack CDN resize 파라미터 미지원)
+- **해결**: `sanitizeImageUrl()` query parameter 제거
+- **파일**: `SafeImage.tsx`
+- **로직**: 1차 sanitize URL → 2차 query 제거 → 3차 fallback OG 이미지
+- **수정 금지**
+
+### 3. Image fallback
+
+- **구현**: naturalWidth 체크 + onError fallback
+- **fallback**: `/Headlines_Fazr_OG_image.png`
+- **수정 금지**
+
+## 캐시 정책 (확정, 수정 금지)
+
+| 페이지 | 캐시 |
+|--------|------|
+| homepage | 60s |
+| topic | 300s |
+| article | 3600s |
+| digest | 3600s |
+
+- Service Worker: HTML cache 없음, static assets cache-first
 
 ## 페이지 구조
 
@@ -40,10 +90,17 @@
 | src/app/news/[slug]/page.tsx | 기사 SEO 페이지 |
 | src/app/ai/AiArticleList.tsx | AI 기사 리스트 (mid-ai 광고 포함) |
 | src/components/AdUnit.tsx | AdSense 광고 컴포넌트 (SLOT_MAP) |
+| src/components/SafeImage.tsx | 이미지 fallback + sanitize |
+| src/components/InfoBar.tsx | 날씨/환율/BTC (hydration guard) |
 | src/app/api/backfill-summaries/route.ts | AI summary backfill API |
 | src/app/api/news-ingest/route.ts | 뉴스 수집 API |
 | src/app/sitemap-topics.xml/route.ts | Topic sitemap (CORE_KEYWORDS + DB) |
 | src/lib/categories.ts | 카테고리 매핑 |
+
+## 뉴스 ingest 구조 (수정 금지)
+
+- **cron**: 1시간마다 `/api/news-ingest?summarize=true`
+- **동작**: news api fetch → duplicate filter → AI summary → DB insert
 
 ## Backfill 실행 방법
 
@@ -62,7 +119,9 @@ GET /api/backfill-summaries?secret=INGEST_SECRET&limit=50
 - keywords contains OR title ILIKE 방식
 - category 기반 필터 아님
 
-## 광고 슬롯 매핑 (AdUnit.tsx)
+## 광고 정책
+
+### 슬롯 매핑 (AdUnit.tsx)
 
 | 슬롯 | AdSense ID |
 |------|-----------|
@@ -76,6 +135,20 @@ GET /api/backfill-summaries?secret=INGEST_SECRET&limit=50
 | bottom-home | 2248808942 |
 | top-topic | 9121339058 |
 | bottom-topic | 2248808942 |
+
+### 광고 규칙
+
+- **금지**: header 아래 광고
+- **허용**: article top / mid / bottom
+
+## UI 구조 (확정)
+
+```
+Header:  Headlines Fazr          ☰
+InfoBar: weather  usd/krw  btc
+TrendingBar: 🔥 Trending  AI · Nvidia · Tesla
+높이: 120px
+```
 
 ## 카테고리 매핑 (검토 필요)
 
@@ -97,6 +170,12 @@ GET /api/backfill-summaries?secret=INGEST_SECRET&limit=50
 3. **API 구조 변경 금지**
 4. **DB schema 변경 금지**
 
+## 수정 금지 파일
+
+- `src/lib/articles.ts`
+- `src/app/api/news-ingest/route.ts`
+- Supabase schema
+
 ## Topic Sitemap 기본 키워드
 
 sitemap-topics.xml에 항상 포함되는 키워드:
@@ -108,9 +187,49 @@ anthropic, samsung, economy, climate, cybersecurity, 5g, ev, cloud
 ```
 + DB에서 자동 추출되는 인기 키워드 (최대 200개)
 
-## 다음 단계 (트래픽 성장)
+## Discover 준비 상태
 
-1. Topic 페이지 트래픽 확장 (Google Discover + Google News)
-2. 자동 키워드 생성 (기사 keywords 기반)
-3. Trending Topics 확장
+| 항목 | 상태 |
+|------|------|
+| JSON-LD | 완료 |
+| og:image 1200+ | 완료 |
+| sitemap | 완료 |
+| RSS | 완료 |
+| topic pages | 완료 |
+| digest | 완료 |
+| breaking news | 완료 |
+| trending | 완료 |
+
+- **준비도**: 95%
+- **Discover 테스트 가능 시점**: 기사 200~400개 축적 시 (약 7~10일)
+
+## 다음 안정화 작업 (필수)
+
+### 1. ingest 상태 확인 API
+
+- **새 API**: `/api/news-status`
+- **return**: `{ lastIngest: timestamp, lastInserted: number, articles24h: number }`
+- **Supabase query**:
+  - 최근 기사: `ORDER BY created_at DESC LIMIT 1`
+  - 24시간 기사 수: `created_at > now() - interval '24 hours'`
+- **목적**: 운영 상태 모니터링
+
+### 2. ingest 로그 추가
+
+- **파일**: `api/news-ingest/route.ts`
+- **추가**: `console.log("[INGEST]", { fetched, inserted, duplicates, summaries })`
+- **목적**: 디버깅
+
+### 3. ingest 보안 강화
+
+- **문제**: secret 노출 가능
+- **수정**: `.env` INGEST_SECRET 사용
+- **요청**: `/api/news-ingest?secret=ENV_SECRET`
+- **secret 없으면**: status 404
+
+## 다음 단계 (추후 작업, 지금은 진행하지 않음)
+
+1. Discover 카드 개선
+2. Topic cluster 확장
+3. Digest 확장
 4. Google News 정식 신청
