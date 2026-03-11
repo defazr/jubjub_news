@@ -139,6 +139,24 @@ export default function ArticleContent({ article, relatedArticles }: Props) {
         </div>
       )}
 
+      {/* More Topics — SEO internal linking */}
+      {article.keywords && article.keywords.length > 0 && (
+        <section className="bg-muted/50 rounded-lg p-4 mb-6">
+          <h2 className="text-sm font-semibold mb-2">More Topics</h2>
+          <div className="flex flex-wrap gap-2">
+            {article.keywords.map((kw) => (
+              <a
+                key={kw}
+                href={`/topic/${encodeURIComponent(kw)}`}
+                className="text-sm text-primary hover:underline"
+              >
+                {kw}
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+
       <Separator className="my-6" />
 
       {/* Related articles */}

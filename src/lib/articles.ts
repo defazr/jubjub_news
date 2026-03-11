@@ -92,7 +92,7 @@ export async function getPopularKeywords(limit: number = 20): Promise<string[]> 
     .from("articles")
     .select("keywords")
     .order("created_at", { ascending: false })
-    .limit(200);
+    .limit(500);
 
   if (error) console.error("[articles] getPopularKeywords error:", error.message);
   if (!data) return [];
