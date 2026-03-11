@@ -166,6 +166,18 @@ export const maxDuration = 60;
 
 export async function GET(req: NextRequest) {
   try {
+    // Debug mode - check config without auth (placed first for diagnostics)
+    const action = req.nextUrl.searchParams.get("action");
+    if (action === "status") {
+      return NextResponse.json({
+        hasSupabaseUrl: !!SUPABASE_URL,
+        hasSupabaseKey: !!SUPABASE_SERVICE_KEY,
+        hasRapidApiKey: !!RAPIDAPI_KEY,
+        hasAnthropicKey: !!ANTHROPIC_API_KEY,
+        supabaseUrl: SUPABASE_URL ? SUPABASE_URL.slice(0, 30) + "..." : "NOT SET",
+      });
+    }
+
     // Validate required environment variables
     if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
       return NextResponse.json(
@@ -179,18 +191,6 @@ export async function GET(req: NextRequest) {
         { error: "Server misconfiguration: missing RAPIDAPI_KEY" },
         { status: 500 }
       );
-    }
-
-    // Debug mode - check config without running ingest
-    const action = req.nextUrl.searchParams.get("action");
-    if (action === "status") {
-      return NextResponse.json({
-        hasSupabaseUrl: !!SUPABASE_URL,
-        hasSupabaseKey: !!SUPABASE_SERVICE_KEY,
-        hasRapidApiKey: !!RAPIDAPI_KEY,
-        hasAnthropicKey: !!ANTHROPIC_API_KEY,
-        supabaseUrl: SUPABASE_URL ? SUPABASE_URL.slice(0, 30) + "..." : "NOT SET",
-      });
     }
 
     // Auth check

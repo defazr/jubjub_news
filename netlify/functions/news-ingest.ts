@@ -2,26 +2,36 @@
 const SITE_URL = process.env.URL || process.env.DEPLOY_URL || "https://headlines.fazr.co.kr";
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
-export default async () => {
+export default async (req: Request) => {
+  console.log("news-ingest function triggered");
+  console.log("SITE_URL:", SITE_URL);
+  console.log("Has SUPABASE_SERVICE_KEY:", !!SUPABASE_SERVICE_KEY);
+
   if (!SITE_URL) {
-    console.error("No SITE_URL available");
-    return new Response(JSON.stringify({ error: "No site URL" }), { status: 500 });
+    return new Response(JSON.stringify({ error: "No site URL" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const secret = SUPABASE_SERVICE_KEY.slice(0, 16);
   const url = `${SITE_URL}/api/news-ingest?secret=${secret}`;
+  console.log("Calling:", url.replace(secret, "***"));
 
   try {
     const res = await fetch(url);
     const text = await res.text();
     console.log(`news-ingest response [${res.status}]:`, text.slice(0, 500));
 
-    // Try to parse as JSON, fallback to raw text
     let data;
     try {
       data = JSON.parse(text);
     } catch {
-      data = { error: "Non-JSON response from API route", status: res.status, body: text.slice(0, 200) };
+      data = {
+        error: "Non-JSON response from API route",
+        status: res.status,
+        body: text.slice(0, 200),
+      };
     }
 
     return new Response(JSON.stringify(data), {
@@ -33,7 +43,7 @@ export default async () => {
     console.error("Failed to trigger news-ingest:", message);
     return new Response(
       JSON.stringify({ error: "Failed to trigger news-ingest", message }),
-      { status: 500 }
+      { status: 500, headers: { "Content-Type": "application/json" } },
     );
   }
 };
