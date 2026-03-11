@@ -1,20 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
-
 export async function POST(req: NextRequest) {
   try {
-    const { texts, targetLang } = await req.json();
+    // Read env var at request time, not module load time
+    const apiKey = process.env.GEMINI_API_KEY;
 
-    if (!texts || !Array.isArray(texts) || texts.length === 0) {
-      return NextResponse.json({ error: "texts array required" }, { status: 400 });
-    }
-
-    if (!GEMINI_API_KEY) {
+    if (!apiKey) {
+      console.error("GEMINI_API_KEY is not set. Available env keys:", Object.keys(process.env).filter(k => k.includes("GEMINI") || k.includes("gemini")));
       return NextResponse.json(
         { error: "GEMINI_API_KEY not configured" },
         { status: 500 }
       );
+    }
+
+    const { texts, targetLang } = await req.json();
+
+    if (!texts || !Array.isArray(texts) || texts.length === 0) {
+      return NextResponse.json({ error: "texts array required" }, { status: 400 });
     }
 
     const langName = targetLang === "ko" ? "Korean" : "English";
@@ -25,7 +27,7 @@ export async function POST(req: NextRequest) {
     const prompt = `Translate the following news headlines and excerpts to ${langName}. Keep the same numbered format. Only output translations, no explanations.\n\n${numbered}`;
 
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
