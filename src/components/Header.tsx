@@ -1,15 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
-import {
-  Menu,
-  Sun,
-  Moon,
-  Search,
-  Bookmark,
-} from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import InfoBar from "@/components/InfoBar";
 import TrendingBar from "@/components/TrendingBar";
 import FullMenu from "@/components/FullMenu";
@@ -22,12 +15,8 @@ interface Props {
 export default function Header({ onSearch }: Props) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-
     const handleScroll = () => {
       const y = window.scrollY;
       setScrolled((prev) => {
@@ -43,21 +32,16 @@ export default function Header({ onSearch }: Props) {
   return (
     <>
       <header className="relative z-50">
-        {/* Top Header: Logo + Actions */}
-        <div
-          className={`bg-card border-b border-border ${
-            scrolled ? "hidden" : ""
-          }`}
-        >
+        {/* Top Header: Logo + Search + Menu */}
+        <div className={`bg-card border-b border-border ${scrolled ? "hidden" : ""}`}>
           <div className="max-w-[1200px] mx-auto px-4 h-14 flex items-center justify-between">
-            {/* Logo */}
             <a href="/" className="hover:opacity-80 transition-opacity">
               <span className="font-headline text-xl md:text-2xl tracking-tight">
                 Headlines Fazr
               </span>
             </a>
 
-            {/* Desktop nav (visible when not scrolled) */}
+            {/* Desktop nav */}
             <nav className="hidden lg:flex items-center gap-1">
               {CATEGORIES.slice(0, 6).map((cat) => (
                 <a
@@ -70,8 +54,8 @@ export default function Header({ onSearch }: Props) {
               ))}
             </nav>
 
-            {/* Right actions */}
-            <div className="flex items-center gap-0.5">
+            {/* Right: Search + Menu only (Bloomberg style) */}
+            <div className="flex items-center gap-1">
               <Button
                 variant="ghost"
                 size="icon"
@@ -86,27 +70,6 @@ export default function Header({ onSearch }: Props) {
               >
                 <Search className="h-4 w-4" />
               </Button>
-
-              <Button variant="ghost" size="icon" className="h-9 w-9" asChild>
-                <a href="/bookmarks">
-                  <Bookmark className="h-4 w-4" />
-                </a>
-              </Button>
-
-              {mounted && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9"
-                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                >
-                  {theme === "dark" ? (
-                    <Sun className="h-4 w-4" />
-                  ) : (
-                    <Moon className="h-4 w-4" />
-                  )}
-                </Button>
-              )}
 
               <Button
                 variant="ghost"
@@ -138,7 +101,6 @@ export default function Header({ onSearch }: Props) {
                 <span className="font-headline text-lg tracking-tight">Headlines Fazr</span>
               </a>
 
-              {/* Desktop categories in sticky */}
               <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
                 {CATEGORIES.slice(0, 6).map((cat) => (
                   <a
@@ -166,21 +128,6 @@ export default function Header({ onSearch }: Props) {
                 >
                   <Search className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                  <a href="/bookmarks">
-                    <Bookmark className="h-4 w-4" />
-                  </a>
-                </Button>
-                {mounted && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                  >
-                    {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
-                  </Button>
-                )}
                 <Button
                   variant="ghost"
                   size="icon"
@@ -195,10 +142,8 @@ export default function Header({ onSearch }: Props) {
         )}
       </header>
 
-      {/* Spacer when nav is fixed */}
       {scrolled && <div className="h-11" />}
 
-      {/* Full Screen Menu */}
       <FullMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
     </>
   );

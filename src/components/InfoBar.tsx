@@ -10,15 +10,16 @@ import {
   CloudDrizzle,
   CloudFog,
   CloudSun,
-  TrendingUp,
   DollarSign,
   Bitcoin,
+  TrendingUp,
+  TrendingDown,
 } from "lucide-react";
 
 interface MarketData {
   weather: { temp: number; icon: string; city: string } | null;
-  usdKrw: number | null;
-  btcUsd: number | null;
+  usdKrw: { rate: number; prevRate: number | null } | null;
+  btcUsd: { price: number; change24h: number | null } | null;
 }
 
 const WEATHER_ICONS: Record<string, typeof Sun> = {
@@ -46,8 +47,8 @@ function mapWeatherCode(code: number): string {
   return "cloud";
 }
 
-const CACHE_KEY = "hf_infobar_cache";
-const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+const CACHE_KEY = "hf_infobar_v2";
+const CACHE_TTL = 10 * 60 * 1000;
 
 function getCached(): (MarketData & { ts: number }) | null {
   if (typeof window === "undefined") return null;
@@ -71,9 +72,22 @@ function setCache(data: MarketData) {
   }
 }
 
-function formatNum(n: number): string {
+function formatPrice(n: number): string {
   if (n >= 1000) return `${(n / 1000).toFixed(1)}K`.replace(".0K", "K");
   return n.toFixed(0);
+}
+
+function ChangeIndicator({ pct }: { pct: number | null }) {
+  if (pct === null) return null;
+  const isUp = pct >= 0;
+  const Icon = isUp ? TrendingUp : TrendingDown;
+  const color = isUp ? "text-emerald-500" : "text-red-500";
+  return (
+    <span className={`flex items-center gap-0.5 ${color}`}>
+      <Icon className="h-2.5 w-2.5" />
+      <span className="text-[10px] font-medium">{isUp ? "+" : ""}{pct.toFixed(1)}%</span>
+    </span>
+  );
 }
 
 export default function InfoBar() {
@@ -120,20 +134,7 @@ export default function InfoBar() {
         );
         lat = pos.coords.latitude;
         lon = pos.coords.longitude;
-        // Reverse geocode
-        try {
-          const geoRes = await fetch(
-            `https://geocoding-api.open-meteo.com/v1/search?name=_&latitude=${lat}&longitude=${lon}&count=1`
-          );
-          if (geoRes.ok) {
-            const geoData = await geoRes.json();
-            if (geoData.results?.[0]?.name) {
-              city = geoData.results[0].name;
-            }
-          }
-        } catch {
-          city = "My Location";
-        }
+        city = "";
       } catch {
         // Default Seoul
       }
@@ -144,10 +145,11 @@ export default function InfoBar() {
     );
     if (!res.ok) throw new Error("Weather fetch failed");
     const d = await res.json();
+
     return {
       temp: Math.round(d.current.temperature_2m),
       icon: mapWeatherCode(d.current.weather_code),
-      city,
+      city: city || "My Location",
     };
   }
 
@@ -155,16 +157,33 @@ export default function InfoBar() {
     const res = await fetch("https://open.er-api.com/v6/latest/USD");
     if (!res.ok) throw new Error("Exchange rate fetch failed");
     const d = await res.json();
-    return Math.round(d.rates?.KRW);
+    const rate = Math.round(d.rates?.KRW);
+
+    // Try to get previous rate from old cache for change calculation
+    let prevRate: number | null = null;
+    try {
+      const old = localStorage.getItem(CACHE_KEY);
+      if (old) {
+        const parsed = JSON.parse(old);
+        if (parsed.usdKrw?.rate) prevRate = parsed.usdKrw.rate;
+      }
+    } catch {
+      // ignore
+    }
+
+    return { rate, prevRate };
   }
 
   async function fetchBtc() {
     const res = await fetch(
-      "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
+      "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true"
     );
     if (!res.ok) throw new Error("BTC fetch failed");
     const d = await res.json();
-    return Math.round(d.bitcoin?.usd);
+    return {
+      price: Math.round(d.bitcoin?.usd),
+      change24h: d.bitcoin?.usd_24h_change ? parseFloat(d.bitcoin.usd_24h_change.toFixed(1)) : null,
+    };
   }
 
   if (!mounted) {
@@ -177,35 +196,42 @@ export default function InfoBar() {
 
   const WeatherIcon = data.weather ? WEATHER_ICONS[data.weather.icon] || CloudSun : null;
 
+  // Calculate USD/KRW change percentage
+  const krwChangePct = data.usdKrw?.prevRate && data.usdKrw.rate !== data.usdKrw.prevRate
+    ? ((data.usdKrw.rate - data.usdKrw.prevRate) / data.usdKrw.prevRate) * 100
+    : null;
+
   return (
     <div className="bg-muted/30 border-b border-border">
-      <div className="max-w-[1200px] mx-auto px-4 h-8 flex items-center justify-center gap-4 md:gap-6 text-xs text-muted-foreground overflow-x-auto whitespace-nowrap">
+      <div className="max-w-[1200px] mx-auto px-4 h-8 flex items-center justify-center gap-3 md:gap-5 text-xs text-muted-foreground overflow-x-auto whitespace-nowrap scrollbar-hide">
         {data.weather && WeatherIcon && (
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1.5">
             <WeatherIcon className="h-3.5 w-3.5 text-amber-500" />
-            <span>{data.weather.city}</span>
             <span className="font-medium text-foreground/80">{data.weather.temp}°</span>
+            <span>{data.weather.city}</span>
           </span>
         )}
 
         {data.usdKrw && (
           <>
-            <span className="text-border">|</span>
-            <span className="flex items-center gap-1">
-              <DollarSign className="h-3 w-3 text-green-500" />
+            <span className="text-border/60">|</span>
+            <span className="flex items-center gap-1.5">
+              <DollarSign className="h-3 w-3 text-emerald-500" />
               <span>USD/KRW</span>
-              <span className="font-medium text-foreground/80">{data.usdKrw.toLocaleString()}</span>
+              <span className="font-medium text-foreground/80">{data.usdKrw.rate.toLocaleString()}</span>
+              <ChangeIndicator pct={krwChangePct} />
             </span>
           </>
         )}
 
         {data.btcUsd && (
           <>
-            <span className="text-border">|</span>
-            <span className="flex items-center gap-1">
+            <span className="text-border/60">|</span>
+            <span className="flex items-center gap-1.5">
               <Bitcoin className="h-3 w-3 text-orange-500" />
               <span>BTC</span>
-              <span className="font-medium text-foreground/80">${formatNum(data.btcUsd)}</span>
+              <span className="font-medium text-foreground/80">${formatPrice(data.btcUsd.price)}</span>
+              <ChangeIndicator pct={data.btcUsd.change24h} />
             </span>
           </>
         )}

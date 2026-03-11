@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, Search, Home, Sparkles, TrendingUp, Bookmark, Globe, Clock } from "lucide-react";
+import { useTheme } from "next-themes";
+import { X, Search, Home, Sparkles, TrendingUp, Bookmark, Globe, Clock, Sun, Moon } from "lucide-react";
 import { CATEGORIES } from "@/lib/categories";
 import { getSearchHistory, addSearchHistory, removeSearchHistoryItem, clearSearchHistory } from "@/lib/storage";
 
@@ -10,19 +11,35 @@ interface Props {
   onClose: () => void;
 }
 
+// News-style menu order: Home, Trending, AI, then categories by priority
+const MENU_CATEGORIES = [
+  { label: "Technology", slug: "tech" },
+  { label: "Economy", slug: "economy" },
+  { label: "Politics", slug: "politics" },
+  { label: "World", slug: "world" },
+  { label: "Opinion", slug: "opinion" },
+  { label: "Culture", slug: "culture" },
+  { label: "Sports", slug: "sports" },
+  { label: "Society", slug: "society" },
+];
+
 export default function FullMenu({ open, onClose }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Body scroll lock
   useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden";
       setSearchHistory(getSearchHistory());
-      // Focus search after animation
       setTimeout(() => inputRef.current?.focus(), 200);
     } else {
       document.body.style.overflow = "";
@@ -63,37 +80,20 @@ export default function FullMenu({ open, onClose }: Props) {
 
   if (!open) return null;
 
-  const NAV_SECTIONS = [
-    {
-      items: [
-        { label: "Home", href: "/", icon: Home },
-        { label: "AI News", href: "/ai", icon: Sparkles, highlight: true },
-        { label: "Trending", href: "/trending", icon: TrendingUp, highlight: true },
-        { label: "World News", href: "/world", icon: Globe },
-        { label: "Saved", href: "/bookmarks", icon: Bookmark },
-      ],
-    },
-    {
-      title: "Sections",
-      items: CATEGORIES.map((cat) => ({
-        label: cat.name,
-        href: `/category/${cat.slug}`,
-        color: cat.color,
-      })),
-    },
-  ];
-
   const filteredHistory = searchQuery.trim()
     ? searchHistory.filter((h) => h.toLowerCase().includes(searchQuery.toLowerCase()))
     : searchHistory;
 
+  // Find category color by slug
+  function getCatColor(slug: string): string {
+    return CATEGORIES.find((c) => c.slug === slug)?.color || "#888";
+  }
+
   return (
-    <div
-      className="fixed inset-0 z-[100] bg-background/98 backdrop-blur-sm animate-in fade-in duration-200"
-    >
+    <div className="fixed inset-0 z-[100] bg-background/98 backdrop-blur-sm animate-in fade-in duration-200">
       <div
-        ref={menuRef}
         className="h-full overflow-y-auto"
+        style={{ overscrollBehavior: "contain" }}
       >
         <div className="max-w-[600px] mx-auto px-5 py-4">
           {/* Top: close + logo */}
@@ -128,7 +128,6 @@ export default function FullMenu({ open, onClose }: Props) {
               />
             </div>
 
-            {/* Search history */}
             {showHistory && filteredHistory.length > 0 && (
               <div className="mt-2 bg-card border border-border rounded-lg overflow-hidden">
                 <div className="flex items-center justify-between px-3 py-2 border-b border-border">
@@ -168,45 +167,72 @@ export default function FullMenu({ open, onClose }: Props) {
             )}
           </form>
 
-          {/* Navigation sections */}
-          {NAV_SECTIONS.map((section, si) => (
-            <div key={si} className="mb-4">
-              {section.title && (
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
-                  {section.title}
-                </h3>
-              )}
-              <div className="border border-border rounded-lg overflow-hidden divide-y divide-border">
-                {section.items.map((item) => {
-                  const Icon = "icon" in item ? item.icon : null;
-                  const highlight = "highlight" in item && item.highlight;
-                  const color = "color" in item ? item.color : undefined;
+          {/* Main navigation - news style order */}
+          <div className="border border-border rounded-lg overflow-hidden divide-y divide-border mb-4">
+            <a href="/" onClick={onClose} className="flex items-center gap-3 px-4 py-3.5 text-base font-medium hover:bg-accent transition-colors">
+              <Home className="h-4 w-4 shrink-0" />
+              Home
+            </a>
+            <a href="/trending" onClick={onClose} className="flex items-center gap-3 px-4 py-3.5 text-base font-medium text-primary hover:bg-accent transition-colors">
+              <TrendingUp className="h-4 w-4 shrink-0" />
+              Trending
+            </a>
+            <a href="/ai" onClick={onClose} className="flex items-center gap-3 px-4 py-3.5 text-base font-medium text-primary hover:bg-accent transition-colors">
+              <Sparkles className="h-4 w-4 shrink-0" />
+              AI News
+            </a>
+            <a href="/world" onClick={onClose} className="flex items-center gap-3 px-4 py-3.5 text-base font-medium hover:bg-accent transition-colors">
+              <Globe className="h-4 w-4 shrink-0" />
+              World News
+            </a>
+          </div>
 
-                  return (
-                    <a
-                      key={item.href}
-                      href={item.href}
-                      onClick={onClose}
-                      className={`flex items-center gap-3 px-4 py-3.5 text-base font-medium hover:bg-accent transition-colors ${
-                        highlight ? "text-primary" : "text-foreground"
-                      }`}
-                    >
-                      {Icon && <Icon className="h-4.5 w-4.5 shrink-0" />}
-                      {color && (
-                        <span
-                          className="w-2 h-2 rounded-full shrink-0"
-                          style={{ backgroundColor: color }}
-                        />
-                      )}
-                      {item.label}
-                    </a>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+          {/* Sections - categories in news-style order */}
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
+            Sections
+          </h3>
+          <div className="border border-border rounded-lg overflow-hidden divide-y divide-border mb-4">
+            {MENU_CATEGORIES.map((cat) => (
+              <a
+                key={cat.slug}
+                href={`/category/${cat.slug}`}
+                onClick={onClose}
+                className="flex items-center gap-3 px-4 py-3.5 text-base font-medium hover:bg-accent transition-colors"
+              >
+                <span
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ backgroundColor: getCatColor(cat.slug) }}
+                />
+                {cat.label}
+              </a>
+            ))}
+          </div>
 
-          {/* Bottom padding for scroll */}
+          {/* Utilities: Saved + Theme (moved from header) */}
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
+            Settings
+          </h3>
+          <div className="border border-border rounded-lg overflow-hidden divide-y divide-border mb-4">
+            <a href="/bookmarks" onClick={onClose} className="flex items-center gap-3 px-4 py-3.5 text-base font-medium hover:bg-accent transition-colors">
+              <Bookmark className="h-4 w-4 shrink-0" />
+              Saved Articles
+            </a>
+            {mounted && (
+              <button
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="flex items-center gap-3 w-full px-4 py-3.5 text-base font-medium hover:bg-accent transition-colors text-left"
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-4 w-4 shrink-0" />
+                ) : (
+                  <Moon className="h-4 w-4 shrink-0" />
+                )}
+                {theme === "dark" ? "Light Mode" : "Dark Mode"}
+              </button>
+            )}
+          </div>
+
+          {/* Bottom padding */}
           <div className="h-8" />
         </div>
       </div>
