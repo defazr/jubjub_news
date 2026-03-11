@@ -4,9 +4,9 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
 const SITE_URL = "https://headlines.fazr.co.kr";
-const SITE_NAME = "JubJub 뉴스";
+const SITE_NAME = "JubJub News";
 const SITE_DESCRIPTION =
-  "국내외 정치, 경제, 사회, 국제, IT/과학, 스포츠 등 주요 뉴스를 실시간으로 한눈에 모아보는 뉴스 큐레이션 서비스";
+  "Latest global news curated by AI with quick summaries and translation. Updated every 4 hours.";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -21,26 +21,22 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} - 국내외 주요 뉴스를 한눈에`,
+    default: `${SITE_NAME} - AI Curated Global News`,
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
   keywords: [
-    "뉴스",
-    "한국 뉴스",
-    "실시간 뉴스",
-    "속보",
-    "정치",
-    "경제",
-    "사회",
-    "국제",
-    "IT",
-    "과학",
-    "스포츠",
-    "문화",
-    "오피니언",
-    "뉴스 큐레이션",
+    "AI news",
+    "global news",
+    "AI summary",
+    "news curation",
+    "AI curated news",
+    "world news",
+    "technology",
+    "business",
     "JubJub",
+    "translated news",
+    "news summary",
   ],
   authors: [{ name: SITE_NAME }],
   creator: SITE_NAME,
@@ -61,21 +57,21 @@ export const metadata: Metadata = {
     locale: "ko_KR",
     url: SITE_URL,
     siteName: SITE_NAME,
-    title: `${SITE_NAME} - 국내외 주요 뉴스를 한눈에`,
+    title: `${SITE_NAME} - AI Curated Global News`,
     description: SITE_DESCRIPTION,
     images: [
       {
         url: `${SITE_URL}/og-image.jpg`,
         width: 1200,
         height: 630,
-        alt: `${SITE_NAME} - 국내외 주요 뉴스를 한눈에`,
+        alt: `${SITE_NAME} - AI Curated Global News`,
         type: "image/jpeg",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_NAME} - 국내외 주요 뉴스를 한눈에`,
+    title: `${SITE_NAME} - AI Curated Global News`,
     description: SITE_DESCRIPTION,
     images: [`${SITE_URL}/og-image.jpg`],
   },
@@ -99,7 +95,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

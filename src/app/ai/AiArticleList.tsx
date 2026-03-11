@@ -15,7 +15,7 @@ export default function AiArticleList({ articles }: { articles: Article[] }) {
   if (articles.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground">
-        AI 요약 기사가 아직 없습니다. 뉴스 수집이 진행되면 자동으로 표시됩니다.
+        No AI summarized articles yet. Articles will appear automatically as news is collected.
       </div>
     );
   }
@@ -41,7 +41,7 @@ export default function AiArticleList({ articles }: { articles: Article[] }) {
                     {article.category}
                   </Badge>
                   <Badge variant="outline" className="text-xs text-primary border-primary/30">
-                    AI 요약
+                    AI Summary
                   </Badge>
                 </div>
                 <BookmarkButton

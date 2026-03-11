@@ -24,7 +24,7 @@ export default function TranslateButton({ translated, translating, targetLabel, 
       ) : (
         <Languages className="h-4 w-4" />
       )}
-      {translating ? "번역 중..." : translated ? "원문 보기" : targetLabel}
+      {translating ? "Translating..." : translated ? "View Original" : targetLabel}
     </Button>
   );
 }

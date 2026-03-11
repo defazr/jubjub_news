@@ -29,7 +29,7 @@ export default function Sidebar({ articles }: Props) {
         <CardHeader className="bg-primary/5 dark:bg-primary/10 pt-4 pb-3 px-4">
           <CardTitle className="text-base font-bold flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-primary" />
-            많이 본 뉴스
+            Trending
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4">
@@ -63,7 +63,7 @@ export default function Sidebar({ articles }: Props) {
         <CardHeader className="pt-4 pb-3 px-4">
           <CardTitle className="text-base font-bold flex items-center gap-2">
             <Globe className="h-4 w-4 text-primary" />
-            뉴스 출처
+            Sources
           </CardTitle>
         </CardHeader>
         <Separator />

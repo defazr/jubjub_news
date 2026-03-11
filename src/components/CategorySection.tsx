@@ -55,7 +55,7 @@ function CategoryCardGrid({ cat, articles, animDelay, readUrls }: { cat: string;
               )}
               <span className={`font-headline text-base font-semibold text-card-foreground group-hover:text-primary leading-snug block transition-colors line-clamp-2 ${readUrls.has(featured.url) ? "opacity-60" : ""}`}>
                 {featured.title}
-                {readUrls.has(featured.url) && <span className="ml-1 text-[10px] font-normal text-muted-foreground bg-muted px-1 py-0.5 rounded">읽음</span>}
+                {readUrls.has(featured.url) && <span className="ml-1 text-[10px] font-normal text-muted-foreground bg-muted px-1 py-0.5 rounded">Read</span>}
               </span>
               <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2">
                 {featured.excerpt}
@@ -133,7 +133,7 @@ function CategoryCardList({ cat, articles, readUrls }: { cat: string; articles: 
                   className={`text-[15px] font-medium text-card-foreground hover:text-primary leading-snug transition-colors line-clamp-2 block ${readUrls.has(article.url) ? "opacity-60" : ""}`}
                 >
                   {article.title}
-                  {readUrls.has(article.url) && <span className="ml-1 text-[10px] font-normal text-muted-foreground bg-muted px-1 py-0.5 rounded">읽음</span>}
+                  {readUrls.has(article.url) && <span className="ml-1 text-[10px] font-normal text-muted-foreground bg-muted px-1 py-0.5 rounded">Read</span>}
                 </a>
                 <p className="text-sm text-muted-foreground/60 mt-0.5">
                   {article.publisher.name} · {formatDate(article.date)}
@@ -209,10 +209,10 @@ export default function CategorySection({ categoryData, renderMidAd }: Props) {
         <button
           onClick={toggleLayout}
           className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2.5 py-1.5 rounded-md border border-border hover:bg-accent"
-          title={layout === "grid" ? "리스트 보기" : "그리드 보기"}
+          title={layout === "grid" ? "List view" : "Grid view"}
         >
           {layout === "grid" ? <List className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
-          {layout === "grid" ? "리스트" : "그리드"}
+          {layout === "grid" ? "List" : "Grid"}
         </button>
       </div>
 

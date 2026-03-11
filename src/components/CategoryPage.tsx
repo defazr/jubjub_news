@@ -23,7 +23,7 @@ import ShareButton from "@/components/ShareButton";
 function InlineAd({ slot, className = "" }: { slot: string; className?: string }) {
   return (
     <div className={className}>
-      <p className="text-[10px] text-muted-foreground/50 text-center mb-1">광고</p>
+      <p className="text-[10px] text-muted-foreground/50 text-center mb-1">Ad</p>
       <AdUnit slot={slot} />
     </div>
   );
@@ -60,7 +60,7 @@ export default function CategoryPageContent({ category, initialArticles }: Props
   }
 
   useEffect(() => {
-    document.title = `${category.name} - JubJub 뉴스`;
+    document.title = `${category.name} - JubJub News`;
   }, [category]);
 
   async function handleTranslate() {
@@ -98,7 +98,7 @@ export default function CategoryPageContent({ category, initialArticles }: Props
         <div className="flex items-center justify-between mb-6">
           <div>
             <nav className="text-xs text-muted-foreground mb-1">
-              <a href="/" className="hover:text-primary transition-colors">홈</a>
+              <a href="/" className="hover:text-primary transition-colors">Home</a>
               <span className="mx-1.5">/</span>
               <span className="text-foreground font-medium">{category.name}</span>
             </nav>
@@ -111,7 +111,7 @@ export default function CategoryPageContent({ category, initialArticles }: Props
           <TranslateButton
             translated={translated}
             translating={translating}
-            targetLabel="English"
+            targetLabel="한국어 번역"
             onToggle={handleTranslate}
           />
         </div>
@@ -154,7 +154,7 @@ export default function CategoryPageContent({ category, initialArticles }: Props
                     </div>
                     <h2 className={`font-headline text-xl md:text-2xl font-bold text-card-foreground leading-tight mb-2 hover:text-primary transition-colors ${readUrls.has(articles[0].url) ? "opacity-60" : ""}`}>
                       {articles[0].title}
-                      {readUrls.has(articles[0].url) && <span className="ml-2 text-xs font-normal text-muted-foreground bg-muted px-1.5 py-0.5 rounded align-middle">읽음</span>}
+                      {readUrls.has(articles[0].url) && <span className="ml-2 text-xs font-normal text-muted-foreground bg-muted px-1.5 py-0.5 rounded align-middle">Read</span>}
                     </h2>
                     <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
                       {articles[0].excerpt}
@@ -173,10 +173,10 @@ export default function CategoryPageContent({ category, initialArticles }: Props
               <button
                 onClick={toggleLayout}
                 className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-accent"
-                title={layout === "grid" ? "리스트 보기" : "그리드 보기"}
+                title={layout === "grid" ? "List view" : "Grid view"}
               >
                 {layout === "grid" ? <List className="h-3.5 w-3.5" /> : <LayoutGrid className="h-3.5 w-3.5" />}
-                {layout === "grid" ? "리스트" : "그리드"}
+                {layout === "grid" ? "List" : "Grid"}
               </button>
             </div>
 
@@ -196,7 +196,7 @@ export default function CategoryPageContent({ category, initialArticles }: Props
                       <div className="flex items-start justify-between gap-2">
                         <h3 className={`text-sm font-semibold text-card-foreground leading-snug mb-1.5 hover:text-primary transition-colors line-clamp-2 flex-1 ${readUrls.has(article.url) ? "opacity-60" : ""}`}>
                           {article.title}
-                          {readUrls.has(article.url) && <span className="ml-1 text-[10px] font-normal text-muted-foreground bg-muted px-1 py-0.5 rounded">읽음</span>}
+                          {readUrls.has(article.url) && <span className="ml-1 text-[10px] font-normal text-muted-foreground bg-muted px-1 py-0.5 rounded">Read</span>}
                         </h3>
                         <div className="flex items-center gap-0.5">
                           <ShareButton url={article.url} title={article.title} />
@@ -224,7 +224,7 @@ export default function CategoryPageContent({ category, initialArticles }: Props
                   className="gap-2"
                 >
                   <ChevronDown className="h-4 w-4" />
-                  더보기 ({articles.length - visibleCount}개 남음)
+                  Load more ({articles.length - visibleCount} remaining)
                 </Button>
               </div>
             )}
@@ -234,7 +234,7 @@ export default function CategoryPageContent({ category, initialArticles }: Props
             <div className="mt-8">
               <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
                 <span className="w-1 h-4 bg-primary rounded-full" />
-                다른 카테고리
+                Other Categories
               </h3>
               <div className="flex flex-wrap gap-2">
                 {CATEGORIES.filter((c) => c.slug !== category.slug).map((c) => (
@@ -246,7 +246,7 @@ export default function CategoryPageContent({ category, initialArticles }: Props
                 ))}
                 <a href="/world">
                   <Badge variant="outline" className="hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer">
-                    해외 뉴스
+                    World News
                   </Badge>
                 </a>
               </div>

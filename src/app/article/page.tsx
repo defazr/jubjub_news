@@ -16,7 +16,7 @@ const COUNTDOWN_SECONDS = 7;
 function ArticleRedirectContent() {
   const params = useSearchParams();
   const url = params.get("url") || "";
-  const title = params.get("title") || "뉴스 기사";
+  const title = params.get("title") || "News Article";
   const source = params.get("source") || "";
   const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
   const [paused, setPaused] = useState(false);
@@ -57,9 +57,9 @@ function ArticleRedirectContent() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="border-0 shadow-md max-w-md w-full mx-4">
           <CardContent className="p-8 text-center">
-            <p className="text-muted-foreground mb-4">잘못된 접근입니다.</p>
+            <p className="text-muted-foreground mb-4">Invalid access.</p>
             <Button asChild>
-              <a href="/">홈으로 돌아가기</a>
+              <a href="/">Back to Home</a>
             </Button>
           </CardContent>
         </Card>
@@ -81,7 +81,7 @@ function ArticleRedirectContent() {
           <Button variant="ghost" size="sm" asChild>
             <a href="/" className="gap-1.5">
               <ArrowLeft className="h-4 w-4" />
-              홈으로
+              Home
             </a>
           </Button>
         </div>
@@ -97,9 +97,9 @@ function ArticleRedirectContent() {
       </header>
 
       <main className="max-w-[800px] mx-auto px-4 py-8">
-        {/* 상단 광고 */}
+        {/* 상단 Ad */}
         <div className="mb-6">
-          <p className="text-[10px] text-muted-foreground/50 text-center mb-1">광고</p>
+          <p className="text-[10px] text-muted-foreground/50 text-center mb-1">Ad</p>
           <AdUnit slot="9121339058" />
         </div>
 
@@ -107,7 +107,7 @@ function ArticleRedirectContent() {
           <CardContent className="p-6">
             <Badge variant="outline" className="mb-4 text-xs text-muted-foreground">
               <ExternalLink className="h-3 w-3 mr-1" />
-              외부 기사로 이동합니다
+              Redirecting to external article
             </Badge>
 
             <h1 className="font-headline text-xl md:text-2xl font-bold text-card-foreground mb-3 leading-tight">
@@ -116,7 +116,7 @@ function ArticleRedirectContent() {
 
             {source && (
               <p className="text-sm text-muted-foreground mb-5">
-                출처: <span className="font-medium text-card-foreground">{decodeURIComponent(source)}</span>
+                Source: <span className="font-medium text-card-foreground">{decodeURIComponent(source)}</span>
               </p>
             )}
 
@@ -126,7 +126,7 @@ function ArticleRedirectContent() {
               <Button asChild size="lg" className="w-full sm:w-auto">
                 <a href={url} className="gap-2">
                   <ExternalLink className="h-4 w-4" />
-                  기사 바로가기
+                  Go to Article
                 </a>
               </Button>
 
@@ -134,7 +134,7 @@ function ArticleRedirectContent() {
                 <div className="flex items-center gap-3">
                   <span className="text-sm text-muted-foreground flex items-center gap-1.5">
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    {countdown}초 후 자동 이동
+                    Redirecting in {countdown}s
                   </span>
                   <Button
                     variant="ghost"
@@ -143,41 +143,41 @@ function ArticleRedirectContent() {
                     className="text-xs text-muted-foreground hover:text-foreground gap-1"
                   >
                     <X className="h-3.5 w-3.5" />
-                    취소
+                    Cancel
                   </Button>
                 </div>
               ) : paused ? (
                 <span className="text-sm text-muted-foreground">
-                  자동 이동이 취소되었습니다
+                  Auto-redirect cancelled
                 </span>
               ) : (
-                <span className="text-sm text-muted-foreground">이동 중...</span>
+                <span className="text-sm text-muted-foreground">Redirecting...</span>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* 중간 광고 */}
+        {/* 중간 Ad */}
         <div className="mb-6">
-          <p className="text-[10px] text-muted-foreground/50 text-center mb-1">광고</p>
+          <p className="text-[10px] text-muted-foreground/50 text-center mb-1">Ad</p>
           <AdUnit slot="2248808942" />
         </div>
 
-        {/* 하단 광고 */}
+        {/* 하단 Ad */}
         <div className="mb-6">
-          <p className="text-[10px] text-muted-foreground/50 text-center mb-1">광고</p>
+          <p className="text-[10px] text-muted-foreground/50 text-center mb-1">Ad</p>
           <AdUnit slot="9121339058" format="rectangle" />
         </div>
 
         <div className="text-center">
           <Button variant="link" asChild className="text-muted-foreground">
-            <a href="/">JubJub 뉴스 홈으로 돌아가기</a>
+            <a href="/">Back to JubJub News</a>
           </Button>
         </div>
       </main>
 
       <footer className="bg-card border-t border-border text-muted-foreground/60 text-xs text-center py-4 mt-8">
-        &copy; 2026 줍줍뉴스. All rights reserved.
+        &copy; 2026 JubJub News. All rights reserved.
       </footer>
     </div>
   );

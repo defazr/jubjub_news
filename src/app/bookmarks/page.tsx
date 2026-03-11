@@ -35,16 +35,16 @@ export default function BookmarksPage() {
       <main className="max-w-[1200px] mx-auto px-3 md:px-4 py-5 md:py-8">
         <div className="mb-6">
           <nav className="text-xs text-muted-foreground mb-1">
-            <a href="/" className="hover:text-primary transition-colors">홈</a>
+            <a href="/" className="hover:text-primary transition-colors">Home</a>
             <span className="mx-1.5">/</span>
-            <span className="text-foreground font-medium">스크랩</span>
+            <span className="text-foreground font-medium">Saved</span>
           </nav>
           <h1 className="font-headline text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
             <Bookmark className="h-7 w-7 text-primary" />
-            스크랩한 기사
+            Saved Articles
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {bookmarks.length}개의 기사
+            {bookmarks.length} articles
           </p>
         </div>
 
@@ -54,10 +54,10 @@ export default function BookmarksPage() {
           <div className="text-center py-16">
             <Bookmark className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
             <p className="text-lg text-muted-foreground mb-2">
-              스크랩한 기사가 없습니다
+              No saved articles yet
             </p>
             <p className="text-sm text-muted-foreground/60">
-              기사의 북마크 아이콘을 눌러 스크랩하세요
+              Tap the bookmark icon on any article to save it
             </p>
           </div>
         ) : (

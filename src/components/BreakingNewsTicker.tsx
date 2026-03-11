@@ -18,7 +18,7 @@ export default function BreakingNewsTicker({ items }: Props) {
           className="shrink-0 gap-1 rounded-sm bg-primary-foreground/15 text-primary-foreground border-0 px-3 py-1.5 text-xs font-bold"
         >
           <Zap className="h-3 w-3 fill-current" />
-          속보
+          Breaking
         </Badge>
         <div className="overflow-hidden py-2.5 pl-4">
           <div className="animate-marquee whitespace-nowrap">

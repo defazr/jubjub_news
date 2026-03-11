@@ -53,10 +53,10 @@ export default function Header({ onSearch }: Props) {
   });
 
   const timeMeta = {
-    morning: { label: "좋은 아침", Icon: Sunrise },
-    afternoon: { label: "좋은 오후", Icon: Sun },
-    evening: { label: "좋은 저녁", Icon: Sunset },
-    night: { label: "좋은 밤", Icon: Moon },
+    morning: { label: "Good morning", Icon: Sunrise },
+    afternoon: { label: "Good afternoon", Icon: Sun },
+    evening: { label: "Good evening", Icon: Sunset },
+    night: { label: "Good night", Icon: Moon },
   } as const;
   const { label: timeLabel, Icon: TimeIcon } = timeMeta[timeOfDay];
 
@@ -146,15 +146,15 @@ export default function Header({ onSearch }: Props) {
             <div className="flex items-center gap-3">
               <a href="/bookmarks" className="hover:text-primary transition-colors flex items-center gap-1">
                 <Bookmark className="h-3 w-3" />
-                스크랩
+                Saved
               </a>
               <a href="/ai" className="hover:text-primary transition-colors flex items-center gap-1">
                 <Sparkles className="h-3 w-3" />
-                AI 뉴스
+                AI News
               </a>
               <a href="/world" className="hover:text-primary transition-colors flex items-center gap-1">
                 <Globe className="h-3 w-3" />
-                해외 뉴스
+                World
               </a>
               <span className="flex items-center gap-0.5 border-l border-border pl-3">
                 <button onClick={() => changeFontSize(-1)} className="hover:text-foreground transition-colors p-0.5" title="글자 줄이기">
@@ -177,11 +177,11 @@ export default function Header({ onSearch }: Props) {
           <div className="max-w-[1200px] mx-auto px-4 py-4 md:py-6 text-center">
             <a href="/" className="inline-block">
               <h1 className="font-headline text-3xl md:text-4xl tracking-tight">
-                JubJub 뉴스
+                JubJub News
               </h1>
             </a>
             <p className="text-sm md:text-base text-muted-foreground mt-1.5">
-              국내외 주요 뉴스를 한눈에
+              AI Curated Global News · Updated every 4 hours
             </p>
           </div>
         </div>
@@ -205,15 +205,15 @@ export default function Header({ onSearch }: Props) {
                   <SheetContent side="left" className="w-72 p-0">
                     <SheetTitle className="sr-only">메뉴</SheetTitle>
                     <div className="p-5 border-b border-border">
-                      <span className="font-headline text-xl tracking-tight">JubJub 뉴스</span>
-                      <p className="text-xs text-muted-foreground mt-1">국내외 주요 뉴스를 한눈에</p>
+                      <span className="font-headline text-xl tracking-tight">JubJub News</span>
+                      <p className="text-xs text-muted-foreground mt-1">AI Curated Global News</p>
                     </div>
                     <div className="py-2">
                       <a
                         href="/"
                         className="flex items-center gap-3 w-full px-5 py-3 text-sm font-medium hover:bg-accent transition-colors"
                       >
-                        <Home className="h-4 w-4" /> 홈
+                        <Home className="h-4 w-4" /> Home
                       </a>
                       <Separator />
                       {CATEGORIES.map((cat) => (
@@ -230,19 +230,19 @@ export default function Header({ onSearch }: Props) {
                         href="/bookmarks"
                         className="flex items-center gap-3 w-full px-5 py-3 text-sm font-medium hover:bg-accent transition-colors"
                       >
-                        <Bookmark className="h-4 w-4" /> 스크랩
+                        <Bookmark className="h-4 w-4" /> Saved
                       </a>
                       <a
                         href="/ai"
                         className="flex items-center gap-3 w-full px-5 py-3 text-sm font-medium text-primary hover:bg-accent transition-colors"
                       >
-                        <Sparkles className="h-4 w-4" /> AI 뉴스
+                        <Sparkles className="h-4 w-4" /> AI News
                       </a>
                       <a
                         href="/world"
                         className="flex items-center gap-3 w-full px-5 py-3 text-sm font-medium text-primary hover:bg-accent transition-colors"
                       >
-                        <Globe className="h-4 w-4" /> 해외 뉴스
+                        <Globe className="h-4 w-4" /> World
                       </a>
                     </div>
                   </SheetContent>
@@ -270,7 +270,7 @@ export default function Header({ onSearch }: Props) {
                   >
                     <a href="/">
                       <Home className="h-4 w-4 mr-1" />
-                      홈
+                      Home
                     </a>
                   </Button>
                 </li>
@@ -308,7 +308,7 @@ export default function Header({ onSearch }: Props) {
                   >
                     <a href="/world">
                       <Globe className="h-4 w-4 mr-1" />
-                      해외
+                      World
                     </a>
                   </Button>
                 </li>
@@ -366,7 +366,7 @@ export default function Header({ onSearch }: Props) {
                         setShowHistory(true);
                       }}
                       onFocus={() => setShowHistory(true)}
-                      placeholder="뉴스 검색..."
+                      placeholder="Search news..."
                       className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                       autoFocus
                     />
@@ -375,13 +375,13 @@ export default function Header({ onSearch }: Props) {
                     {showHistory && filteredHistory.length > 0 && (
                       <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-md shadow-lg z-50 overflow-hidden">
                         <div className="flex items-center justify-between px-3 py-2 border-b border-border">
-                          <span className="text-xs text-muted-foreground font-medium">최근 검색어</span>
+                          <span className="text-xs text-muted-foreground font-medium">Recent searches</span>
                           <button
                             type="button"
                             onClick={handleClearHistory}
                             className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                           >
-                            전체 삭제
+                            Clear all
                           </button>
                         </div>
                         {filteredHistory.slice(0, 6).map((item) => (
@@ -408,7 +408,7 @@ export default function Header({ onSearch }: Props) {
                     )}
                   </div>
                   <Button type="submit" size="sm" className="h-9">
-                    검색
+                    Search
                   </Button>
                 </form>
               </div>

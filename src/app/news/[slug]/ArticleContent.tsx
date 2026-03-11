@@ -45,7 +45,7 @@ export default function ArticleContent({ article, relatedArticles }: Props) {
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors mb-4"
       >
         <ArrowLeft className="h-4 w-4" />
-        뉴스 홈
+        News Home
       </a>
 
       {/* Category badge */}
@@ -96,7 +96,7 @@ export default function ArticleContent({ article, relatedArticles }: Props) {
       {/* AI Summary */}
       {article.summary && (
         <div className="bg-primary/5 border border-primary/10 rounded-lg p-5 mb-6">
-          <h2 className="text-sm font-semibold text-primary mb-2">AI 요약</h2>
+          <h2 className="text-sm font-semibold text-primary mb-2">AI Summary</h2>
           <p className="text-base leading-relaxed">{article.summary}</p>
         </div>
       )}
@@ -113,7 +113,7 @@ export default function ArticleContent({ article, relatedArticles }: Props) {
 
       {/* Original link */}
       <div className="bg-muted/50 rounded-lg p-4 mb-6">
-        <p className="text-sm text-muted-foreground mb-2">원문 보기</p>
+        <p className="text-sm text-muted-foreground mb-2">Original Article</p>
         <a
           href={article.source_url}
           target="_blank"
@@ -121,7 +121,7 @@ export default function ArticleContent({ article, relatedArticles }: Props) {
           className="inline-flex items-center gap-1 text-primary hover:underline text-sm font-medium"
         >
           <ExternalLink className="h-3.5 w-3.5" />
-          {article.publisher || "원문 링크"}에서 전체 기사 읽기
+          Read full article on {article.publisher || "source"}
         </a>
       </div>
 
@@ -144,7 +144,7 @@ export default function ArticleContent({ article, relatedArticles }: Props) {
       {/* Related articles */}
       {relatedArticles.length > 0 && (
         <section>
-          <h2 className="text-lg font-bold mb-4">관련 뉴스</h2>
+          <h2 className="text-lg font-bold mb-4">Related News</h2>
           <div className="space-y-3">
             {relatedArticles.map((rel) => (
               <a key={rel.id} href={`/news/${rel.slug}`}>
