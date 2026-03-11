@@ -1,12 +1,9 @@
-import { supabase as anonClient, createAdminClient } from "./supabase";
+import { supabase } from "./supabase";
 import type { Article } from "@/types/database";
 
-// Use admin client if service_role key is available (bypasses RLS), else anon
+// Always use anon client — RLS allows public reads
 function getClient() {
-  if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    return createAdminClient();
-  }
-  return anonClient;
+  return supabase;
 }
 
 /** Convert a DB Article to the ApiArticle shape used by UI components */
