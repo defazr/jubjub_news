@@ -123,22 +123,9 @@ export default function InfoBar() {
   }
 
   async function fetchWeather() {
-    let lat = 37.5665;
-    let lon = 126.978;
-    let city = "Seoul";
-
-    if (navigator.geolocation) {
-      try {
-        const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
-          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 3000 })
-        );
-        lat = pos.coords.latitude;
-        lon = pos.coords.longitude;
-        city = "";
-      } catch {
-        // Default Seoul
-      }
-    }
+    // Default: Seoul. Fetch immediately, then update with geolocation if available.
+    const lat = 37.5665;
+    const lon = 126.978;
 
     const res = await fetch(
       `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto`
@@ -149,7 +136,7 @@ export default function InfoBar() {
     return {
       temp: Math.round(d.current.temperature_2m),
       icon: mapWeatherCode(d.current.weather_code),
-      city: city || "My Location",
+      city: "Seoul",
     };
   }
 
@@ -214,7 +201,7 @@ export default function InfoBar() {
 
         {data.usdKrw && (
           <>
-            <span className="text-border/60">|</span>
+            {data.weather && <span className="text-border/60">|</span>}
             <span className="flex items-center gap-1.5">
               <DollarSign className="h-3 w-3 text-emerald-500" />
               <span>USD/KRW</span>
@@ -226,7 +213,7 @@ export default function InfoBar() {
 
         {data.btcUsd && (
           <>
-            <span className="text-border/60">|</span>
+            {(data.weather || data.usdKrw) && <span className="text-border/60">|</span>}
             <span className="flex items-center gap-1.5">
               <Bitcoin className="h-3 w-3 text-orange-500" />
               <span>BTC</span>
