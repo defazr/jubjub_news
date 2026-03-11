@@ -1,22 +1,21 @@
 // Minimal scheduled function that triggers the Next.js API route
 const SITE_URL = process.env.URL || process.env.DEPLOY_URL || "https://headlines.fazr.co.kr";
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+const INGEST_SECRET = process.env.INGEST_SECRET || "";
 
 export default async (req: Request) => {
   console.log("news-ingest function triggered");
   console.log("SITE_URL:", SITE_URL);
-  console.log("Has SUPABASE_SERVICE_KEY:", !!SUPABASE_SERVICE_KEY);
+  console.log("Has INGEST_SECRET:", !!INGEST_SECRET);
 
-  if (!SITE_URL) {
-    return new Response(JSON.stringify({ error: "No site URL" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+  if (!SITE_URL || !INGEST_SECRET) {
+    return new Response(
+      JSON.stringify({ error: "Missing SITE_URL or INGEST_SECRET" }),
+      { status: 500, headers: { "Content-Type": "application/json" } },
+    );
   }
 
-  const secret = SUPABASE_SERVICE_KEY.slice(0, 16);
-  const url = `${SITE_URL}/api/news-ingest?secret=${secret}`;
-  console.log("Calling:", url.replace(secret, "***"));
+  const url = `${SITE_URL}/api/news-ingest?secret=${INGEST_SECRET}`;
+  console.log("Calling news-ingest API...");
 
   try {
     const res = await fetch(url);

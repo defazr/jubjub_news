@@ -4,8 +4,9 @@ import { createClient } from "@supabase/supabase-js";
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || "";
 const RAPIDAPI_HOST = "news-api14.p.rapidapi.com";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+const SUPABASE_SERVICE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || "";
+const INGEST_SECRET = process.env.INGEST_SECRET || "";
 
 const CATEGORIES = [
   { name: "technology", query: "technology" },
@@ -242,10 +243,16 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Auth check
+    if (!INGEST_SECRET) {
+      return NextResponse.json(
+        { error: "Server misconfiguration: missing INGEST_SECRET" },
+        { status: 500 }
+      );
+    }
+
+    // Auth check using dedicated INGEST_SECRET
     const secret = req.nextUrl.searchParams.get("secret");
-    const expectedSecret = SUPABASE_SERVICE_KEY.slice(0, 16);
-    if (!secret || secret !== expectedSecret) {
+    if (!secret || secret !== INGEST_SECRET) {
       return NextResponse.json(
         { error: "Unauthorized", hint: "Missing or invalid secret parameter" },
         { status: 401 }
@@ -343,22 +350,25 @@ export async function GET(req: NextRequest) {
       existingHashes.add(hash);
     }
 
-    // 5. Generate AI summaries in batches of 10
-    const BATCH_SIZE = 10;
-    for (const batch of chunks(prepared, BATCH_SIZE)) {
-      const results = await Promise.allSettled(
-        batch.map(async (item) => {
-          if (!item.excerpt) return;
-          const summary = await generateSummary(item.title, item.excerpt);
-          if (summary) {
-            item.summary = summary;
-            stats.summaries++;
+    // 5. Generate AI summaries (only if ?summarize=true to avoid timeout)
+    const shouldSummarize = req.nextUrl.searchParams.get("summarize") === "true";
+    if (shouldSummarize) {
+      const BATCH_SIZE = 10;
+      for (const batch of chunks(prepared, BATCH_SIZE)) {
+        const results = await Promise.allSettled(
+          batch.map(async (item) => {
+            if (!item.excerpt) return;
+            const summary = await generateSummary(item.title, item.excerpt);
+            if (summary) {
+              item.summary = summary;
+              stats.summaries++;
+            }
+          })
+        );
+        for (const r of results) {
+          if (r.status === "rejected") {
+            console.error("Summary generation failed:", r.reason);
           }
-        })
-      );
-      for (const r of results) {
-        if (r.status === "rejected") {
-          console.error("Summary generation failed:", r.reason);
         }
       }
     }
