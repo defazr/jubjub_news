@@ -111,15 +111,20 @@ export default function HomeContent({ trending, breaking, categoryData, aiArticl
         {/* Trending Topics */}
         <TrendingTopics keywords={popularKeywords} className="mb-6" />
 
-        {/* Daily Digest link */}
+        {/* Daily Digest card */}
         <a
           href="/digest"
-          className="flex items-center gap-2 mb-6 p-3 rounded-lg border border-border hover:border-primary/30 hover:bg-accent/50 transition-all"
+          className="group block mb-6 p-4 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary/40 transition-all"
         >
-          <Newspaper className="h-5 w-5 text-primary shrink-0" />
-          <div>
-            <span className="text-sm font-semibold">Daily Digest</span>
-            <span className="text-xs text-muted-foreground ml-2">Today&apos;s top stories summarized by AI</span>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+              <Newspaper className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold group-hover:text-primary transition-colors">Daily Digest</h3>
+              <p className="text-xs text-muted-foreground">Today&apos;s AI-curated top stories across tech, economy &amp; world</p>
+            </div>
+            <span className="ml-auto text-xs text-primary font-medium shrink-0">Read →</span>
           </div>
         </a>
 
