@@ -112,6 +112,26 @@ export default async function TopicPage({ params }: Props) {
           </section>
         )}
 
+        {/* More Topics — SEO cluster for internal linking */}
+        <section className="mt-6 bg-muted/50 rounded-lg p-4">
+          <h2 className="text-sm font-bold mb-3">More Topics</h2>
+          <div className="flex flex-wrap gap-2">
+            {["ai", "chatgpt", "openai", "nvidia", "apple", "tesla", "microsoft",
+              "google", "meta", "amazon", "bitcoin", "startup", "semiconductor",
+              "robot", "quantum", "cybersecurity", "ev", "cloud"].filter(
+                (kw) => kw.toLowerCase() !== decoded.toLowerCase()
+              ).map((kw) => (
+              <a
+                key={kw}
+                href={`/topic/${encodeURIComponent(kw)}`}
+                className="text-xs px-2.5 py-1 rounded-full border border-border hover:bg-primary hover:text-primary-foreground transition-colors"
+              >
+                {kw}
+              </a>
+            ))}
+          </div>
+        </section>
+
         <AdUnit slot="bottom-topic" className="mt-6" />
       </main>
       <Footer />

@@ -6,6 +6,24 @@ function getClient() {
   return supabase;
 }
 
+/** Parse summary field that may contain SEO_HEADLINE and SUMMARY */
+export function parseSummary(summary: string | null): { seoHeadline: string | null; summaryText: string | null } {
+  if (!summary) return { seoHeadline: null, summaryText: null };
+
+  const headlineMatch = summary.match(/^SEO_HEADLINE:\s*(.+)/m);
+  const summaryMatch = summary.match(/^SUMMARY:\s*(.+)/m);
+
+  if (headlineMatch && summaryMatch) {
+    return {
+      seoHeadline: headlineMatch[1].trim(),
+      summaryText: summaryMatch[1].trim(),
+    };
+  }
+
+  // Fallback: old format without SEO_HEADLINE
+  return { seoHeadline: null, summaryText: summary };
+}
+
 /** Convert a DB Article to the ApiArticle shape used by UI components */
 export function articleToApiArticle(article: Article) {
   return {

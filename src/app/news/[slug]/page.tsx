@@ -60,8 +60,11 @@ export default async function ArticlePage({ params }: Props) {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
     headline: article.title,
-    image: article.image_url ? [article.image_url] : [],
+    image: article.image_url
+      ? [{ "@type": "ImageObject", url: article.image_url, width: 1200, height: 675 }]
+      : [],
     datePublished: article.published_at || article.created_at,
+    dateModified: article.created_at,
     description: article.summary || article.excerpt || "",
     author: {
       "@type": "Organization",

@@ -9,6 +9,7 @@ import AdUnit from "@/components/AdUnit";
 import BookmarkButton from "@/components/BookmarkButton";
 import ShareButton from "@/components/ShareButton";
 import type { Article } from "@/types/database";
+import { parseSummary } from "@/lib/articles";
 
 interface Props {
   article: Article;
@@ -21,7 +22,22 @@ function formatDate(dateStr: string): string {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
 }
 
+function timeAgo(dateStr: string): string {
+  const now = Date.now();
+  const then = new Date(dateStr).getTime();
+  if (isNaN(then)) return "";
+  const diff = now - then;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `Updated ${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `Updated ${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `Updated ${days}d ago`;
+}
+
 export default function ArticleContent({ article, relatedArticles }: Props) {
+  const { seoHeadline, summaryText } = parseSummary(article.summary);
+
   const apiArticle = {
     title: article.title,
     url: article.source_url,
@@ -53,12 +69,17 @@ export default function ArticleContent({ article, relatedArticles }: Props) {
         {article.category}
       </Badge>
 
+      {/* SEO Headline (if available) */}
+      {seoHeadline && (
+        <p className="text-sm font-medium text-primary mb-2">{seoHeadline}</p>
+      )}
+
       {/* Title */}
       <h1 className="text-2xl md:text-3xl font-bold leading-tight mb-4">
         {article.title}
       </h1>
 
-      {/* Meta info */}
+      {/* Meta info + Updated timestamp */}
       <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-4">
         {article.publisher && (
           <span className="flex items-center gap-1">
@@ -72,6 +93,11 @@ export default function ArticleContent({ article, relatedArticles }: Props) {
             {formatDate(article.published_at || article.created_at)}
           </span>
         )}
+        {(article.published_at || article.created_at) && (
+          <span className="text-xs text-muted-foreground/70">
+            {timeAgo(article.published_at || article.created_at)}
+          </span>
+        )}
       </div>
 
       {/* Action buttons */}
@@ -82,22 +108,43 @@ export default function ArticleContent({ article, relatedArticles }: Props) {
 
       <Separator className="mb-6" />
 
-      {/* Featured image */}
+      {/* Featured image — 16:9 aspect ratio, min 1200px wide for Discover */}
       {article.image_url && (
-        <div className="mb-6 rounded-lg overflow-hidden">
+        <div className="mb-6 rounded-lg overflow-hidden aspect-video">
           <img
             src={article.image_url}
             alt={article.title}
-            className="w-full h-auto object-cover max-h-[400px]"
+            className="w-full h-full object-cover"
+            width={1200}
+            height={675}
           />
         </div>
       )}
 
-      {/* AI Summary */}
-      {article.summary && (
+      {/* AI Summary — Enhanced for Discover quality signal */}
+      {(summaryText || article.summary) && (
         <div className="bg-primary/5 border border-primary/10 rounded-lg p-5 mb-6">
-          <h2 className="text-sm font-semibold text-primary mb-2">AI Summary</h2>
-          <p className="text-base leading-relaxed">{article.summary}</p>
+          <div className="flex items-center gap-2 mb-3">
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+              AI Summary
+            </span>
+            <span className="text-[10px] text-muted-foreground">Powered by AI</span>
+          </div>
+          <p className="text-base leading-relaxed">{summaryText || article.summary}</p>
+          {article.keywords && article.keywords.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-primary/10">
+              <span className="text-[10px] text-muted-foreground mr-1">Key topics:</span>
+              {article.keywords.slice(0, 5).map((kw) => (
+                <a
+                  key={kw}
+                  href={`/topic/${encodeURIComponent(kw)}`}
+                  className="text-[11px] font-medium text-primary hover:underline"
+                >
+                  {kw}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

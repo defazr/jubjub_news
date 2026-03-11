@@ -101,11 +101,22 @@ async function generateSummary(title: string, excerpt: string): Promise<string |
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5-20251001",
-        max_tokens: 150,
+        max_tokens: 200,
         messages: [
           {
             role: "user",
-            content: `Summarize this news article in 2-3 sentences (50-80 words). Focus on key facts only.\n\nTitle: ${title}\n\nExcerpt: ${excerpt}`,
+            content: `You are a news editor. Given this article, produce two things:
+
+1. SEO_HEADLINE: A click-worthy, SEO-optimized headline (max 70 chars). Make it engaging for Google Discover. Do NOT just repeat the original title.
+2. SUMMARY: A 2-3 sentence summary (50-80 words) focusing on key facts.
+
+Format your response exactly like this:
+SEO_HEADLINE: Your headline here
+SUMMARY: Your summary here
+
+Title: ${title}
+
+Excerpt: ${excerpt}`,
           },
         ],
       }),
