@@ -88,8 +88,6 @@ export default async function TopicPage({ params }: Props) {
 
         <TopicArticleList articles={articles} />
 
-        <AdUnit slot="bottom-topic" className="mt-6" />
-
         {/* Related Topics - Internal Linking */}
         {relatedTopics.length > 0 && (
           <section className="mt-8">

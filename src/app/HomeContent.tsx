@@ -170,23 +170,20 @@ export default function HomeContent({ trending, categoryData, aiArticles, popula
         {/* Trending Topics */}
         <TrendingTopics keywords={popularKeywords} className="mb-6" />
 
-        {/* 광고 1 */}
-        <InlineAd slot="9121339058" className="my-5" />
+        {/* Ad: top-home */}
+        <InlineAd slot="top-home" className="my-5" />
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3">
             <CategorySection
               categoryData={currentCategories}
               renderMidAd={
-                <InlineAd slot="2248808942" className="my-5" />
+                <InlineAd slot="bottom-home" className="my-5" />
               }
             />
-            <InlineAd slot="9121339058" className="mt-5" />
           </div>
           <div className="lg:col-span-1">
             <Sidebar articles={currentTrending.slice(0, 10)} />
-            <InlineAd slot="2248808942" className="mt-5" />
-            <InlineAd slot="9121339058" className="mt-5" />
           </div>
         </div>
       </main>
