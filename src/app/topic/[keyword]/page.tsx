@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Hash } from "lucide-react";
 import TrendingTopics from "@/components/TrendingTopics";
 
-export const revalidate = 600; // ISR: 10 minutes
+export const revalidate = 300; // ISR: 5 minutes
 
 interface Props {
   params: Promise<{ keyword: string }>;

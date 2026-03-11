@@ -7,6 +7,8 @@ import AdUnit from "@/components/AdUnit";
 import TrendingTopics from "@/components/TrendingTopics";
 import ArticleContent from "./ArticleContent";
 
+export const revalidate = 3600; // ISR: 1 hour
+
 interface Props {
   params: Promise<{ slug: string }>;
 }

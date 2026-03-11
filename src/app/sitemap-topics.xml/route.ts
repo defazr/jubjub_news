@@ -8,7 +8,7 @@ const CORE_KEYWORDS = [
   "google", "meta", "amazon", "bitcoin", "crypto", "startup",
   "semiconductor", "iphone", "android", "robot", "space", "quantum", "gpu",
   "gpt5", "gemini", "copilot", "deepseek", "anthropic", "samsung",
-  "economy", "climate", "cybersecurity", "5g", "ev", "cloud",
+  "economy", "climate", "cybersecurity", "5g", "ev", "cloud", "chip",
 ];
 
 export const revalidate = 3600; // Revalidate hourly
