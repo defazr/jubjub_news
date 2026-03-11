@@ -14,7 +14,7 @@ export default async (req: Request) => {
     );
   }
 
-  const url = `${SITE_URL}/api/news-ingest?secret=${INGEST_SECRET}`;
+  const url = `${SITE_URL}/api/news-ingest?secret=${INGEST_SECRET}&summarize=true`;
   console.log("Calling news-ingest API...");
 
   try {
