@@ -51,15 +51,17 @@ export default async function TopicPage({ params }: Props) {
       <main className="max-w-[1200px] mx-auto px-4 py-6">
         <div className="mb-6">
           <nav className="text-xs text-muted-foreground mb-1">
-            <a href="/" className="hover:text-primary transition-colors">홈</a>
+            <a href="/" className="hover:text-primary transition-colors">Home</a>
+            <span className="mx-1.5">/</span>
+            <a href="/ai" className="hover:text-primary transition-colors">AI News</a>
             <span className="mx-1.5">/</span>
             <span className="text-foreground font-medium">#{decoded}</span>
           </nav>
           <h1 className="text-2xl font-bold">
-            <span className="text-primary">#{decoded}</span> 관련 뉴스
+            AI News about <span className="text-primary">{decoded}</span>
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {articles.length}개의 기사
+            Latest news and AI summaries about {decoded} · {articles.length} articles
           </p>
         </div>
 
@@ -74,7 +76,7 @@ export default async function TopicPage({ params }: Props) {
           <section className="mt-8">
             <h2 className="text-sm font-bold flex items-center gap-2 mb-3">
               <Hash className="h-4 w-4 text-primary" />
-              관련 토픽
+              Related Topics
             </h2>
             <div className="flex flex-wrap gap-2">
               {relatedTopics.map((kw) => (

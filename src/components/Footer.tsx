@@ -8,14 +8,14 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mb-8">
           <div className="col-span-2 md:col-span-1">
             <a href="/">
-              <span className="font-headline text-2xl tracking-tight">JubJub 뉴스</span>
+              <span className="font-headline text-2xl tracking-tight">JubJub News</span>
             </a>
             <p className="text-base text-muted-foreground leading-relaxed mt-2">
-              국내외 주요 뉴스를 한눈에 모아 보여드립니다.
+              Latest global news curated by AI with quick summaries and translation.
             </p>
           </div>
           <div>
-            <h5 className="text-base font-bold text-foreground mb-3">섹션</h5>
+            <h5 className="text-base font-bold text-foreground mb-3">Sections</h5>
             <ul className="text-base space-y-2">
               {CATEGORIES.map((cat) => (
                 <li key={cat.slug}>
@@ -26,29 +26,34 @@ export default function Footer() {
               ))}
               <li>
                 <a href="/world" className="text-primary hover:underline transition-colors font-medium">
-                  해외 뉴스
+                  World News
+                </a>
+              </li>
+              <li>
+                <a href="/ai" className="text-primary hover:underline transition-colors font-medium">
+                  AI News
                 </a>
               </li>
               <li>
                 <a href="/bookmarks" className="text-muted-foreground hover:text-primary transition-colors">
-                  스크랩
+                  Saved
                 </a>
               </li>
             </ul>
           </div>
           <div>
-            <h5 className="text-base font-bold text-foreground mb-3">고객센터</h5>
+            <h5 className="text-base font-bold text-foreground mb-3">Support</h5>
             <ul className="text-base space-y-2">
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">광고 문의</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">제보하기</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">이용약관</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">개인정보처리방침</a></li>
+              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Advertise</a></li>
+              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Submit a tip</a></li>
+              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Terms of Service</a></li>
+              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Privacy Policy</a></li>
             </ul>
           </div>
         </div>
         <Separator className="mb-5" />
         <p className="text-sm text-muted-foreground/60 text-center">
-          &copy; 2026 줍줍뉴스. All rights reserved.
+          &copy; 2026 JubJub News. All rights reserved.
         </p>
       </div>
     </footer>

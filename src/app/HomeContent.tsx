@@ -18,7 +18,7 @@ import { Sparkles, Hash } from "lucide-react";
 function InlineAd({ slot, className = "" }: { slot: string; className?: string }) {
   return (
     <div className={className}>
-      <p className="text-[10px] text-muted-foreground/50 text-center mb-1">광고</p>
+      <p className="text-[10px] text-muted-foreground/50 text-center mb-1">Ad</p>
       <AdUnit slot={slot} />
     </div>
   );
@@ -82,7 +82,7 @@ export default function HomeContent({ trending, categoryData, aiArticles, popula
   }
 
   const headlines = currentTrending.slice(0, 5);
-  const breakingTitles = currentTrending.slice(0, 4).map((a) => `속보: ${a.title}`);
+  const breakingTitles = currentTrending.slice(0, 4).map((a) => a.title);
 
   return (
     <div className="min-h-screen bg-background">
@@ -95,7 +95,7 @@ export default function HomeContent({ trending, categoryData, aiArticles, popula
           <TranslateButton
             translated={translated}
             translating={translating}
-            targetLabel="English"
+            targetLabel="한국어 번역"
             onToggle={handleTranslate}
           />
         </div>
@@ -107,7 +107,7 @@ export default function HomeContent({ trending, categoryData, aiArticles, popula
           <section className="mb-6 md:mb-8">
             <h2 className="text-lg font-bold flex items-center gap-2 mb-3">
               <Sparkles className="h-5 w-5 text-primary" />
-              AI 요약 뉴스
+              AI Summary
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
               {aiArticles.slice(0, 5).map((article, i) => (
@@ -116,11 +116,14 @@ export default function HomeContent({ trending, categoryData, aiArticles, popula
                   href={article.url}
                   className="block p-3 rounded-lg border border-border hover:border-primary/30 hover:bg-accent/50 transition-all"
                 >
-                  <Badge variant="secondary" className="text-[10px] mb-1.5">AI 요약</Badge>
+                  <Badge variant="outline" className="text-[10px] mb-1.5 text-primary border-primary/30">AI Summary</Badge>
                   <h3 className="text-sm font-semibold line-clamp-2 text-card-foreground leading-snug">
                     {article.title}
                   </h3>
                   <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{article.excerpt}</p>
+                  <p className="text-[10px] text-muted-foreground/60 mt-1.5">
+                    {article.publisher.name}
+                  </p>
                 </a>
               ))}
             </div>
@@ -132,7 +135,7 @@ export default function HomeContent({ trending, categoryData, aiArticles, popula
           <section className="mb-6">
             <h2 className="text-sm font-bold flex items-center gap-2 mb-2">
               <Hash className="h-4 w-4 text-primary" />
-              인기 키워드
+              Popular Topics
             </h2>
             <div className="flex flex-wrap gap-1.5">
               {popularKeywords.map((kw) => (

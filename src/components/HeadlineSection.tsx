@@ -41,17 +41,17 @@ export default function HeadlineSection({ articles }: Props) {
                 />
               ) : (
                 <div className="w-full h-48 md:h-64 bg-muted flex items-center justify-center text-muted-foreground text-sm">
-                  뉴스 이미지
+                  News Image
                 </div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6">
                 <Badge variant="secondary" className="mb-2 bg-primary text-primary-foreground border-0 text-xs">
-                  {mainHeadline.publisher.name || "뉴스"}
+                  {mainHeadline.publisher.name || "News"}
                 </Badge>
                 <h2 className={`font-headline text-2xl md:text-3xl font-bold text-white leading-tight line-clamp-2 ${readUrls.has(mainHeadline.url) ? "opacity-70" : ""}`}>
                   {mainHeadline.title}
-                  {readUrls.has(mainHeadline.url) && <span className="ml-2 text-xs font-normal bg-white/20 text-white/80 px-1.5 py-0.5 rounded align-middle">읽음</span>}
+                  {readUrls.has(mainHeadline.url) && <span className="ml-2 text-xs font-normal bg-white/20 text-white/80 px-1.5 py-0.5 rounded align-middle">Read</span>}
                 </h2>
               </div>
             </div>
@@ -91,7 +91,7 @@ export default function HeadlineSection({ articles }: Props) {
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1">
                       <Badge variant="outline" className="mb-2 text-xs text-primary border-primary/30">
-                        {subHeadline.publisher.name || "뉴스"}
+                        {subHeadline.publisher.name || "News"}
                       </Badge>
                       <h3 className={`font-headline text-lg md:text-xl font-bold text-card-foreground leading-snug line-clamp-2 hover:text-primary transition-colors ${readUrls.has(subHeadline.url) ? "opacity-60" : ""}`}>
                         {subHeadline.title}
@@ -115,7 +115,7 @@ export default function HeadlineSection({ articles }: Props) {
             <CardContent className="p-4">
               <h4 className="text-base font-bold text-card-foreground mb-3 flex items-center gap-2">
                 <span className="w-1.5 h-5 bg-primary rounded-full" />
-                주요 뉴스
+                Top Stories
               </h4>
               <Separator className="mb-3" />
               <ul className="space-y-3">

@@ -14,7 +14,7 @@ export default function TopicArticleList({ articles }: { articles: Article[] }) 
   if (articles.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground">
-        이 토픽에 해당하는 기사가 없습니다.
+        No articles found for this topic.
       </div>
     );
   }
@@ -32,21 +32,43 @@ export default function TopicArticleList({ articles }: { articles: Article[] }) 
               />
             )}
             <div className="p-4">
-              <Badge variant="secondary" className="mb-2 capitalize text-xs">
-                {article.category}
-              </Badge>
+              <div className="flex items-center gap-2 mb-2">
+                <Badge variant="secondary" className="capitalize text-xs">
+                  {article.category}
+                </Badge>
+                {article.summary && (
+                  <Badge variant="outline" className="text-xs text-primary border-primary/30">
+                    AI Summary
+                  </Badge>
+                )}
+              </div>
               <h2 className="text-sm font-semibold line-clamp-2 mb-2">
                 {article.title}
               </h2>
-              {article.excerpt && (
+              {article.summary ? (
+                <p className="text-xs text-muted-foreground line-clamp-3 mb-2 leading-relaxed">
+                  {article.summary}
+                </p>
+              ) : article.excerpt ? (
                 <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
                   {article.excerpt}
                 </p>
-              )}
-              <p className="text-xs text-muted-foreground">
-                {article.publisher && `${article.publisher} · `}
-                {formatDate(article.created_at)}
-              </p>
+              ) : null}
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">
+                  {article.publisher && `${article.publisher} · `}
+                  {formatDate(article.created_at)}
+                </p>
+                {article.keywords && article.keywords.length > 0 && (
+                  <div className="hidden sm:flex gap-1">
+                    {article.keywords.slice(0, 2).map((kw) => (
+                      <span key={kw} className="text-[10px] text-primary/70">
+                        #{kw}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </Card>
         </a>

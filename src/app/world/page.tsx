@@ -15,19 +15,19 @@ import { articleLink } from "@/lib/link";
 import { Globe } from "lucide-react";
 
 const WORLD_TOPICS = [
-  { label: "전체", dbCategory: null },
-  { label: "비즈니스", dbCategory: "business" },
-  { label: "테크", dbCategory: "technology" },
-  { label: "스포츠", dbCategory: "sports" },
-  { label: "엔터", dbCategory: "entertainment" },
-  { label: "과학", dbCategory: "science" },
-  { label: "건강", dbCategory: "health" },
+  { label: "All", dbCategory: null },
+  { label: "Business", dbCategory: "business" },
+  { label: "Tech", dbCategory: "technology" },
+  { label: "Sports", dbCategory: "sports" },
+  { label: "Entertainment", dbCategory: "entertainment" },
+  { label: "Science", dbCategory: "science" },
+  { label: "Health", dbCategory: "health" },
 ];
 
 function InlineAd({ slot, className = "" }: { slot: string; className?: string }) {
   return (
     <div className={className}>
-      <p className="text-[10px] text-muted-foreground/50 text-center mb-1">광고</p>
+      <p className="text-[10px] text-muted-foreground/50 text-center mb-1">Ad</p>
       <AdUnit slot={slot} />
     </div>
   );
@@ -55,7 +55,7 @@ export default function WorldNewsPage() {
   const [originalArticles, setOriginalArticles] = useState<ApiArticle[]>([]);
 
   useEffect(() => {
-    document.title = "해외 뉴스 - JubJub 뉴스";
+    document.title = "World News - JubJub News";
   }, []);
 
   useEffect(() => {
@@ -108,15 +108,15 @@ export default function WorldNewsPage() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <nav className="text-xs text-muted-foreground mb-1">
-              <a href="/" className="hover:text-primary transition-colors">홈</a>
+              <a href="/" className="hover:text-primary transition-colors">Home</a>
               <span className="mx-1.5">/</span>
-              <span className="text-foreground font-medium">해외 뉴스</span>
+              <span className="text-foreground font-medium">World News</span>
             </nav>
             <h1 className="font-headline text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
               <Globe className="h-7 w-7 text-primary" />
-              해외 뉴스
+              World News
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">전 세계 주요 뉴스를 실시간으로 확인하세요</p>
+            <p className="text-sm text-muted-foreground mt-1">Stay informed with the latest global news</p>
           </div>
           <TranslateButton
             translated={translated}

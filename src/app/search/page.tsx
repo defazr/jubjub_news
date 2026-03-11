@@ -20,7 +20,7 @@ import { getReadUrls, addSearchHistory } from "@/lib/storage";
 function InlineAd({ slot, className = "" }: { slot: string; className?: string }) {
   return (
     <div className={className}>
-      <p className="text-[10px] text-muted-foreground/50 text-center mb-1">광고</p>
+      <p className="text-[10px] text-muted-foreground/50 text-center mb-1">Ad</p>
       <AdUnit slot={slot} />
     </div>
   );
@@ -62,11 +62,11 @@ function SearchContent() {
 
   useEffect(() => {
     if (!query) {
-      document.title = "검색 - JubJub 뉴스";
+      document.title = "Search - JubJub News";
       setLoading(false);
       return;
     }
-    document.title = `"${query}" 검색 결과 - JubJub 뉴스`;
+    document.title = `"${query}" Search Results - JubJub News`;
     addSearchHistory(query);
     setLoading(true);
     setTranslated(false);
@@ -111,23 +111,23 @@ function SearchContent() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <nav className="text-xs text-muted-foreground mb-1">
-              <a href="/" className="hover:text-primary transition-colors">홈</a>
+              <a href="/" className="hover:text-primary transition-colors">Home</a>
               <span className="mx-1.5">/</span>
-              <span className="text-foreground font-medium">검색 결과</span>
+              <span className="text-foreground font-medium">Search Results</span>
             </nav>
             <h1 className="font-headline text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
               <SearchIcon className="h-7 w-7 text-primary" />
-              &ldquo;{query}&rdquo; 검색 결과
+              &ldquo;{query}&rdquo; Results
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {loading ? "검색 중..." : `${articles.length}개의 결과`}
+              {loading ? "Searching..." : `${articles.length} results`}
             </p>
           </div>
           {articles.length > 0 && (
             <TranslateButton
               translated={translated}
               translating={translating}
-              targetLabel="English"
+              targetLabel="한국어 번역"
               onToggle={handleTranslate}
             />
           )}
@@ -154,10 +154,10 @@ function SearchContent() {
           <div className="text-center py-16">
             <SearchIcon className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
             <p className="text-lg text-muted-foreground mb-2">
-              {query ? "검색 결과가 없습니다" : "검색어를 입력해주세요"}
+              {query ? "No results found" : "Enter a search query"}
             </p>
             <p className="text-sm text-muted-foreground/60">
-              다른 키워드로 검색해보세요
+              Try searching with different keywords
             </p>
           </div>
         ) : (
