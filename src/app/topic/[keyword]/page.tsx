@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { getArticlesByKeyword, getPopularKeywords } from "@/lib/articles";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -46,6 +47,11 @@ export default async function TopicPage({ params }: Props) {
     getArticlesByKeyword(decoded, 50),
     getPopularKeywords(20),
   ]);
+
+  // No matching articles → 404 (prevent thin/empty pages)
+  if (articles.length === 0) {
+    notFound();
+  }
 
   // Related topics: exclude current keyword
   const relatedTopics = popularKeywords

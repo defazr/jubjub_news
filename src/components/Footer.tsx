@@ -11,7 +11,7 @@ export default function Footer() {
               <span className="font-headline text-2xl tracking-tight">Headlines Fazr</span>
             </a>
             <p className="text-base text-muted-foreground leading-relaxed mt-2">
-              Latest global news curated by AI with quick summaries and translation.
+              Latest global news curated by AI with quick summaries.
             </p>
           </div>
           <div>
@@ -42,12 +42,11 @@ export default function Footer() {
             </ul>
           </div>
           <div>
-            <h5 className="text-base font-bold text-foreground mb-3">Support</h5>
+            <h5 className="text-base font-bold text-foreground mb-3">Legal</h5>
             <ul className="text-base space-y-2">
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Advertise</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Submit a tip</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Privacy Policy</a></li>
+              <li><a href="/advertise" className="text-muted-foreground hover:text-primary transition-colors">Advertise</a></li>
+              <li><a href="/privacy" className="text-muted-foreground hover:text-primary transition-colors">Privacy Policy</a></li>
+              <li><a href="/terms" className="text-muted-foreground hover:text-primary transition-colors">Terms of Service</a></li>
             </ul>
           </div>
         </div>
