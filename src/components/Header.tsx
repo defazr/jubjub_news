@@ -162,10 +162,6 @@ export default function Header({ onSearch }: Props) {
                 <Sparkles className="h-3 w-3" />
                 AI News
               </a>
-              <a href="/world" className="hover:text-primary transition-colors flex items-center gap-1">
-                <Globe className="h-3 w-3" />
-                World
-              </a>
               <span className="flex items-center gap-0.5 border-l border-border pl-3">
                 <button onClick={() => changeFontSize(-1)} className="hover:text-foreground transition-colors p-0.5" title="글자 줄이기">
                   <AArrowDown className="h-3.5 w-3.5" />
@@ -248,12 +244,6 @@ export default function Header({ onSearch }: Props) {
                       >
                         <Sparkles className="h-4 w-4" /> AI News
                       </a>
-                      <a
-                        href="/world"
-                        className="flex items-center gap-3 w-full px-5 py-3 text-sm font-medium text-primary hover:bg-accent transition-colors"
-                      >
-                        <Globe className="h-4 w-4" /> World
-                      </a>
                     </div>
                   </SheetContent>
                 </Sheet>
@@ -306,19 +296,6 @@ export default function Header({ onSearch }: Props) {
                     <a href="/ai">
                       <Sparkles className="h-4 w-4 mr-1" />
                       AI
-                    </a>
-                  </Button>
-                </li>
-                <li>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    asChild
-                    className="text-sm font-medium text-primary hover:bg-primary/5"
-                  >
-                    <a href="/world">
-                      <Globe className="h-4 w-4 mr-1" />
-                      World
                     </a>
                   </Button>
                 </li>
