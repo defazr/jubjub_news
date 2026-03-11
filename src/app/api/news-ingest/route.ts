@@ -105,14 +105,17 @@ async function generateSummary(title: string, excerpt: string): Promise<string |
         messages: [
           {
             role: "user",
-            content: `You are a news editor. Given this article, produce two things:
+            content: `You are a news editor. Given this article, produce two things on separate lines:
 
-1. SEO_HEADLINE: A click-worthy, SEO-optimized headline (max 70 chars). Make it engaging for Google Discover. Do NOT just repeat the original title.
-2. SUMMARY: A 2-3 sentence summary (50-80 words) focusing on key facts.
+Line 1: A click-worthy, SEO-optimized headline (max 70 chars). Engaging for Google Discover. Do NOT repeat the original title.
+Line 2+: A 2-3 sentence summary (50-80 words) focusing on key facts.
 
-Format your response exactly like this:
-SEO_HEADLINE: Your headline here
-SUMMARY: Your summary here
+IMPORTANT: Output ONLY these two parts separated by a blank line. No labels, no prefixes.
+
+Example format:
+Revolutionary AI Chip Could Change Computing Forever
+
+Scientists at MIT have developed a new neuromorphic chip that processes data 100x faster. The breakthrough could transform industries from healthcare to autonomous vehicles. Early tests show promising results in real-world applications.
 
 Title: ${title}
 

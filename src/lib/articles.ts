@@ -6,13 +6,17 @@ function getClient() {
   return supabase;
 }
 
-/** Parse summary field that may contain SEO_HEADLINE and SUMMARY */
+/** Parse summary field — supports 3 formats:
+ *  1. OLD: "SEO_HEADLINE: ...\nSUMMARY: ..."
+ *  2. NEW: "headline\n\nsummary text..."
+ *  3. LEGACY: plain summary text (no headline)
+ */
 export function parseSummary(summary: string | null): { seoHeadline: string | null; summaryText: string | null } {
   if (!summary) return { seoHeadline: null, summaryText: null };
 
+  // Format 1: OLD labeled format
   const headlineMatch = summary.match(/^SEO_HEADLINE:\s*(.+)/m);
   const summaryMatch = summary.match(/^SUMMARY:\s*(.+)/m);
-
   if (headlineMatch && summaryMatch) {
     return {
       seoHeadline: headlineMatch[1].trim(),
@@ -20,7 +24,21 @@ export function parseSummary(summary: string | null): { seoHeadline: string | nu
     };
   }
 
-  // Fallback: old format without SEO_HEADLINE
+  // Format 2: NEW newline-based format (first line = headline, blank line, rest = summary)
+  const parts = summary.split(/\n\s*\n/);
+  if (parts.length >= 2) {
+    const firstLine = parts[0].trim();
+    const rest = parts.slice(1).join("\n\n").trim();
+    // Headline should be short (< 100 chars) and not look like a full paragraph
+    if (firstLine.length > 0 && firstLine.length < 100 && rest.length > 0) {
+      return {
+        seoHeadline: firstLine,
+        summaryText: rest,
+      };
+    }
+  }
+
+  // Format 3: LEGACY plain summary
   return { seoHeadline: null, summaryText: summary };
 }
 
