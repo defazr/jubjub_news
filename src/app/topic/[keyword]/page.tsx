@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { getArticlesByKeyword, getPopularKeywords } from "@/lib/articles";
+import { getPopularKeywords } from "@/lib/articles";
+import { getArticlesByConceptTopic, getTopicDescription } from "@/lib/topicConcepts";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AdUnit from "@/components/AdUnit";
@@ -17,7 +18,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { keyword } = await params;
   const decoded = decodeURIComponent(keyword);
-  const desc = `Latest news and AI summaries about ${decoded}. Real-time global news curated by AI.`;
+  const desc = getTopicDescription(decoded) || `Latest news and AI summaries about ${decoded}. Real-time global news curated by AI.`;
   return {
     title: `${decoded} News - Latest AI Summarized Articles | Headlines Fazr`,
     description: desc,
@@ -43,7 +44,7 @@ export default async function TopicPage({ params }: Props) {
   const decoded = decodeURIComponent(keyword);
 
   const [articles, popularKeywords] = await Promise.all([
-    getArticlesByKeyword(decoded, 50),
+    getArticlesByConceptTopic(decoded, 50),
     getPopularKeywords(20),
   ]);
 
