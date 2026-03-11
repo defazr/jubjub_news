@@ -175,7 +175,56 @@ export async function GET(req: NextRequest) {
         hasRapidApiKey: !!RAPIDAPI_KEY,
         hasAnthropicKey: !!ANTHROPIC_API_KEY,
         supabaseUrl: SUPABASE_URL ? SUPABASE_URL.slice(0, 30) + "..." : "NOT SET",
+        serviceKeyPrefix: SUPABASE_SERVICE_KEY ? SUPABASE_SERVICE_KEY.slice(0, 10) + "..." : "NOT SET",
       });
+    }
+
+    // Test mode - test each service individually
+    if (action === "test") {
+      const results: Record<string, unknown> = {};
+
+      // Test Supabase connection
+      try {
+        const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+        const { data, error } = await supabase.from("articles").select("id").limit(1);
+        results.supabase = error ? { error: error.message, code: error.code } : { ok: true, rows: data?.length ?? 0 };
+      } catch (e) {
+        results.supabase = { error: e instanceof Error ? e.message : String(e) };
+      }
+
+      // Test RapidAPI
+      try {
+        const res = await fetch(`https://${RAPIDAPI_HOST}/v2/trendings?topic=General&language=en`, {
+          headers: { "x-rapidapi-host": RAPIDAPI_HOST, "x-rapidapi-key": RAPIDAPI_KEY },
+        });
+        const text = await res.text();
+        results.rapidapi = { status: res.status, bodyLength: text.length, preview: text.slice(0, 100) };
+      } catch (e) {
+        results.rapidapi = { error: e instanceof Error ? e.message : String(e) };
+      }
+
+      // Test Anthropic
+      try {
+        const res = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": ANTHROPIC_API_KEY,
+            "anthropic-version": "2023-06-01",
+          },
+          body: JSON.stringify({
+            model: "claude-haiku-4-5-20251001",
+            max_tokens: 20,
+            messages: [{ role: "user", content: "Say hello in one word." }],
+          }),
+        });
+        const data = await res.json();
+        results.anthropic = { status: res.status, response: data.content?.[0]?.text || data.error || data };
+      } catch (e) {
+        results.anthropic = { error: e instanceof Error ? e.message : String(e) };
+      }
+
+      return NextResponse.json(results);
     }
 
     // Validate required environment variables
