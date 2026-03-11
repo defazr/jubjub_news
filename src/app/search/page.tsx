@@ -80,7 +80,7 @@ function SearchContent() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header onSearch={handleSearch} />
+      <Header />
 
       <main className="max-w-[1200px] mx-auto px-3 md:px-4 py-5 md:py-8">
         <div className="flex items-center justify-between mb-4">

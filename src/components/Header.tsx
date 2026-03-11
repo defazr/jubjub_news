@@ -2,17 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, Search } from "lucide-react";
+import { Menu } from "lucide-react";
 import InfoBar from "@/components/InfoBar";
 import TrendingBar from "@/components/TrendingBar";
 import FullMenu from "@/components/FullMenu";
 import { CATEGORIES } from "@/lib/categories";
 
-interface Props {
-  onSearch?: (query: string) => void;
-}
-
-export default function Header({ onSearch }: Props) {
+export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -32,7 +28,7 @@ export default function Header({ onSearch }: Props) {
   return (
     <>
       <header className="relative z-50">
-        {/* Top Header: Logo + Search + Menu */}
+        {/* Top Header: Logo + Menu */}
         <div className={`bg-card border-b border-border ${scrolled ? "hidden" : ""}`}>
           <div className="max-w-[1200px] mx-auto px-4 h-14 flex items-center justify-between">
             <a href="/" className="hover:opacity-80 transition-opacity">
@@ -54,32 +50,15 @@ export default function Header({ onSearch }: Props) {
               ))}
             </nav>
 
-            {/* Right: Search + Menu only (Bloomberg style) */}
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9"
-                onClick={() => {
-                  if (onSearch) {
-                    onSearch("");
-                  } else {
-                    window.location.href = "/search";
-                  }
-                }}
-              >
-                <Search className="h-4 w-4" />
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9"
-                onClick={() => setMenuOpen(true)}
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-            </div>
+            {/* Right: Menu only */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9"
+              onClick={() => setMenuOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
           </div>
         </div>
 
@@ -113,30 +92,14 @@ export default function Header({ onSearch }: Props) {
                 ))}
               </nav>
 
-              <div className="flex items-center gap-0.5">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => {
-                    if (onSearch) {
-                      onSearch("");
-                    } else {
-                      window.location.href = "/search";
-                    }
-                  }}
-                >
-                  <Search className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setMenuOpen(true)}
-                >
-                  <Menu className="h-4 w-4" />
-                </Button>
-              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setMenuOpen(true)}
+              >
+                <Menu className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         )}
