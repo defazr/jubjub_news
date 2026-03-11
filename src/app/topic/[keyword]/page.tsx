@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import AdUnit from "@/components/AdUnit";
 import TopicArticleList from "./TopicArticleList";
 import { Badge } from "@/components/ui/badge";
-import { Hash } from "lucide-react";
+import { Hash, TrendingUp } from "lucide-react";
 
 export const revalidate = 600; // ISR: 10 minutes
 
@@ -16,17 +16,23 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { keyword } = await params;
   const decoded = decodeURIComponent(keyword);
+  const desc = `Latest news and AI summaries about ${decoded}. Real-time global news curated by AI.`;
   return {
-    title: `${decoded} News and Updates - JubJub News`,
-    description: `Latest ${decoded} news, updates, and analysis. Stay informed with AI-summarized articles about ${decoded}.`,
+    title: `${decoded} News - Latest AI Summarized Articles | JubJub News`,
+    description: desc,
     alternates: {
       canonical: `https://headlines.fazr.co.kr/topic/${keyword}`,
     },
     openGraph: {
-      title: `${decoded} News and Updates`,
-      description: `Latest ${decoded} news, updates, and analysis.`,
+      title: `${decoded} News - Latest AI Summarized Articles`,
+      description: desc,
       url: `https://headlines.fazr.co.kr/topic/${keyword}`,
       type: "website",
+    },
+    twitter: {
+      card: "summary",
+      title: `${decoded} News - Latest AI Summarized Articles`,
+      description: desc,
     },
   };
 }
@@ -40,10 +46,12 @@ export default async function TopicPage({ params }: Props) {
     getPopularKeywords(20),
   ]);
 
-  // Related topics: exclude current keyword
-  const relatedTopics = popularKeywords.filter(
+  // Trending & related topics: exclude current keyword
+  const otherTopics = popularKeywords.filter(
     (kw) => kw.toLowerCase() !== decoded.toLowerCase()
-  ).slice(0, 12);
+  );
+  const trendingTopics = otherTopics.slice(0, 8);
+  const relatedTopics = otherTopics.slice(0, 12);
 
   return (
     <div className="min-h-screen bg-background">
@@ -65,11 +73,33 @@ export default async function TopicPage({ params }: Props) {
           </p>
         </div>
 
-        <AdUnit slot="9121339058" className="mb-6" />
+        <AdUnit slot="top-topic" className="mb-6" />
+
+        {/* Trending Topics */}
+        {trendingTopics.length > 0 && (
+          <section className="mb-6">
+            <h2 className="text-sm font-bold flex items-center gap-2 mb-3">
+              <TrendingUp className="h-4 w-4 text-primary" />
+              Trending Topics
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {trendingTopics.map((kw) => (
+                <a key={kw} href={`/topic/${encodeURIComponent(kw)}`}>
+                  <Badge
+                    variant="secondary"
+                    className="hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
+                  >
+                    #{kw}
+                  </Badge>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
 
         <TopicArticleList articles={articles} />
 
-        <AdUnit slot="2248808942" className="mt-6" />
+        <AdUnit slot="bottom-topic" className="mt-6" />
 
         {/* Related Topics - Internal Linking */}
         {relatedTopics.length > 0 && (
@@ -93,7 +123,7 @@ export default async function TopicPage({ params }: Props) {
           </section>
         )}
 
-        <AdUnit slot="9121339058" className="mt-6" />
+        <AdUnit slot="bottom-topic" className="mt-6" />
       </main>
       <Footer />
     </div>
