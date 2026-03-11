@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { Bookmark, Trash2 } from "lucide-react";
 import { getBookmarks, removeBookmark, type BookmarkedArticle } from "@/lib/storage";
 import { articleLink } from "@/lib/link";
+import SafeImage from "@/components/SafeImage";
 
 export default function BookmarksPage() {
   const [bookmarks, setBookmarks] = useState<BookmarkedArticle[]>([]);
@@ -69,14 +70,12 @@ export default function BookmarksPage() {
                     href={articleLink(article.url, article.title, article.publisher)}
                     className="block sm:flex flex-1"
                   >
-                    {article.thumbnail && (
-                      <img
-                        src={article.thumbnail}
-                        alt={article.title}
-                        className="w-full sm:w-48 h-32 sm:h-auto object-cover rounded-t-lg sm:rounded-t-none sm:rounded-l-lg shrink-0"
-                        loading="lazy"
-                      />
-                    )}
+                    <SafeImage
+                      src={article.thumbnail}
+                      alt={article.title}
+                      className="w-full sm:w-48 h-32 sm:h-auto object-cover rounded-t-lg sm:rounded-t-none sm:rounded-l-lg shrink-0"
+                      loading="lazy"
+                    />
                     <CardContent className="p-4 flex flex-col justify-center flex-1">
                       <Badge variant="outline" className="mb-1.5 w-fit text-xs text-primary border-primary/30">
                         {article.publisher}

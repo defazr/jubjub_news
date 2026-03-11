@@ -36,7 +36,6 @@ export const metadata: Metadata = {
     "technology",
     "business",
     "Headlines Fazr",
-    "translated news",
     "news summary",
   ],
   authors: [{ name: SITE_NAME }],
