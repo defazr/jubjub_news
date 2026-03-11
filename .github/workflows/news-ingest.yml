@@ -1,0 +1,29 @@
+name: News Ingest Cron
+
+on:
+  schedule:
+    # Every 6 hours: 00:00, 06:00, 12:00, 18:00 UTC
+    - cron: "0 0,6,12,18 * * *"
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger news ingest
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://headlines.fazr.co.kr/api/news-ingest?secret=${{ secrets.INGEST_SECRET }}&summarize=true" \
+            --max-time 120)
+          echo "Response code: $response"
+          if [ "$response" -ne 200 ]; then
+            echo "Ingest failed with status $response"
+            exit 1
+          fi
+
+      - name: Trigger backfill summaries
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://headlines.fazr.co.kr/api/backfill-summaries?secret=${{ secrets.INGEST_SECRET }}&limit=50" \
+            --max-time 180)
+          echo "Response code: $response"
