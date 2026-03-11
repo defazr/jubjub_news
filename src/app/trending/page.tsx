@@ -114,8 +114,6 @@ export default async function TrendingPage() {
           })}
         </div>
 
-        <AdUnit slot="bottom-topic" className="mb-6" />
-
         {/* Latest stories */}
         <section className="mb-8">
           <h2 className="text-lg font-bold flex items-center gap-2 mb-4">

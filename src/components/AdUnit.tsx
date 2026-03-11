@@ -2,18 +2,24 @@
 
 import { useEffect, useRef, useState } from "react";
 
-// AdSense slot ID mapping
+// AdSense slot ID mapping — 5 unique slots, no duplicates per page
 const SLOT_MAP: Record<string, string> = {
+  // Article pages (3 slots)
   "top-article": "9121339058",     // headlines_01
   "mid-article": "2248808942",     // headlines_02
-  "bottom-article": "9121339058",  // headlines_01
+  "bottom-article": "2658112296",  // headlines_03
+  // AI pages
   "top-ai": "9121339058",          // headlines_01
   "mid-ai": "2248808942",          // headlines_02
-  "bottom-ai": "2248808942",       // headlines_02
+  "bottom-ai": "2658112296",       // headlines_03
+  // Home page (2 slots)
   "top-home": "9121339058",        // headlines_01
-  "bottom-home": "2248808942",     // headlines_02
-  "top-topic": "9121339058",       // headlines_01
-  "bottom-topic": "2248808942",    // headlines_02
+  "bottom-home": "9626486537",     // headlines_04
+  // Topic / Trending pages (2 slots)
+  "top-topic": "6704809725",       // headlines_05
+  "bottom-topic": "2658112296",    // headlines_03
+  // Sidebar
+  "sidebar": "9626486537",         // headlines_04
 };
 
 interface Props {
