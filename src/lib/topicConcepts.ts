@@ -93,10 +93,10 @@ export async function getArticlesByConceptTopic(
 ): Promise<Article[]> {
   const keywords = getConceptKeywords(topic);
 
-  // Build OR conditions: keywords.cs.{kw} for each concept keyword + title.ilike for original topic
+  // Build OR conditions: keywords.cs.{kw} for each concept keyword + title/excerpt.ilike for original topic
   const conditions = keywords
     .map((kw) => `keywords.cs.{${kw}}`)
-    .concat([`title.ilike.%${topic}%`])
+    .concat([`title.ilike.%${topic}%`, `excerpt.ilike.%${topic}%`])
     .join(",");
 
   const { data, error } = await supabase
