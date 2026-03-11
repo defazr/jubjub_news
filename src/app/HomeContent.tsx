@@ -13,7 +13,8 @@ import AdUnit from "@/components/AdUnit";
 import TranslateButton from "@/components/TranslateButton";
 import { translateTexts, type ApiArticle } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, TrendingUp } from "lucide-react";
+import { Sparkles } from "lucide-react";
+import TrendingTopics from "@/components/TrendingTopics";
 
 function InlineAd({ slot, className = "" }: { slot: string; className?: string }) {
   return (
@@ -131,26 +132,7 @@ export default function HomeContent({ trending, categoryData, aiArticles, popula
         )}
 
         {/* Trending Topics */}
-        {popularKeywords.length > 0 && (
-          <section className="mb-6 bg-muted/50 rounded-lg p-4">
-            <h2 className="text-sm font-bold flex items-center gap-2 mb-3">
-              <TrendingUp className="h-4 w-4 text-primary" />
-              Trending Topics
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {popularKeywords.map((kw) => (
-                <a key={kw} href={`/topic/${encodeURIComponent(kw)}`}>
-                  <Badge
-                    variant="secondary"
-                    className="text-xs hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
-                  >
-                    #{kw}
-                  </Badge>
-                </a>
-              ))}
-            </div>
-          </section>
-        )}
+        <TrendingTopics keywords={popularKeywords} className="mb-6" />
 
         {/* 광고 1 */}
         <InlineAd slot="9121339058" className="my-5" />

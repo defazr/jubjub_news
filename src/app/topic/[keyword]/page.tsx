@@ -5,7 +5,8 @@ import Footer from "@/components/Footer";
 import AdUnit from "@/components/AdUnit";
 import TopicArticleList from "./TopicArticleList";
 import { Badge } from "@/components/ui/badge";
-import { Hash, TrendingUp } from "lucide-react";
+import { Hash } from "lucide-react";
+import TrendingTopics from "@/components/TrendingTopics";
 
 export const revalidate = 600; // ISR: 10 minutes
 
@@ -46,12 +47,10 @@ export default async function TopicPage({ params }: Props) {
     getPopularKeywords(20),
   ]);
 
-  // Trending & related topics: exclude current keyword
-  const otherTopics = popularKeywords.filter(
-    (kw) => kw.toLowerCase() !== decoded.toLowerCase()
-  );
-  const trendingTopics = otherTopics.slice(0, 8);
-  const relatedTopics = otherTopics.slice(0, 12);
+  // Related topics: exclude current keyword
+  const relatedTopics = popularKeywords
+    .filter((kw) => kw.toLowerCase() !== decoded.toLowerCase())
+    .slice(0, 12);
 
   return (
     <div className="min-h-screen bg-background">
@@ -85,26 +84,7 @@ export default async function TopicPage({ params }: Props) {
         <AdUnit slot="top-topic" className="mb-6" />
 
         {/* Trending Topics */}
-        {trendingTopics.length > 0 && (
-          <section className="mb-6">
-            <h2 className="text-sm font-bold flex items-center gap-2 mb-3">
-              <TrendingUp className="h-4 w-4 text-primary" />
-              Trending Topics
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {trendingTopics.map((kw) => (
-                <a key={kw} href={`/topic/${encodeURIComponent(kw)}`}>
-                  <Badge
-                    variant="secondary"
-                    className="hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
-                  >
-                    #{kw}
-                  </Badge>
-                </a>
-              ))}
-            </div>
-          </section>
-        )}
+        <TrendingTopics keywords={popularKeywords} exclude={decoded} className="mb-6" />
 
         <TopicArticleList articles={articles} />
 

@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getArticleBySlug, getRelatedArticles } from "@/lib/articles";
+import { getArticleBySlug, getRelatedArticles, getPopularKeywords } from "@/lib/articles";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AdUnit from "@/components/AdUnit";
+import TrendingTopics from "@/components/TrendingTopics";
 import ArticleContent from "./ArticleContent";
 
 interface Props {
@@ -49,16 +50,50 @@ export default async function ArticlePage({ params }: Props) {
     notFound();
   }
 
-  const relatedArticles = await getRelatedArticles(article, 5);
+  const [relatedArticles, popularKeywords] = await Promise.all([
+    getRelatedArticles(article, 6),
+    getPopularKeywords(15),
+  ]);
+
+  // JSON-LD structured data for Google News / Discover
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: article.title,
+    image: article.image_url ? [article.image_url] : [],
+    datePublished: article.published_at || article.created_at,
+    description: article.summary || article.excerpt || "",
+    author: {
+      "@type": "Organization",
+      name: "Headlines Fazr",
+      url: "https://headlines.fazr.co.kr",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Headlines Fazr",
+      url: "https://headlines.fazr.co.kr",
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `https://headlines.fazr.co.kr/news/${slug}`,
+    },
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <main className="max-w-[800px] mx-auto px-4 py-6">
         {/* Top Ad */}
         <AdUnit slot="top-article" className="mb-6" />
 
         <ArticleContent article={article} relatedArticles={relatedArticles} />
+
+        {/* Trending Topics */}
+        <TrendingTopics keywords={popularKeywords} className="mt-6" />
 
         {/* Bottom Ad */}
         <AdUnit slot="bottom-article" className="mt-6" />
