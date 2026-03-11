@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import BookmarkButton from "@/components/BookmarkButton";
 import AdUnit from "@/components/AdUnit";
+import SafeImage from "@/components/SafeImage";
 import type { Article } from "@/types/database";
 
 function formatDate(dateStr: string): string {
@@ -33,15 +34,13 @@ export default function AiArticleList({ articles }: { articles: Article[] }) {
           )}
           <Card className="overflow-hidden hover:shadow-md transition-shadow">
           <div className="flex flex-col md:flex-row">
-            {article.image_url && (
-              <a href={`/news/${article.slug}`} className="md:w-60 shrink-0">
-                <img
-                  src={article.image_url}
-                  alt=""
-                  className="w-full h-44 md:h-full object-cover"
-                />
-              </a>
-            )}
+            <a href={`/news/${article.slug}`} className="md:w-60 shrink-0">
+              <SafeImage
+                src={article.image_url}
+                alt={article.title}
+                className="w-full h-44 md:h-full object-cover"
+              />
+            </a>
             <div className="p-4 flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="flex items-center gap-2">

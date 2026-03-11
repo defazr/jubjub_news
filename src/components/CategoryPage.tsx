@@ -19,6 +19,7 @@ import { CATEGORIES, type CategoryInfo } from "@/lib/categories";
 import { articleLink } from "@/lib/link";
 import { getReadUrls, getLayout, setLayoutPref } from "@/lib/storage";
 import ShareButton from "@/components/ShareButton";
+import SafeImage from "@/components/SafeImage";
 
 function InlineAd({ slot, className = "" }: { slot: string; className?: string }) {
   return (
@@ -135,13 +136,11 @@ export default function CategoryPageContent({ category, initialArticles }: Props
             {articles[0] && (
               <Card className="border-0 shadow-sm hover:shadow-md transition-shadow mb-6 overflow-hidden py-0">
                 <a href={articleLink(articles[0].url, articles[0].title, articles[0].publisher.name)} className="block md:flex">
-                  {articles[0].thumbnail && (
-                    <img
-                      src={articles[0].thumbnail}
-                      alt={articles[0].title}
-                      className="w-full md:w-1/2 h-48 md:h-64 object-cover"
-                    />
-                  )}
+                  <SafeImage
+                    src={articles[0].thumbnail}
+                    alt={articles[0].title}
+                    className="w-full md:w-1/2 h-48 md:h-64 object-cover"
+                  />
                   <CardContent className="p-5 md:p-6 flex flex-col justify-center">
                     <div className="flex items-start justify-between gap-2">
                       <Badge variant="outline" className="mb-2 w-fit text-xs text-primary border-primary/30">
@@ -184,14 +183,12 @@ export default function CategoryPageContent({ category, initialArticles }: Props
               {visibleArticles.slice(1).map((article, i) => (
                 <Card key={i} className="border-0 shadow-sm hover:shadow-md transition-shadow py-0 gap-0">
                   <a href={articleLink(article.url, article.title, article.publisher.name)} className="block">
-                    {article.thumbnail && (
-                      <img
-                        src={article.thumbnail}
-                        alt={article.title}
-                        className="w-full h-40 object-cover rounded-t-lg"
-                        loading="lazy"
-                      />
-                    )}
+                    <SafeImage
+                      src={article.thumbnail}
+                      alt={article.title}
+                      className="w-full h-40 object-cover rounded-t-lg"
+                      loading="lazy"
+                    />
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-2">
                         <h3 className={`text-sm font-semibold text-card-foreground leading-snug mb-1.5 hover:text-primary transition-colors line-clamp-2 flex-1 ${readUrls.has(article.url) ? "opacity-60" : ""}`}>

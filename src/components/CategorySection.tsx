@@ -10,6 +10,7 @@ import BookmarkButton from "@/components/BookmarkButton";
 import ShareButton from "@/components/ShareButton";
 import { getReadUrls, getLayout, setLayoutPref } from "@/lib/storage";
 import { getCategoryByName } from "@/lib/categories";
+import SafeImage from "@/components/SafeImage";
 import { LayoutGrid, List } from "lucide-react";
 
 interface Props {
@@ -42,17 +43,15 @@ function CategoryCardGrid({ cat, articles, animDelay, readUrls }: { cat: string;
               href={articleLink(featured.url, featured.title, featured.publisher.name)}
               className="block group"
             >
-              {featured.thumbnail && (
-                <div className="relative w-full aspect-video mb-2.5 overflow-hidden rounded-md bg-muted">
-                  <img
-                    src={featured.thumbnail}
-                    alt={featured.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </div>
-              )}
+              <div className="relative w-full aspect-video mb-2.5 overflow-hidden rounded-md bg-muted">
+                <SafeImage
+                  src={featured.thumbnail}
+                  alt={featured.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              </div>
               <span className={`font-headline text-base font-semibold text-card-foreground group-hover:text-primary leading-snug block transition-colors line-clamp-2 ${readUrls.has(featured.url) ? "opacity-60" : ""}`}>
                 {featured.title}
                 {readUrls.has(featured.url) && <span className="ml-1 text-[10px] font-normal text-muted-foreground bg-muted px-1 py-0.5 rounded">Read</span>}
@@ -112,13 +111,13 @@ function CategoryCardList({ cat, articles, readUrls }: { cat: string; articles: 
         <ul className="space-y-3.5">
           {articles.map((article, i) => (
             <li key={i} className="flex items-start gap-3">
-              {i === 0 && article.thumbnail && (
+              {i === 0 && (
                 <a
                   href={articleLink(article.url, article.title, article.publisher.name)}
                   className="shrink-0 block"
                 >
                   <div className="w-28 h-20 overflow-hidden rounded-md bg-muted">
-                    <img
+                    <SafeImage
                       src={article.thumbnail}
                       alt={article.title}
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"

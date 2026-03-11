@@ -13,6 +13,7 @@ import AdUnit from "@/components/AdUnit";
 import TranslateButton from "@/components/TranslateButton";
 import { translateTexts, type ApiArticle } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
+import SafeImage from "@/components/SafeImage";
 import { Sparkles, Zap } from "lucide-react";
 import TrendingTopics from "@/components/TrendingTopics";
 
@@ -118,15 +119,13 @@ export default function HomeContent({ trending, categoryData, aiArticles, popula
                   href={article.url}
                   className="group block p-3 rounded-lg border border-red-500/20 hover:border-red-500/50 hover:bg-red-500/5 transition-all"
                 >
-                  {article.thumbnail && (
-                    <div className="aspect-video rounded overflow-hidden mb-2">
-                      <img
-                        src={article.thumbnail}
-                        alt=""
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                      />
-                    </div>
-                  )}
+                  <div className="aspect-video rounded overflow-hidden mb-2">
+                    <SafeImage
+                      src={article.thumbnail}
+                      alt={article.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                    />
+                  </div>
                   <h3 className="text-sm font-semibold line-clamp-2 leading-snug">
                     {article.title}
                   </h3>

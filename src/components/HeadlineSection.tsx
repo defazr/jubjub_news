@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import BookmarkButton from "@/components/BookmarkButton";
 import ShareButton from "@/components/ShareButton";
+import SafeImage from "@/components/SafeImage";
 import { getReadUrls } from "@/lib/storage";
 
 interface Props {
@@ -33,17 +34,11 @@ export default function HeadlineSection({ articles }: Props) {
         <Card className="md:col-span-2 overflow-hidden border-0 shadow-sm hover:shadow-md transition-shadow duration-300 py-0">
           <a href={articleLink(mainHeadline.url, mainHeadline.title, mainHeadline.publisher.name)} className="block">
             <div className="relative">
-              {mainHeadline.thumbnail ? (
-                <img
-                  src={mainHeadline.thumbnail}
-                  alt={mainHeadline.title}
-                  className="w-full h-48 md:h-64 object-cover"
-                />
-              ) : (
-                <div className="w-full h-48 md:h-64 bg-muted flex items-center justify-center text-muted-foreground text-sm">
-                  News Image
-                </div>
-              )}
+              <SafeImage
+                src={mainHeadline.thumbnail}
+                alt={mainHeadline.title}
+                className="w-full h-48 md:h-64 object-cover"
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6">
                 <Badge variant="secondary" className="mb-2 bg-primary text-primary-foreground border-0 text-xs">
@@ -80,13 +75,11 @@ export default function HeadlineSection({ articles }: Props) {
           {subHeadline && (
             <Card className="border-0 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden py-0">
               <a href={articleLink(subHeadline.url, subHeadline.title, subHeadline.publisher.name)} className="block">
-                {subHeadline.thumbnail && (
-                  <img
-                    src={subHeadline.thumbnail}
-                    alt={subHeadline.title}
-                    className="w-full h-32 object-cover"
-                  />
-                )}
+                <SafeImage
+                  src={subHeadline.thumbnail}
+                  alt={subHeadline.title}
+                  className="w-full h-32 object-cover"
+                />
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1">

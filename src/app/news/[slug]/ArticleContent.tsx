@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import AdUnit from "@/components/AdUnit";
 import BookmarkButton from "@/components/BookmarkButton";
 import ShareButton from "@/components/ShareButton";
+import SafeImage from "@/components/SafeImage";
 import type { Article } from "@/types/database";
 import { parseSummary } from "@/lib/articles";
 
@@ -110,12 +111,10 @@ export default function ArticleContent({ article, relatedArticles }: Props) {
 
       {/* Featured image — 16:9 aspect ratio, min 1200px wide for Discover */}
       <div className="mb-6 rounded-lg overflow-hidden aspect-video">
-        <img
-          src={article.image_url || "https://headlines.fazr.co.kr/Headlines_Fazr_OG_image.png"}
+        <SafeImage
+          src={article.image_url}
           alt={article.title}
           className="w-full h-full object-cover"
-          width={1200}
-          height={675}
         />
       </div>
 
@@ -213,9 +212,9 @@ export default function ArticleContent({ article, relatedArticles }: Props) {
               <a key={rel.id} href={`/news/${rel.slug}`}>
                 <Card className="p-4 hover:bg-accent/50 transition-colors cursor-pointer">
                   <div className="flex gap-3">
-                    <img
-                      src={rel.image_url || "https://headlines.fazr.co.kr/Headlines_Fazr_OG_image.png"}
-                      alt=""
+                    <SafeImage
+                      src={rel.image_url}
+                      alt={rel.title}
                       className="w-20 h-14 object-cover rounded flex-shrink-0"
                     />
                     <div className="min-w-0">
