@@ -104,6 +104,7 @@ export default function RootLayout({
         <link rel="canonical" href={SITE_URL} />
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        <link rel="alternate" type="application/rss+xml" title="Headlines Fazr RSS" href={`${SITE_URL}/rss.xml`} />
         <meta name="naver-site-verification" content="d19fefda5c8d730ea238a493c59d291eb0a8c6b0" />
         <meta name="google-site-verification" content="" />
         {/* 카카오톡 공유용 (OG 태그 기반 + 추가 메타) */}
