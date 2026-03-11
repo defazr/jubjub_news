@@ -124,15 +124,28 @@ export async function getRelatedArticles(
   article: Article,
   limit: number = 5
 ): Promise<Article[]> {
+  // Fetch more candidates, then rank by keyword overlap
+  const candidateLimit = Math.max(limit * 5, 30);
   const { data, error } = await getClient()
     .from("articles")
     .select("*")
     .neq("id", article.id)
     .eq("category", article.category)
     .order("created_at", { ascending: false })
-    .limit(limit);
+    .limit(candidateLimit);
   if (error) console.error("[articles] getRelatedArticles error:", error.message);
-  return dedup(data || []);
+
+  const candidates = dedup(data || []);
+  if (!article.keywords?.length) return candidates.slice(0, limit);
+
+  // Score by keyword overlap
+  const kwSet = new Set(article.keywords.map((k) => k.toLowerCase()));
+  const scored = candidates.map((c) => {
+    const overlap = (c.keywords || []).filter((k) => kwSet.has(k.toLowerCase())).length;
+    return { article: c, score: overlap };
+  });
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, limit).map((s) => s.article);
 }
 
 export async function getPopularKeywords(limit: number = 20): Promise<string[]> {
@@ -179,6 +192,61 @@ export async function getTrendingArticles(limit: number = 10): Promise<Article[]
     .limit(limit);
   if (error) console.error("[articles] getTrendingArticles error:", error.message);
   return dedup(data || []);
+}
+
+/** Get breaking news: recent articles (last 6 hours) with AI summaries */
+export async function getBreakingArticles(limit: number = 5): Promise<Article[]> {
+  const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await getClient()
+    .from("articles")
+    .select("*")
+    .not("summary", "is", null)
+    .neq("summary", "")
+    .gte("created_at", sixHoursAgo)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) console.error("[articles] getBreakingArticles error:", error.message);
+
+  const results = dedup(data || []);
+  // Fallback: if not enough recent articles, get latest with summaries
+  if (results.length < limit) {
+    const { data: fallback } = await getClient()
+      .from("articles")
+      .select("*")
+      .not("summary", "is", null)
+      .neq("summary", "")
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    return dedup(fallback || []).slice(0, limit);
+  }
+  return results;
+}
+
+/** Get articles for Daily Digest grouped by category */
+export async function getDigestArticles(perCategory: number = 3): Promise<Record<string, Article[]>> {
+  const categories = ["technology", "business", "world", "ai", "science", "sports"];
+  const result: Record<string, Article[]> = {};
+
+  const results = await Promise.all(
+    categories.map((cat) =>
+      getClient()
+        .from("articles")
+        .select("*")
+        .eq("category", cat)
+        .not("summary", "is", null)
+        .neq("summary", "")
+        .order("created_at", { ascending: false })
+        .limit(perCategory)
+    )
+  );
+
+  categories.forEach((cat, i) => {
+    const { data, error } = results[i];
+    if (error) console.error("[articles] getDigestArticles error:", error.message, cat);
+    result[cat] = dedup(data || []);
+  });
+
+  return result;
 }
 
 /** Get popular keywords grouped by category */

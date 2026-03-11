@@ -23,17 +23,17 @@ function formatDate(dateStr: string): string {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
 }
 
-function timeAgo(dateStr: string): string {
+function timeAgo(dateStr: string): { text: string; isRecent: boolean } {
   const now = Date.now();
   const then = new Date(dateStr).getTime();
-  if (isNaN(then)) return "";
+  if (isNaN(then)) return { text: "", isRecent: false };
   const diff = now - then;
   const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `Updated ${mins}m ago`;
+  if (mins < 60) return { text: `Updated ${mins}m ago`, isRecent: true };
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `Updated ${hours}h ago`;
+  if (hours < 24) return { text: `Updated ${hours}h ago`, isRecent: hours <= 6 };
   const days = Math.floor(hours / 24);
-  return `Updated ${days}d ago`;
+  return { text: `Updated ${days}d ago`, isRecent: false };
 }
 
 export default function ArticleContent({ article, relatedArticles }: Props) {
@@ -94,11 +94,19 @@ export default function ArticleContent({ article, relatedArticles }: Props) {
             {formatDate(article.published_at || article.created_at)}
           </span>
         )}
-        {(article.published_at || article.created_at) && (
-          <span className="text-xs text-muted-foreground/70">
-            {timeAgo(article.published_at || article.created_at)}
-          </span>
-        )}
+        {(article.published_at || article.created_at) && (() => {
+          const { text, isRecent } = timeAgo(article.published_at || article.created_at);
+          if (!text) return null;
+          return (
+            <span className={`text-xs px-1.5 py-0.5 rounded ${
+              isRecent
+                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium"
+                : "text-muted-foreground/70"
+            }`}>
+              {text}
+            </span>
+          );
+        })()}
       </div>
 
       {/* Action buttons */}

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "next-themes";
-import { X, Search, Home, Sparkles, TrendingUp, Bookmark, Globe, Clock, Sun, Moon } from "lucide-react";
+import { X, Search, Home, Sparkles, TrendingUp, Bookmark, Globe, Clock, Sun, Moon, Newspaper } from "lucide-react";
 import { CATEGORIES } from "@/lib/categories";
 import { getSearchHistory, addSearchHistory, removeSearchHistoryItem, clearSearchHistory } from "@/lib/storage";
 
@@ -184,6 +184,10 @@ export default function FullMenu({ open, onClose }: Props) {
             <a href="/world" onClick={onClose} className="flex items-center gap-3 px-4 py-3.5 text-base font-medium hover:bg-accent transition-colors">
               <Globe className="h-4 w-4 shrink-0" />
               World News
+            </a>
+            <a href="/digest" onClick={onClose} className="flex items-center gap-3 px-4 py-3.5 text-base font-medium hover:bg-accent transition-colors">
+              <Newspaper className="h-4 w-4 shrink-0" />
+              Daily Digest
             </a>
           </div>
 

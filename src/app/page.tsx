@@ -3,6 +3,7 @@ import {
   getLatestArticles,
   getArticlesByCategory,
   getArticlesWithSummary,
+  getBreakingArticles,
   getPopularKeywords,
   articleToApiArticle,
 } from "@/lib/articles";
@@ -12,10 +13,11 @@ import HomeContent from "./HomeContent";
 export const revalidate = 300; // ISR: revalidate every 5 minutes
 
 export default async function Home() {
-  const [trendingRaw, latestRaw, aiRaw, popularKeywords, ...categoryResults] = await Promise.all([
+  const [trendingRaw, latestRaw, aiRaw, breakingRaw, popularKeywords, ...categoryResults] = await Promise.all([
     getTrendingArticles(15),
     getLatestArticles(15),
     getArticlesWithSummary(10),
+    getBreakingArticles(5),
     getPopularKeywords(15),
     ...HOMEPAGE_CATEGORIES.map((c) => getArticlesByCategory(c.db, 5)),
   ]);
@@ -24,6 +26,7 @@ export default async function Home() {
   const effectiveTrending = trendingRaw.length > 0 ? trendingRaw : latestRaw;
   const trending = effectiveTrending.map(articleToApiArticle);
   const aiArticles = aiRaw.map(articleToApiArticle);
+  const breaking = breakingRaw.map(articleToApiArticle);
 
   const categoryData: Record<string, ReturnType<typeof articleToApiArticle>[]> = {};
   HOMEPAGE_CATEGORIES.forEach((c, i) => {
@@ -33,6 +36,7 @@ export default async function Home() {
   return (
     <HomeContent
       trending={trending}
+      breaking={breaking}
       categoryData={categoryData}
       aiArticles={aiArticles}
       popularKeywords={popularKeywords}
