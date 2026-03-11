@@ -13,7 +13,7 @@ import AdUnit from "@/components/AdUnit";
 import TranslateButton from "@/components/TranslateButton";
 import { translateTexts, type ApiArticle } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Zap } from "lucide-react";
 import TrendingTopics from "@/components/TrendingTopics";
 
 function InlineAd({ slot, className = "" }: { slot: string; className?: string }) {
@@ -102,6 +102,42 @@ export default function HomeContent({ trending, categoryData, aiArticles, popula
         </div>
 
         <HeadlineSection articles={headlines} />
+
+        {/* Breaking — Latest global headlines updated by AI */}
+        {currentTrending.length > 0 && (
+          <section className="mb-6 md:mb-8">
+            <div className="flex items-center gap-2 mb-3">
+              <Zap className="h-5 w-5 text-red-500 fill-red-500" />
+              <h2 className="text-lg font-bold">Breaking</h2>
+              <span className="text-xs text-muted-foreground">Latest global headlines updated by AI</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+              {currentTrending.slice(0, 5).map((article, i) => (
+                <a
+                  key={`breaking-${i}`}
+                  href={article.url}
+                  className="group block p-3 rounded-lg border border-red-500/20 hover:border-red-500/50 hover:bg-red-500/5 transition-all"
+                >
+                  {article.thumbnail && (
+                    <div className="aspect-video rounded overflow-hidden mb-2">
+                      <img
+                        src={article.thumbnail}
+                        alt=""
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      />
+                    </div>
+                  )}
+                  <h3 className="text-sm font-semibold line-clamp-2 leading-snug">
+                    {article.title}
+                  </h3>
+                  <p className="text-[10px] text-muted-foreground/60 mt-1">
+                    {article.publisher.name}
+                  </p>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* AI 요약 뉴스 섹션 */}
         {aiArticles.length > 0 && (
