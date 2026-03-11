@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const decoded = decodeURIComponent(keyword);
   const desc = `Latest news and AI summaries about ${decoded}. Real-time global news curated by AI.`;
   return {
-    title: `${decoded} News - Latest AI Summarized Articles | JubJub News`,
+    title: `${decoded} News - Latest AI Summarized Articles | Headlines Fazr`,
     description: desc,
     alternates: {
       canonical: `https://headlines.fazr.co.kr/topic/${keyword}`,

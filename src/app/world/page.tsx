@@ -55,7 +55,7 @@ export default function WorldNewsPage() {
   const [originalArticles, setOriginalArticles] = useState<ApiArticle[]>([]);
 
   useEffect(() => {
-    document.title = "World News - JubJub News";
+    document.title = "World News - Headlines Fazr";
   }, []);
 
   useEffect(() => {

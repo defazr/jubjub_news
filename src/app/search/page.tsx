@@ -62,11 +62,11 @@ function SearchContent() {
 
   useEffect(() => {
     if (!query) {
-      document.title = "Search - JubJub News";
+      document.title = "Search - Headlines Fazr";
       setLoading(false);
       return;
     }
-    document.title = `"${query}" Search Results - JubJub News`;
+    document.title = `"${query}" Search Results - Headlines Fazr`;
     addSearchHistory(query);
     setLoading(true);
     setTranslated(false);

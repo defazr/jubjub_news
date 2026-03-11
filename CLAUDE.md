@@ -1,4 +1,4 @@
-# JubJub News - Claude 작업 지시서
+# Headlines Fazr - Claude 작업 지시서
 
 ## 프로젝트 정보
 

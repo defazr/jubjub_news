@@ -1,7 +1,7 @@
 {
-  "name": "JubJub 뉴스",
-  "short_name": "JubJub",
-  "description": "국내외 주요 뉴스를 한눈에 모아보는 뉴스 큐레이션 서비스",
+  "name": "Headlines Fazr",
+  "short_name": "Headlines Fazr",
+  "description": "Global news curated by AI with trending topics and AI summaries",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

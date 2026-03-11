@@ -8,7 +8,7 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mb-8">
           <div className="col-span-2 md:col-span-1">
             <a href="/">
-              <span className="font-headline text-2xl tracking-tight">JubJub News</span>
+              <span className="font-headline text-2xl tracking-tight">Headlines Fazr</span>
             </a>
             <p className="text-base text-muted-foreground leading-relaxed mt-2">
               Latest global news curated by AI with quick summaries and translation.
@@ -53,7 +53,7 @@ export default function Footer() {
         </div>
         <Separator className="mb-5" />
         <p className="text-sm text-muted-foreground/60 text-center">
-          &copy; 2026 JubJub News. All rights reserved.
+          &copy; 2026 Headlines Fazr. All rights reserved.
         </p>
       </div>
     </footer>

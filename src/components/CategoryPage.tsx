@@ -60,7 +60,7 @@ export default function CategoryPageContent({ category, initialArticles }: Props
   }
 
   useEffect(() => {
-    document.title = `${category.name} - JubJub News`;
+    document.title = `${category.name} - Headlines Fazr`;
   }, [category]);
 
   async function handleTranslate() {
