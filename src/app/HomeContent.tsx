@@ -13,7 +13,7 @@ import AdUnit from "@/components/AdUnit";
 import TranslateButton from "@/components/TranslateButton";
 import { translateTexts, type ApiArticle } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Hash } from "lucide-react";
+import { Sparkles, TrendingUp } from "lucide-react";
 
 function InlineAd({ slot, className = "" }: { slot: string; className?: string }) {
   return (
@@ -130,17 +130,20 @@ export default function HomeContent({ trending, categoryData, aiArticles, popula
           </section>
         )}
 
-        {/* 인기 키워드 */}
+        {/* Trending Topics */}
         {popularKeywords.length > 0 && (
-          <section className="mb-6">
-            <h2 className="text-sm font-bold flex items-center gap-2 mb-2">
-              <Hash className="h-4 w-4 text-primary" />
-              Popular Topics
+          <section className="mb-6 bg-muted/50 rounded-lg p-4">
+            <h2 className="text-sm font-bold flex items-center gap-2 mb-3">
+              <TrendingUp className="h-4 w-4 text-primary" />
+              Trending Topics
             </h2>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-2">
               {popularKeywords.map((kw) => (
                 <a key={kw} href={`/topic/${encodeURIComponent(kw)}`}>
-                  <Badge variant="outline" className="text-xs hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer">
+                  <Badge
+                    variant="secondary"
+                    className="text-xs hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
+                  >
                     #{kw}
                   </Badge>
                 </a>

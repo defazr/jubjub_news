@@ -42,7 +42,7 @@ export default async function TopicPage({ params }: Props) {
   const decoded = decodeURIComponent(keyword);
 
   const [articles, popularKeywords] = await Promise.all([
-    getArticlesByKeyword(decoded, 30),
+    getArticlesByKeyword(decoded, 50),
     getPopularKeywords(20),
   ]);
 
@@ -72,6 +72,15 @@ export default async function TopicPage({ params }: Props) {
             Latest news and AI summaries about {decoded} · {articles.length} articles
           </p>
         </div>
+
+        {/* About this topic — SEO content block */}
+        <section className="bg-muted/50 rounded-lg p-4 mb-6">
+          <h2 className="text-sm font-semibold mb-1">About {decoded}</h2>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            This page collects the latest global news articles related to <strong>{decoded}</strong>.
+            All articles are automatically summarized using AI to help you stay informed quickly.
+          </p>
+        </section>
 
         <AdUnit slot="top-topic" className="mb-6" />
 

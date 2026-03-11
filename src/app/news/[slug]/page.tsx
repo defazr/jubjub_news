@@ -16,6 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!article) return { title: "기사를 찾을 수 없습니다" };
 
   const description = article.summary || article.excerpt || "";
+  const ogImage = article.image_url || "https://headlines.fazr.co.kr/og-default.png";
 
   return {
     title: article.title,
@@ -25,14 +26,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: article.title,
       description: description.slice(0, 160),
       type: "article",
-      images: article.image_url ? [{ url: article.image_url }] : [],
+      images: [{ url: ogImage, width: 1200, height: 630 }],
       publishedTime: article.published_at || undefined,
     },
     twitter: {
       card: "summary_large_image",
       title: article.title,
       description: description.slice(0, 160),
-      images: article.image_url ? [article.image_url] : [],
+      images: [ogImage],
     },
     alternates: {
       canonical: `https://headlines.fazr.co.kr/news/${slug}`,
