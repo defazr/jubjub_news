@@ -4,8 +4,9 @@ import { createClient } from "@supabase/supabase-js";
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || "";
 const RAPIDAPI_HOST = "news-api14.p.rapidapi.com";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+const SUPABASE_SERVICE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || "";
+const INGEST_SECRET = process.env.INGEST_SECRET || "";
 
 const CATEGORIES = [
   { name: "technology", query: "technology" },
@@ -166,6 +167,67 @@ export const maxDuration = 60;
 
 export async function GET(req: NextRequest) {
   try {
+    // Debug mode - check config without auth (placed first for diagnostics)
+    const action = req.nextUrl.searchParams.get("action");
+    if (action === "status") {
+      return NextResponse.json({
+        hasSupabaseUrl: !!SUPABASE_URL,
+        hasSupabaseKey: !!SUPABASE_SERVICE_KEY,
+        hasRapidApiKey: !!RAPIDAPI_KEY,
+        hasAnthropicKey: !!ANTHROPIC_API_KEY,
+        supabaseUrl: SUPABASE_URL ? SUPABASE_URL.slice(0, 30) + "..." : "NOT SET",
+        serviceKeyPrefix: SUPABASE_SERVICE_KEY ? SUPABASE_SERVICE_KEY.slice(0, 10) + "..." : "NOT SET",
+      });
+    }
+
+    // Test mode - test each service individually
+    if (action === "test") {
+      const results: Record<string, unknown> = {};
+
+      // Test Supabase connection
+      try {
+        const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+        const { data, error } = await supabase.from("articles").select("id").limit(1);
+        results.supabase = error ? { error: error.message, code: error.code } : { ok: true, rows: data?.length ?? 0 };
+      } catch (e) {
+        results.supabase = { error: e instanceof Error ? e.message : String(e) };
+      }
+
+      // Test RapidAPI
+      try {
+        const res = await fetch(`https://${RAPIDAPI_HOST}/v2/trendings?topic=General&language=en`, {
+          headers: { "x-rapidapi-host": RAPIDAPI_HOST, "x-rapidapi-key": RAPIDAPI_KEY },
+        });
+        const text = await res.text();
+        results.rapidapi = { status: res.status, bodyLength: text.length, preview: text.slice(0, 100) };
+      } catch (e) {
+        results.rapidapi = { error: e instanceof Error ? e.message : String(e) };
+      }
+
+      // Test Anthropic
+      try {
+        const res = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": ANTHROPIC_API_KEY,
+            "anthropic-version": "2023-06-01",
+          },
+          body: JSON.stringify({
+            model: "claude-haiku-4-5-20251001",
+            max_tokens: 20,
+            messages: [{ role: "user", content: "Say hello in one word." }],
+          }),
+        });
+        const data = await res.json();
+        results.anthropic = { status: res.status, response: data.content?.[0]?.text || data.error || data };
+      } catch (e) {
+        results.anthropic = { error: e instanceof Error ? e.message : String(e) };
+      }
+
+      return NextResponse.json(results);
+    }
+
     // Validate required environment variables
     if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
       return NextResponse.json(
@@ -181,22 +243,16 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Debug mode - check config without running ingest
-    const action = req.nextUrl.searchParams.get("action");
-    if (action === "status") {
-      return NextResponse.json({
-        hasSupabaseUrl: !!SUPABASE_URL,
-        hasSupabaseKey: !!SUPABASE_SERVICE_KEY,
-        hasRapidApiKey: !!RAPIDAPI_KEY,
-        hasAnthropicKey: !!ANTHROPIC_API_KEY,
-        supabaseUrl: SUPABASE_URL ? SUPABASE_URL.slice(0, 30) + "..." : "NOT SET",
-      });
+    if (!INGEST_SECRET) {
+      return NextResponse.json(
+        { error: "Server misconfiguration: missing INGEST_SECRET" },
+        { status: 500 }
+      );
     }
 
-    // Auth check
+    // Auth check using dedicated INGEST_SECRET
     const secret = req.nextUrl.searchParams.get("secret");
-    const expectedSecret = SUPABASE_SERVICE_KEY.slice(0, 16);
-    if (!secret || secret !== expectedSecret) {
+    if (!secret || secret !== INGEST_SECRET) {
       return NextResponse.json(
         { error: "Unauthorized", hint: "Missing or invalid secret parameter" },
         { status: 401 }
@@ -294,22 +350,25 @@ export async function GET(req: NextRequest) {
       existingHashes.add(hash);
     }
 
-    // 5. Generate AI summaries in batches of 10
-    const BATCH_SIZE = 10;
-    for (const batch of chunks(prepared, BATCH_SIZE)) {
-      const results = await Promise.allSettled(
-        batch.map(async (item) => {
-          if (!item.excerpt) return;
-          const summary = await generateSummary(item.title, item.excerpt);
-          if (summary) {
-            item.summary = summary;
-            stats.summaries++;
+    // 5. Generate AI summaries (only if ?summarize=true to avoid timeout)
+    const shouldSummarize = req.nextUrl.searchParams.get("summarize") === "true";
+    if (shouldSummarize) {
+      const BATCH_SIZE = 10;
+      for (const batch of chunks(prepared, BATCH_SIZE)) {
+        const results = await Promise.allSettled(
+          batch.map(async (item) => {
+            if (!item.excerpt) return;
+            const summary = await generateSummary(item.title, item.excerpt);
+            if (summary) {
+              item.summary = summary;
+              stats.summaries++;
+            }
+          })
+        );
+        for (const r of results) {
+          if (r.status === "rejected") {
+            console.error("Summary generation failed:", r.reason);
           }
-        })
-      );
-      for (const r of results) {
-        if (r.status === "rejected") {
-          console.error("Summary generation failed:", r.reason);
         }
       }
     }
