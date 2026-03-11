@@ -34,7 +34,10 @@ self.addEventListener("fetch", (event) => {
   if (url.includes("doubleclick")) return;
   if (url.includes("adsbygoogle")) return;
 
-  // Static assets (_next/static): cache-first (immutable)
+  // HTML pages: never cache, always fetch from network
+  if (request.destination === "document") return;
+
+  // Static assets (_next/static): cache-first (immutable, hash in filename)
   if (url.includes("/_next/static/")) {
     event.respondWith(
       caches.match(request).then((cached) => {
@@ -50,17 +53,4 @@ self.addEventListener("fetch", (event) => {
     );
     return;
   }
-
-  // HTML pages: network-first (always get latest, fallback to cache)
-  event.respondWith(
-    fetch(request)
-      .then((response) => {
-        if (response.ok && response.type === "basic") {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-        }
-        return response;
-      })
-      .catch(() => caches.match(request))
-  );
 });
