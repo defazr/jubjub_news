@@ -39,18 +39,8 @@ export default function Header({ onSearch }: Props) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
-  const [currentDate] = useState(() => {
-    const now = new Date();
-    const days = ["일", "월", "화", "수", "목", "금", "토"];
-    return `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 (${days[now.getDay()]})`;
-  });
-  const [timeOfDay] = useState<"morning" | "afternoon" | "evening" | "night">(() => {
-    const hour = new Date().getHours();
-    if (hour >= 6 && hour < 12) return "morning";
-    if (hour >= 12 && hour < 17) return "afternoon";
-    if (hour >= 17 && hour < 20) return "evening";
-    return "night";
-  });
+  const [currentDate, setCurrentDate] = useState("");
+  const [timeOfDay, setTimeOfDay] = useState<"morning" | "afternoon" | "evening" | "night">("morning");
 
   const timeMeta = {
     morning: { label: "Good morning", Icon: Sunrise },
@@ -63,6 +53,17 @@ export default function Header({ onSearch }: Props) {
   useEffect(() => {
     setMounted(true);
     setFontSizeState(getFontSize());
+
+    // Set date/time on client only to avoid hydration mismatch
+    const now = new Date();
+    const days = ["일", "월", "화", "수", "목", "금", "토"];
+    setCurrentDate(`${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 (${days[now.getDay()]})`);
+    const hour = now.getHours();
+    if (hour >= 6 && hour < 12) setTimeOfDay("morning");
+    else if (hour >= 12 && hour < 17) setTimeOfDay("afternoon");
+    else if (hour >= 17 && hour < 20) setTimeOfDay("evening");
+    else setTimeOfDay("night");
+
     const handleScroll = () => setScrolled(window.scrollY > 120);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -137,11 +138,13 @@ export default function Header({ onSearch }: Props) {
         <div className="bg-muted/50 border-b border-border">
           <div className="max-w-[1200px] mx-auto px-4 py-1.5 flex justify-between items-center text-xs text-muted-foreground">
             <div className="flex items-center gap-3">
-              <span>{currentDate}</span>
-              <span className="hidden sm:flex items-center gap-1 text-primary/70">
-                <TimeIcon className="h-3 w-3" />
-                {timeLabel}
-              </span>
+              {mounted && currentDate && <span>{currentDate}</span>}
+              {mounted && (
+                <span className="hidden sm:flex items-center gap-1 text-primary/70">
+                  <TimeIcon className="h-3 w-3" />
+                  {timeLabel}
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-3">
               <a href="/bookmarks" className="hover:text-primary transition-colors flex items-center gap-1">

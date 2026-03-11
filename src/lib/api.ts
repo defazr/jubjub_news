@@ -56,7 +56,7 @@ async function translateChunk(
   targetLang: "ko" | "en"
 ): Promise<string[]> {
   try {
-    const res = await fetch("/.netlify/functions/translate-proxy", {
+    const res = await fetch("/api/translate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ texts, targetLang }),

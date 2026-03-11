@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { AdSenseScript } from "@/components/AdSenseScript";
 import "./globals.css";
 
 const SITE_URL = "https://headlines.fazr.co.kr";
@@ -113,12 +114,7 @@ export default function RootLayout({
         <ThemeProvider>
           {children}
         </ThemeProvider>
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7976139023602789"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
+        <AdSenseScript />
         <Script id="font-size-init" strategy="beforeInteractive">{`
           try {
             var fs = localStorage.getItem('jubjub_font_size');

@@ -23,12 +23,20 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const { request } = event;
+  const url = request.url;
+
+  // Only handle http(s) requests — skip chrome-extension://, etc.
+  if (!url.startsWith("http")) return;
 
   // Skip non-GET and API requests
   if (request.method !== "GET") return;
-  if (request.url.includes("/.netlify/functions/")) return;
-  if (request.url.includes("googlesyndication")) return;
-  if (request.url.includes("google-analytics")) return;
+  if (url.includes("/.netlify/functions/")) return;
+  if (url.includes("/api/")) return;
+  if (url.includes("googlesyndication")) return;
+  if (url.includes("google-analytics")) return;
+  if (url.includes("googleads")) return;
+  if (url.includes("doubleclick")) return;
+  if (url.includes("adsbygoogle")) return;
 
   event.respondWith(
     caches.match(request).then((cached) => {
