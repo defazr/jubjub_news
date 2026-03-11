@@ -8,6 +8,7 @@ const SLOT_MAP: Record<string, string> = {
   "mid-article": "2248808942",     // headlines_02
   "bottom-article": "9121339058",  // headlines_01
   "top-ai": "9121339058",          // headlines_01
+  "mid-ai": "2248808942",          // headlines_02
   "bottom-ai": "2248808942",       // headlines_02
   "top-home": "9121339058",        // headlines_01
   "bottom-home": "2248808942",     // headlines_02
