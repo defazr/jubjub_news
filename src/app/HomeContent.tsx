@@ -26,14 +26,17 @@ function InlineAd({ slot, className = "" }: { slot: string; className?: string }
 
 interface Props {
   trending: ApiArticle[];
+  breaking: ApiArticle[];
   categoryData: Record<string, ApiArticle[]>;
   aiArticles: ApiArticle[];
   popularKeywords: string[];
 }
 
-export default function HomeContent({ trending, categoryData, aiArticles, popularKeywords }: Props) {
+export default function HomeContent({ trending, breaking, categoryData, aiArticles, popularKeywords }: Props) {
   const headlines = trending.slice(0, 5);
   const breakingTitles = trending.slice(0, 4).map((a) => a.title);
+  // Use breaking articles (recent 6h with summaries), fallback to trending
+  const breakingArticles = breaking.length > 0 ? breaking : trending.slice(0, 5);
 
   return (
     <div className="min-h-screen bg-background">
@@ -43,16 +46,16 @@ export default function HomeContent({ trending, categoryData, aiArticles, popula
       <main className="max-w-[1200px] mx-auto px-3 md:px-4 py-5 md:py-8">
         <HeadlineSection articles={headlines} />
 
-        {/* Breaking — Latest global headlines updated by AI */}
-        {trending.length > 0 && (
+        {/* Breaking News — Recent articles with AI summaries */}
+        {breakingArticles.length > 0 && (
           <section className="mb-6 md:mb-8">
             <div className="flex items-center gap-2 mb-3">
               <Zap className="h-5 w-5 text-red-500 fill-red-500" />
-              <h2 className="text-lg font-bold">Breaking</h2>
-              <span className="text-xs text-muted-foreground">Latest global headlines updated by AI</span>
+              <h2 className="text-lg font-bold">Breaking News</h2>
+              <span className="text-xs text-muted-foreground">Latest headlines with AI summaries</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-              {trending.slice(0, 5).map((article, i) => (
+              {breakingArticles.slice(0, 5).map((article, i) => (
                 <a
                   key={`breaking-${i}`}
                   href={article.url}

@@ -58,6 +58,20 @@ export default async function TopicPage({ params }: Props) {
     .filter((kw) => kw.toLowerCase() !== decoded.toLowerCase())
     .slice(0, 12);
 
+  // Extract top co-occurring keywords from articles for the about section
+  const kwFreq = new Map<string, number>();
+  for (const a of articles) {
+    for (const kw of a.keywords || []) {
+      if (kw.toLowerCase() !== decoded.toLowerCase()) {
+        kwFreq.set(kw, (kwFreq.get(kw) || 0) + 1);
+      }
+    }
+  }
+  const topKeywords = [...kwFreq.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([kw]) => kw);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -82,9 +96,15 @@ export default async function TopicPage({ params }: Props) {
         <section className="bg-muted/50 rounded-lg p-4 mb-6">
           <h2 className="text-sm font-semibold mb-1">About {decoded}</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            This page collects the latest global news articles related to <strong>{decoded}</strong>.
-            All articles are automatically summarized using AI to help you stay informed quickly.
+            Latest AI-curated news and analysis about <strong>{decoded}</strong>,
+            including breaking stories, expert analysis, and global coverage.
+            Updated in real-time with AI-powered summaries to keep you informed.
           </p>
+          {topKeywords.length > 0 && (
+            <p className="text-xs text-muted-foreground/70 mt-2">
+              Related: {topKeywords.join(" · ")}
+            </p>
+          )}
         </section>
 
         <AdUnit slot="top-topic" className="mb-6" />
