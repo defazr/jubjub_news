@@ -1,8 +1,10 @@
 "use client";
 
+import React from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import BookmarkButton from "@/components/BookmarkButton";
+import AdUnit from "@/components/AdUnit";
 import type { Article } from "@/types/database";
 
 function formatDate(dateStr: string): string {
@@ -20,10 +22,16 @@ export default function AiArticleList({ articles }: { articles: Article[] }) {
     );
   }
 
+  const MID_AD_INDEX = 3;
+
   return (
     <div className="grid gap-5">
-      {articles.map((article) => (
-        <Card key={article.id} className="overflow-hidden hover:shadow-md transition-shadow">
+      {articles.map((article, idx) => (
+        <React.Fragment key={article.id}>
+          {idx === MID_AD_INDEX && (
+            <AdUnit slot="mid-ai" className="my-1" />
+          )}
+          <Card className="overflow-hidden hover:shadow-md transition-shadow">
           <div className="flex flex-col md:flex-row">
             {article.image_url && (
               <a href={`/news/${article.slug}`} className="md:w-60 shrink-0">
@@ -89,6 +97,7 @@ export default function AiArticleList({ articles }: { articles: Article[] }) {
             </div>
           </div>
         </Card>
+        </React.Fragment>
       ))}
     </div>
   );

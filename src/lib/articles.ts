@@ -65,7 +65,7 @@ export async function getArticlesByKeyword(
   const { data, error } = await getClient()
     .from("articles")
     .select("*")
-    .contains("keywords", [keyword])
+    .or(`keywords.cs.{${keyword}},title.ilike.%${keyword}%`)
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) console.error("[articles] getArticlesByKeyword error:", error.message, keyword);

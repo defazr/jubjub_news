@@ -88,7 +88,7 @@ function SearchContent() {
     }
     setTranslating(true);
     const texts = articles.flatMap((a) => [a.title, a.excerpt]);
-    const result = await translateTexts(texts, "en");
+    const result = await translateTexts(texts, "ko");
     const updated = articles.map((a, i) => ({
       ...a,
       title: result[i * 2] || a.title,
