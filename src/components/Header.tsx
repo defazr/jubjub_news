@@ -64,7 +64,14 @@ export default function Header({ onSearch }: Props) {
     else if (hour >= 17 && hour < 20) setTimeOfDay("evening");
     else setTimeOfDay("night");
 
-    const handleScroll = () => setScrolled(window.scrollY > 120);
+    const handleScroll = () => {
+      const y = window.scrollY;
+      setScrolled((prev) => {
+        if (!prev && y > 140) return true;
+        if (prev && y < 80) return false;
+        return prev;
+      });
+    };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -173,8 +180,8 @@ export default function Header({ onSearch }: Props) {
 
         {/* Logo area - hides on scroll */}
         <div
-          className={`bg-card border-b border-border transition-all duration-300 overflow-hidden ${
-            scrolled ? "max-h-0 opacity-0" : "max-h-32 opacity-100"
+          className={`bg-card border-b border-border overflow-hidden ${
+            scrolled ? "hidden" : ""
           }`}
         >
           <div className="max-w-[1200px] mx-auto px-4 py-4 md:py-6 text-center">
