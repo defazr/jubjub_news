@@ -6,13 +6,17 @@ function getClient() {
   return supabase;
 }
 
-/** Parse summary field that may contain SEO_HEADLINE and SUMMARY */
+/** Parse summary field — supports 3 formats:
+ *  1. OLD: "SEO_HEADLINE: ...\nSUMMARY: ..."
+ *  2. NEW: "headline\n\nsummary text..."
+ *  3. LEGACY: plain summary text (no headline)
+ */
 export function parseSummary(summary: string | null): { seoHeadline: string | null; summaryText: string | null } {
   if (!summary) return { seoHeadline: null, summaryText: null };
 
+  // Format 1: OLD labeled format
   const headlineMatch = summary.match(/^SEO_HEADLINE:\s*(.+)/m);
   const summaryMatch = summary.match(/^SUMMARY:\s*(.+)/m);
-
   if (headlineMatch && summaryMatch) {
     return {
       seoHeadline: headlineMatch[1].trim(),
@@ -20,7 +24,21 @@ export function parseSummary(summary: string | null): { seoHeadline: string | nu
     };
   }
 
-  // Fallback: old format without SEO_HEADLINE
+  // Format 2: NEW newline-based format (first line = headline, blank line, rest = summary)
+  const parts = summary.split(/\n\s*\n/);
+  if (parts.length >= 2) {
+    const firstLine = parts[0].trim();
+    const rest = parts.slice(1).join("\n\n").trim();
+    // Headline should be short (< 100 chars) and not look like a full paragraph
+    if (firstLine.length > 0 && firstLine.length < 100 && rest.length > 0) {
+      return {
+        seoHeadline: firstLine,
+        summaryText: rest,
+      };
+    }
+  }
+
+  // Format 3: LEGACY plain summary
   return { seoHeadline: null, summaryText: summary };
 }
 
@@ -149,4 +167,38 @@ export async function getTrendingArticles(limit: number = 10): Promise<Article[]
     .limit(limit);
   if (error) console.error("[articles] getTrendingArticles error:", error.message);
   return data || [];
+}
+
+/** Get popular keywords grouped by category */
+export async function getKeywordsByCategory(categories: string[], limit: number = 10): Promise<Record<string, string[]>> {
+  const result: Record<string, string[]> = {};
+
+  for (const cat of categories) {
+    const { data, error } = await getClient()
+      .from("articles")
+      .select("keywords")
+      .eq("category", cat)
+      .order("created_at", { ascending: false })
+      .limit(200);
+
+    if (error) {
+      console.error("[articles] getKeywordsByCategory error:", error.message, cat);
+      result[cat] = [];
+      continue;
+    }
+
+    const freq = new Map<string, number>();
+    for (const row of (data || []) as { keywords: string[] }[]) {
+      for (const kw of row.keywords || []) {
+        freq.set(kw, (freq.get(kw) || 0) + 1);
+      }
+    }
+
+    result[cat] = [...freq.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, limit)
+      .map(([kw]) => kw);
+  }
+
+  return result;
 }

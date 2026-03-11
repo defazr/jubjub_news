@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getArticleBySlug, getRelatedArticles, getPopularKeywords } from "@/lib/articles";
+import { getArticleBySlug, getRelatedArticles, getPopularKeywords, parseSummary } from "@/lib/articles";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AdUnit from "@/components/AdUnit";
@@ -16,7 +16,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const article = await getArticleBySlug(slug);
   if (!article) return { title: "기사를 찾을 수 없습니다" };
 
-  const description = article.summary || article.excerpt || "";
+  const { summaryText } = parseSummary(article.summary);
+  const description = summaryText || article.excerpt || "";
   const ogImage = article.image_url || "https://headlines.fazr.co.kr/Headlines_Fazr_OG_image.png";
 
   return {
@@ -56,6 +57,7 @@ export default async function ArticlePage({ params }: Props) {
   ]);
 
   // JSON-LD structured data for Google News / Discover
+  const { summaryText: parsedSummary } = parseSummary(article.summary);
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
@@ -65,7 +67,7 @@ export default async function ArticlePage({ params }: Props) {
       : [],
     datePublished: article.published_at || article.created_at,
     dateModified: article.created_at,
-    description: article.summary || article.excerpt || "",
+    description: parsedSummary || article.excerpt || "",
     author: {
       "@type": "Organization",
       name: "Headlines Fazr",

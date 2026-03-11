@@ -116,6 +116,17 @@ export default function RootLayout({
           {children}
         </ThemeProvider>
         <AdSenseScript />
+        {/* Google Analytics 4 */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-Z5K4EG4DNE"
+          strategy="afterInteractive"
+        />
+        <Script id="ga4-init" strategy="afterInteractive">{`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-Z5K4EG4DNE');
+        `}</Script>
         <Script id="font-size-init" strategy="beforeInteractive">{`
           try {
             var fs = localStorage.getItem('jubjub_font_size');

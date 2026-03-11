@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { parseSummary } from "@/lib/articles";
 
 const SITE_URL = "https://headlines.fazr.co.kr";
 
@@ -36,7 +37,7 @@ export async function GET() {
       <title>${escapeXml(a.title)}</title>
       <link>${SITE_URL}/news/${a.slug}</link>
       <guid isPermaLink="true">${SITE_URL}/news/${a.slug}</guid>
-      <description>${escapeXml(a.summary || a.excerpt || "")}</description>
+      <description>${escapeXml(parseSummary(a.summary).summaryText || a.excerpt || "")}</description>
       <category>${escapeXml(a.category)}</category>
       <pubDate>${new Date(a.published_at || a.created_at).toUTCString()}</pubDate>
     </item>`
