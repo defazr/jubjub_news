@@ -28,11 +28,14 @@ CREATE INDEX IF NOT EXISTS idx_articles_keywords ON articles USING GIN (keywords
 -- RLS: Enable and allow public read access
 ALTER TABLE articles ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Public read access" ON articles
-  FOR SELECT USING (true);
-
-CREATE POLICY "Service role insert" ON articles
-  FOR INSERT WITH CHECK (true);
-
-CREATE POLICY "Service role update" ON articles
-  FOR UPDATE USING (true);
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'articles' AND policyname = 'Public read access') THEN
+    CREATE POLICY "Public read access" ON articles FOR SELECT USING (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'articles' AND policyname = 'Service role insert') THEN
+    CREATE POLICY "Service role insert" ON articles FOR INSERT WITH CHECK (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'articles' AND policyname = 'Service role update') THEN
+    CREATE POLICY "Service role update" ON articles FOR UPDATE USING (true);
+  END IF;
+END $$;
