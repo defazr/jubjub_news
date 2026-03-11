@@ -88,8 +88,13 @@ function extractKeywords(title: string, excerpt: string): string[] {
     .map(([word]) => word);
 }
 
-async function generateSummary(title: string, excerpt: string): Promise<string | null> {
-  if (!ANTHROPIC_API_KEY || !excerpt) return null;
+interface AiResult {
+  summary: string | null;
+  keywords: string[] | null;
+}
+
+async function generateSummaryAndKeywords(title: string, excerpt: string): Promise<AiResult> {
+  if (!ANTHROPIC_API_KEY || !excerpt) return { summary: null, keywords: null };
 
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -101,21 +106,24 @@ async function generateSummary(title: string, excerpt: string): Promise<string |
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5-20251001",
-        max_tokens: 200,
+        max_tokens: 250,
         messages: [
           {
             role: "user",
-            content: `You are a news editor. Given this article, produce two things on separate lines:
+            content: `You are a news editor. Given this article, produce exactly 3 sections separated by blank lines:
 
 Line 1: A click-worthy, SEO-optimized headline (max 70 chars). Engaging for Google Discover. Do NOT repeat the original title.
+
 Line 2+: A 2-3 sentence summary (50-80 words) focusing on key facts.
 
-IMPORTANT: Output ONLY these two parts separated by a blank line. No labels, no prefixes.
+Last line: KEYWORDS: comma-separated list of 5-8 specific entities and topics (company names, people, technologies, industries). Lowercase. No generic words.
 
-Example format:
+Example:
 Revolutionary AI Chip Could Change Computing Forever
 
 Scientists at MIT have developed a new neuromorphic chip that processes data 100x faster. The breakthrough could transform industries from healthcare to autonomous vehicles. Early tests show promising results in real-world applications.
+
+KEYWORDS: mit, neuromorphic, ai chip, semiconductor, autonomous vehicles, healthcare ai
 
 Title: ${title}
 
@@ -125,13 +133,29 @@ Excerpt: ${excerpt}`,
       }),
     });
 
-    if (!res.ok) return null;
+    if (!res.ok) return { summary: null, keywords: null };
 
     const data = await res.json();
     const text = data.content?.[0]?.text;
-    return text || null;
+    if (!text) return { summary: null, keywords: null };
+
+    // Extract keywords from last line if present
+    const keywordsMatch = text.match(/^KEYWORDS:\s*(.+)$/m);
+    let aiKeywords: string[] | null = null;
+    let summaryText = text;
+
+    if (keywordsMatch) {
+      aiKeywords = keywordsMatch[1]
+        .split(",")
+        .map((k: string) => k.trim().toLowerCase())
+        .filter((k: string) => k.length >= 2 && k.length <= 30);
+      // Remove the KEYWORDS line from summary
+      summaryText = text.replace(/\n*^KEYWORDS:.*$/m, "").trim();
+    }
+
+    return { summary: summaryText, keywords: aiKeywords };
   } catch {
-    return null;
+    return { summary: null, keywords: null };
   }
 }
 
@@ -364,7 +388,7 @@ export async function GET(req: NextRequest) {
       existingHashes.add(hash);
     }
 
-    // 5. Generate AI summaries (only if ?summarize=true to avoid timeout)
+    // 5. Generate AI summaries + keywords (only if ?summarize=true to avoid timeout)
     const shouldSummarize = req.nextUrl.searchParams.get("summarize") === "true";
     if (shouldSummarize) {
       const BATCH_SIZE = 10;
@@ -372,10 +396,22 @@ export async function GET(req: NextRequest) {
         const results = await Promise.allSettled(
           batch.map(async (item) => {
             if (!item.excerpt) return;
-            const summary = await generateSummary(item.title, item.excerpt);
-            if (summary) {
-              item.summary = summary;
+            const aiResult = await generateSummaryAndKeywords(item.title, item.excerpt);
+            if (aiResult.summary) {
+              item.summary = aiResult.summary;
               stats.summaries++;
+            }
+            // Merge AI keywords with existing frequency-based keywords (AI first, deduped)
+            if (aiResult.keywords && aiResult.keywords.length > 0) {
+              const seen = new Set(aiResult.keywords);
+              const merged = [...aiResult.keywords];
+              for (const kw of item.keywords) {
+                if (!seen.has(kw)) {
+                  seen.add(kw);
+                  merged.push(kw);
+                }
+              }
+              item.keywords = merged.slice(0, 10);
             }
           })
         );

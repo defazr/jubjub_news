@@ -81,6 +81,7 @@ export async function GET() {
     { loc: "/", priority: "1.0", freq: "hourly" },
     { loc: "/ai", priority: "0.8", freq: "hourly" },
     { loc: "/world", priority: "0.7", freq: "hourly" },
+    { loc: "/trending", priority: "0.8", freq: "hourly" },
     { loc: "/search", priority: "0.5", freq: "daily" },
     { loc: "/category/politics", priority: "0.8", freq: "hourly" },
     { loc: "/category/economy", priority: "0.8", freq: "hourly" },

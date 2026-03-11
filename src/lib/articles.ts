@@ -168,3 +168,37 @@ export async function getTrendingArticles(limit: number = 10): Promise<Article[]
   if (error) console.error("[articles] getTrendingArticles error:", error.message);
   return data || [];
 }
+
+/** Get popular keywords grouped by category */
+export async function getKeywordsByCategory(categories: string[], limit: number = 10): Promise<Record<string, string[]>> {
+  const result: Record<string, string[]> = {};
+
+  for (const cat of categories) {
+    const { data, error } = await getClient()
+      .from("articles")
+      .select("keywords")
+      .eq("category", cat)
+      .order("created_at", { ascending: false })
+      .limit(200);
+
+    if (error) {
+      console.error("[articles] getKeywordsByCategory error:", error.message, cat);
+      result[cat] = [];
+      continue;
+    }
+
+    const freq = new Map<string, number>();
+    for (const row of (data || []) as { keywords: string[] }[]) {
+      for (const kw of row.keywords || []) {
+        freq.set(kw, (freq.get(kw) || 0) + 1);
+      }
+    }
+
+    result[cat] = [...freq.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, limit)
+      .map(([kw]) => kw);
+  }
+
+  return result;
+}

@@ -6,8 +6,13 @@ const SUPABASE_SERVICE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || "";
 const INGEST_SECRET = process.env.INGEST_SECRET || "";
 
-async function generateSummary(title: string, excerpt: string): Promise<string | null> {
-  if (!ANTHROPIC_API_KEY || !excerpt) return null;
+interface AiResult {
+  summary: string | null;
+  keywords: string[] | null;
+}
+
+async function generateSummaryAndKeywords(title: string, excerpt: string): Promise<AiResult> {
+  if (!ANTHROPIC_API_KEY || !excerpt) return { summary: null, keywords: null };
 
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -19,23 +24,54 @@ async function generateSummary(title: string, excerpt: string): Promise<string |
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5-20251001",
-        max_tokens: 150,
+        max_tokens: 250,
         messages: [
           {
             role: "user",
-            content: `Summarize this news article in 2-3 sentences (50-80 words). Focus on key facts only.\n\nTitle: ${title}\n\nExcerpt: ${excerpt}`,
+            content: `You are a news editor. Given this article, produce exactly 3 sections separated by blank lines:
+
+Line 1: A click-worthy, SEO-optimized headline (max 70 chars). Engaging for Google Discover. Do NOT repeat the original title.
+
+Line 2+: A 2-3 sentence summary (50-80 words) focusing on key facts.
+
+Last line: KEYWORDS: comma-separated list of 5-8 specific entities and topics (company names, people, technologies, industries). Lowercase. No generic words.
+
+Example:
+Revolutionary AI Chip Could Change Computing Forever
+
+Scientists at MIT have developed a new neuromorphic chip that processes data 100x faster. The breakthrough could transform industries from healthcare to autonomous vehicles. Early tests show promising results in real-world applications.
+
+KEYWORDS: mit, neuromorphic, ai chip, semiconductor, autonomous vehicles, healthcare ai
+
+Title: ${title}
+
+Excerpt: ${excerpt}`,
           },
         ],
       }),
     });
 
-    if (!res.ok) return null;
+    if (!res.ok) return { summary: null, keywords: null };
 
     const data = await res.json();
     const text = data.content?.[0]?.text;
-    return text || null;
+    if (!text) return { summary: null, keywords: null };
+
+    const keywordsMatch = text.match(/^KEYWORDS:\s*(.+)$/m);
+    let aiKeywords: string[] | null = null;
+    let summaryText = text;
+
+    if (keywordsMatch) {
+      aiKeywords = keywordsMatch[1]
+        .split(",")
+        .map((k: string) => k.trim().toLowerCase())
+        .filter((k: string) => k.length >= 2 && k.length <= 30);
+      summaryText = text.replace(/\n*^KEYWORDS:.*$/m, "").trim();
+    }
+
+    return { summary: summaryText, keywords: aiKeywords };
   } catch {
-    return null;
+    return { summary: null, keywords: null };
   }
 }
 
@@ -63,7 +99,7 @@ export async function GET(req: NextRequest) {
     // Fetch articles without summaries
     const { data: articles, error } = await supabase
       .from("articles")
-      .select("id, title, excerpt")
+      .select("id, title, excerpt, keywords")
       .is("summary", null)
       .not("excerpt", "is", null)
       .order("created_at", { ascending: false })
@@ -85,11 +121,27 @@ export async function GET(req: NextRequest) {
 
       const results = await Promise.allSettled(
         batch.map(async (article) => {
-          const summary = await generateSummary(article.title, article.excerpt!);
-          if (summary) {
+          const aiResult = await generateSummaryAndKeywords(article.title, article.excerpt!);
+          if (aiResult.summary) {
+            const updateData: Record<string, unknown> = { summary: aiResult.summary };
+
+            // Merge AI keywords with existing ones
+            if (aiResult.keywords && aiResult.keywords.length > 0) {
+              const existing = (article.keywords as string[]) || [];
+              const seen = new Set(aiResult.keywords);
+              const merged = [...aiResult.keywords];
+              for (const kw of existing) {
+                if (!seen.has(kw)) {
+                  seen.add(kw);
+                  merged.push(kw);
+                }
+              }
+              updateData.keywords = merged.slice(0, 10);
+            }
+
             const { error: updateError } = await supabase
               .from("articles")
-              .update({ summary })
+              .update(updateData)
               .eq("id", article.id);
 
             if (updateError) {
