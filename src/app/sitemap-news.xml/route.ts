@@ -4,16 +4,68 @@ const SITE_URL = "https://headlines.fazr.co.kr";
 
 export const revalidate = 3600; // Revalidate hourly
 
+function escapeXml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
 export async function GET() {
-  const { data } = await supabase
+  // Google News sitemap: only articles from last 48 hours
+  const twoDaysAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+
+  const { data: recentData } = await supabase
+    .from("articles")
+    .select("slug, title, created_at, published_at")
+    .gte("created_at", twoDaysAgo)
+    .order("created_at", { ascending: false })
+    .limit(1000);
+
+  const recentArticles = (recentData || []) as {
+    slug: string;
+    title: string;
+    created_at: string;
+    published_at: string | null;
+  }[];
+
+  // Also fetch older articles for standard sitemap entries
+  const { data: olderData } = await supabase
     .from("articles")
     .select("slug, created_at")
+    .lt("created_at", twoDaysAgo)
     .order("created_at", { ascending: false })
     .limit(5000);
 
-  const articles = (data || []) as { slug: string; created_at: string }[];
+  const olderArticles = (olderData || []) as {
+    slug: string;
+    created_at: string;
+  }[];
 
-  const urls = articles
+  // Recent articles with Google News <news:news> tags
+  const recentUrls = recentArticles
+    .map(
+      (a) => `  <url>
+    <loc>${SITE_URL}/news/${a.slug}</loc>
+    <lastmod>${new Date(a.published_at || a.created_at).toISOString()}</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.9</priority>
+    <news:news>
+      <news:publication>
+        <news:name>Headlines Fazr</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>${new Date(a.published_at || a.created_at).toISOString()}</news:publication_date>
+      <news:title>${escapeXml(a.title)}</news:title>
+    </news:news>
+  </url>`
+    )
+    .join("\n");
+
+  // Older articles: standard sitemap entries
+  const olderUrls = olderArticles
     .map(
       (a) => `  <url>
     <loc>${SITE_URL}/news/${a.slug}</loc>
@@ -51,9 +103,11 @@ export async function GET() {
     .join("\n");
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
 ${staticUrls}
-${urls}
+${recentUrls}
+${olderUrls}
 </urlset>`;
 
   return new Response(xml, {
