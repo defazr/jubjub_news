@@ -1,8 +1,23 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
+import { Newsreader, Noto_Sans_KR } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AdSenseScript } from "@/components/AdSenseScript";
 import "./globals.css";
+
+const newsreader = Newsreader({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+  display: "swap",
+  variable: "--font-newsreader",
+});
+
+const notoSansKR = Noto_Sans_KR({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  display: "swap",
+  variable: "--font-noto-sans-kr",
+});
 
 const SITE_URL = "https://headlines.fazr.co.kr";
 const SITE_NAME = "Headlines Fazr";
@@ -97,9 +112,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <link rel="alternate" type="application/rss+xml" title="Headlines Fazr RSS" href={`${SITE_URL}/rss.xml`} />
@@ -109,7 +121,7 @@ export default function RootLayout({
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
       </head>
-      <body className="antialiased overflow-x-hidden">
+      <body className={`${notoSansKR.variable} ${newsreader.variable} antialiased overflow-x-hidden`}>
         <ThemeProvider>
           {children}
         </ThemeProvider>
