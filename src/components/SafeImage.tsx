@@ -46,7 +46,7 @@ export default function SafeImage({
       alt={alt || "news image"}
       title={alt}
       className={className}
-      loading={loading || "lazy"}
+      loading={loading ?? "lazy"}
       fetchPriority={fetchPriority}
       onError={(e) => applyFallback(e.currentTarget)}
       onLoad={(e) => {
