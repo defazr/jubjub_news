@@ -350,8 +350,21 @@ export async function GET(req: NextRequest) {
     const prepared: PreparedArticle[] = [];
     const seenSlugs = new Set<string>();
 
+    // --- spam / SEO page filter keywords ---
+    const spamKeywords = [
+      "tickets", "ticket", "archives", "archive", "hospitality",
+      "betting", "casino", "tag page", "category page",
+    ];
+
     for (const { article, category } of allArticles) {
       if (!article.title || !article.url) continue;
+
+      // Spam / SEO page filter
+      const titleLower = article.title.toLowerCase();
+      if (article.title.length > 120) continue;
+      if (article.title.split(" ").length < 4) continue;
+      if (spamKeywords.some((k) => titleLower.includes(k))) continue;
+      if ((article.title.match(/\|/g) || []).length >= 3) continue;
 
       const hash = createSourceHash(article.url);
       if (existingHashes.has(hash)) {
