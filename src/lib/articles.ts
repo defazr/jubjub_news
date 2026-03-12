@@ -42,7 +42,7 @@ export function parseSummary(summary: string | null): { seoHeadline: string | nu
   return { seoHeadline: null, summaryText: summary };
 }
 
-const FALLBACK_IMAGE = "https://headlines.fazr.co.kr/Headlines_Fazr_OG_image.png";
+const FALLBACK_IMAGE = "https://headlines.fazr.co.kr/Headlines_Fazr_OG_image.webp";
 
 /** Remove duplicate articles by source_url, keeping the first (newest) occurrence */
 function dedup(articles: Article[]): Article[] {
