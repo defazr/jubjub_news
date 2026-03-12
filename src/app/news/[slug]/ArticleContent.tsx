@@ -123,6 +123,8 @@ export default function ArticleContent({ article, relatedArticles }: Props) {
           src={article.image_url}
           alt={article.title}
           className="w-full h-full object-cover"
+          loading="eager"
+          fetchPriority="high"
         />
       </div>
 

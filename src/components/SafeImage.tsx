@@ -30,11 +30,13 @@ export default function SafeImage({
   alt,
   className,
   loading,
+  fetchPriority,
 }: {
   src?: string | null;
   alt: string;
   className?: string;
   loading?: "lazy" | "eager";
+  fetchPriority?: "high" | "low" | "auto";
 }) {
   const imgSrc = src ? sanitizeImageUrl(src) : FALLBACK;
 
@@ -44,7 +46,8 @@ export default function SafeImage({
       alt={alt || "news image"}
       title={alt}
       className={className}
-      loading={loading || "lazy"}
+      loading={loading ?? "lazy"}
+      fetchPriority={fetchPriority}
       onError={(e) => applyFallback(e.currentTarget)}
       onLoad={(e) => {
         const t = e.currentTarget;
