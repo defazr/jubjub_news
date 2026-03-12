@@ -41,7 +41,7 @@ export default function SafeImage({
   return (
     <img
       src={imgSrc}
-      alt=""
+      alt={alt || "news image"}
       title={alt}
       className={className}
       loading={loading}

@@ -81,6 +81,12 @@ export default async function ArticlePage({ params }: Props) {
       "@type": "Organization",
       name: "Headlines Fazr",
       url: "https://headlines.fazr.co.kr",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://headlines.fazr.co.kr/logo.png",
+        width: 512,
+        height: 512,
+      },
     },
     mainEntityOfPage: {
       "@type": "WebPage",
