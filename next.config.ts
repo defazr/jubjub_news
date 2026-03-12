@@ -1,7 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  images: { unoptimized: true },
+  compress: true,
+  poweredByHeader: false,
+  images: {
+    domains: [
+      "gcp-na-images.contentstack.com",
+      "images.unsplash.com",
+    ],
+  },
 };
 
 export default nextConfig;
