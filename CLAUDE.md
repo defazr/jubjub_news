@@ -1,8 +1,13 @@
 # Headlines Fazr - SSOT 운영 지시서 v1.1
 
+IMPORTANT: This project is deployed on Netlify, NOT Vercel.
+
 ## 프로젝트 정보
 
 - **사이트**: https://headlines.fazr.co.kr
+- **호스팅**: Netlify (Vercel 아님)
+- **배포**: Netlify Git deploy (Clear cache and deploy)
+- **CDN**: Netlify CDN
 - **아키텍처**: RapidAPI → /api/news-ingest → Claude AI summary → Supabase → Next.js ISR
 - **상태**: 개발 완료. 운영 단계.
 - **완성도**: 95%
