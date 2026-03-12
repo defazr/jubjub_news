@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     description: "AI curated daily news digest covering technology, economy, world news and AI developments.",
     url: `${SITE_URL}/digest`,
     type: "website",
-    images: [{ url: `${SITE_URL}/Headlines_Fazr_OG_image.png`, width: 1200, height: 630 }],
+    images: [{ url: `${SITE_URL}/Headlines_Fazr_OG_image.webp`, width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",

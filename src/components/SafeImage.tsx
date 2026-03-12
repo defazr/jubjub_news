@@ -1,6 +1,6 @@
 "use client";
 
-const FALLBACK = "/Headlines_Fazr_OG_image.png";
+const FALLBACK = "/Headlines_Fazr_OG_image.webp";
 
 /** Strip query params from external image URLs (fixes CDN 422 errors) */
 function sanitizeImageUrl(url: string): string {

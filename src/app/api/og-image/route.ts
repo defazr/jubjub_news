@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const FALLBACK_URL = "https://headlines.fazr.co.kr/Headlines_Fazr_OG_image.png";
+const FALLBACK_URL = "https://headlines.fazr.co.kr/Headlines_Fazr_OG_image.webp";
 
 export async function GET(req: NextRequest) {
   const url = req.nextUrl.searchParams.get("url");

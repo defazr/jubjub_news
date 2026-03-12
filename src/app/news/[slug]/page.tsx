@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = summaryText || article.excerpt || "";
   const ogImage = article.image_url
     ? `https://headlines.fazr.co.kr/api/og-image?url=${encodeURIComponent(article.image_url)}`
-    : "https://headlines.fazr.co.kr/Headlines_Fazr_OG_image.png";
+    : "https://headlines.fazr.co.kr/Headlines_Fazr_OG_image.webp";
 
   return {
     title: article.title,
