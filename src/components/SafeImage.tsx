@@ -44,7 +44,7 @@ export default function SafeImage({
       alt={alt || "news image"}
       title={alt}
       className={className}
-      loading={loading}
+      loading={loading || "lazy"}
       onError={(e) => applyFallback(e.currentTarget)}
       onLoad={(e) => {
         const t = e.currentTarget;

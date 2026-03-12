@@ -122,12 +122,18 @@ export default function InfoBar() {
     setCache(newData);
   }
 
+  function fetchWithTimeout(url: string, ms = 3000): Promise<Response> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), ms);
+    return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timer));
+  }
+
   async function fetchWeather() {
     // Default: Seoul. Fetch immediately, then update with geolocation if available.
     const lat = 37.5665;
     const lon = 126.978;
 
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto`
     );
     if (!res.ok) throw new Error("Weather fetch failed");
@@ -141,7 +147,7 @@ export default function InfoBar() {
   }
 
   async function fetchExchangeRate() {
-    const res = await fetch("https://open.er-api.com/v6/latest/USD");
+    const res = await fetchWithTimeout("https://open.er-api.com/v6/latest/USD");
     if (!res.ok) throw new Error("Exchange rate fetch failed");
     const d = await res.json();
     const rate = Math.round(d.rates?.KRW);
@@ -162,7 +168,7 @@ export default function InfoBar() {
   }
 
   async function fetchBtc() {
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true"
     );
     if (!res.ok) throw new Error("BTC fetch failed");

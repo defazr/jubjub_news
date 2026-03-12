@@ -191,18 +191,19 @@ export default function ArticleContent({ article, relatedArticles }: Props) {
         </div>
       )}
 
-      {/* More Topics — SEO internal linking */}
+      {/* Explore More — Topic cluster navigation for Discover session depth */}
       {article.keywords && article.keywords.length > 0 && (
-        <section className="bg-muted/50 rounded-lg p-4 mb-6">
-          <h2 className="text-sm font-semibold mb-2">More Topics</h2>
-          <div className="flex flex-wrap gap-2">
-            {article.keywords.map((kw) => (
+        <section className="bg-primary/5 border border-primary/10 rounded-lg p-5 mb-6">
+          <h2 className="text-sm font-bold mb-3">Explore More</h2>
+          <div className="flex flex-col gap-2">
+            {article.keywords.slice(0, 3).map((kw) => (
               <a
                 key={kw}
                 href={`/topic/${encodeURIComponent(kw)}`}
-                className="text-sm text-primary hover:underline"
+                className="flex items-center justify-between text-sm font-medium text-primary hover:underline py-1.5 px-2 rounded hover:bg-primary/5 transition-colors"
               >
-                {kw}
+                <span className="capitalize">{kw} News</span>
+                <span aria-hidden="true">&rarr;</span>
               </a>
             ))}
           </div>
