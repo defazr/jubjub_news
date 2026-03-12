@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { shouldSkipArticle } from "@/lib/articleFilter";
 
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || "";
 const RAPIDAPI_HOST = "news-api14.p.rapidapi.com";
@@ -358,6 +359,9 @@ export async function GET(req: NextRequest) {
 
     for (const { article, category } of allArticles) {
       if (!article.title || !article.url) continue;
+
+      // Junk article filter (cookie/paywall/login/bot pages)
+      if (shouldSkipArticle(article.title, article.excerpt)) continue;
 
       // Spam / SEO page filter
       const titleLower = article.title.toLowerCase();
