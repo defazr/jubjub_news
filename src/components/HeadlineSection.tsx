@@ -81,6 +81,7 @@ export default function HeadlineSection({ articles }: Props) {
                   src={subHeadline.thumbnail}
                   alt={subHeadline.title}
                   className="w-full h-32 object-cover"
+                  loading="eager"
                 />
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-2">
