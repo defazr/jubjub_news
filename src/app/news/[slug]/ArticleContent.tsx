@@ -128,7 +128,17 @@ export default function ArticleContent({ article, relatedArticles }: Props) {
         />
       </div>
 
-      {/* AI Summary — Enhanced for Discover quality signal */}
+      {/* Excerpt / Content — original content first for Discover */}
+      {article.excerpt && (
+        <div className="prose prose-neutral dark:prose-invert max-w-none mb-6">
+          <p className="text-base leading-relaxed">{article.excerpt}</p>
+        </div>
+      )}
+
+      {/* Mid-article Ad */}
+      <AdUnit slot="mid-article" className="my-6" />
+
+      {/* AI Summary — placed after original content for Discover SEO */}
       {(summaryText || article.summary) && (
         <div className="bg-primary/5 border border-primary/10 rounded-lg p-5 mb-6">
           <div className="flex items-center gap-2 mb-3">
@@ -154,16 +164,6 @@ export default function ArticleContent({ article, relatedArticles }: Props) {
           )}
         </div>
       )}
-
-      {/* Excerpt / Content */}
-      {article.excerpt && (
-        <div className="prose prose-neutral dark:prose-invert max-w-none mb-6">
-          <p className="text-base leading-relaxed">{article.excerpt}</p>
-        </div>
-      )}
-
-      {/* Mid-article Ad */}
-      <AdUnit slot="mid-article" className="my-6" />
 
       {/* Original link */}
       <div className="bg-muted/50 rounded-lg p-4 mb-6">
