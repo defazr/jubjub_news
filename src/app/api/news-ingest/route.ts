@@ -360,7 +360,7 @@ export async function GET(req: NextRequest) {
     for (const { article, category } of allArticles) {
       if (!article.title || !article.url) continue;
 
-      // Junk article filter (cookie/paywall/login/bot pages)
+      // Junk article filter (cookie/paywall/login/bot/portal pages)
       if (shouldSkipArticle(article.title, article.excerpt)) continue;
 
       // Spam / SEO page filter
