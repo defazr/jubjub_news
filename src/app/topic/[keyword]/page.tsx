@@ -48,6 +48,9 @@ export default async function TopicPage({ params }: Props) {
     getPopularKeywords(20),
   ]);
 
+  // Topic description for About section
+  const topicDesc = getTopicDescription(decoded);
+
   // Related topics: exclude current keyword
   const relatedTopics = popularKeywords
     .filter((kw) => kw.toLowerCase() !== decoded.toLowerCase())
@@ -88,13 +91,17 @@ export default async function TopicPage({ params }: Props) {
           </p>
         </div>
 
-        {/* About this topic — SEO content block */}
+        {/* About this topic — SEO content block with custom descriptions */}
         <section className="bg-muted/50 rounded-lg p-4 mb-6">
           <h2 className="text-sm font-semibold mb-1">About {decoded}</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Latest AI-curated news and analysis about <strong>{decoded}</strong>,
-            including breaking stories, expert analysis, and global coverage.
-            Updated in real-time with AI-powered summaries to keep you informed.
+            {topicDesc || (
+              <>
+                Latest AI-curated news and analysis about <strong>{decoded}</strong>,
+                including breaking stories, expert analysis, and global coverage.
+                Updated in real-time with AI-powered summaries to keep you informed.
+              </>
+            )}
           </p>
           {topKeywords.length > 0 && (
             <p className="text-xs text-muted-foreground/70 mt-2">
