@@ -43,8 +43,9 @@ const TOPIC_CONCEPTS: Record<string, string[]> = {
   startup: ["startup", "venture capital", "vc", "funding", "unicorn"],
 };
 
-/** SEO description templates for concept topics */
+/** SEO description templates for topic pages — used in metadata + visible About section */
 const TOPIC_DESCRIPTIONS: Record<string, string> = {
+  // Concept topics
   ai: "Latest news about artificial intelligence, machine learning, LLMs, ChatGPT, and AI industry developments.",
   crypto:
     "Breaking news on cryptocurrency, Bitcoin, Ethereum, blockchain technology, and DeFi markets.",
@@ -63,6 +64,50 @@ const TOPIC_DESCRIPTIONS: Record<string, string> = {
     "Robotics and automation news covering industrial robots, AI-powered automation, and humanoid robots.",
   startup:
     "Startup ecosystem news including funding rounds, venture capital, unicorns, and tech entrepreneurship.",
+
+  // Major brand/product topics
+  nvidia:
+    "NVIDIA news covering GPU launches, AI chip developments, data center hardware, and semiconductor market impact.",
+  apple:
+    "Apple news including iPhone updates, macOS releases, services expansion, and product launches worldwide.",
+  tesla:
+    "Tesla news on electric vehicles, Autopilot developments, energy products, and Elon Musk's business updates.",
+  microsoft:
+    "Microsoft news covering Windows updates, Azure cloud, Copilot AI integration, and enterprise technology.",
+  google:
+    "Google news including Search updates, Gemini AI, Android developments, and Alphabet business strategy.",
+  meta:
+    "Meta news on Facebook, Instagram, WhatsApp, Reality Labs, and metaverse technology developments.",
+  amazon:
+    "Amazon news covering e-commerce, AWS cloud services, Alexa AI, and logistics innovation.",
+  openai:
+    "OpenAI news including ChatGPT updates, GPT model releases, AI safety research, and industry partnerships.",
+  chatgpt:
+    "ChatGPT news covering new features, model improvements, plugins, and real-world AI applications.",
+  bitcoin:
+    "Bitcoin news including price movements, mining updates, regulatory developments, and institutional adoption.",
+  samsung:
+    "Samsung news on Galaxy smartphones, semiconductor manufacturing, display technology, and consumer electronics.",
+  iphone:
+    "iPhone news covering new model releases, iOS updates, camera improvements, and Apple ecosystem integration.",
+  android:
+    "Android news including OS updates, Google Play, device launches, and mobile technology trends.",
+  gpu:
+    "GPU news covering graphics card launches, AI accelerator chips, gaming performance, and data center hardware.",
+  "5g":
+    "5G network news on deployment progress, carrier updates, device compatibility, and next-gen connectivity.",
+  climate:
+    "Climate news covering environmental policy, carbon emissions, renewable energy, and sustainability efforts.",
+  economy:
+    "Global economy news including GDP updates, central bank policies, trade developments, and market analysis.",
+  anthropic:
+    "Anthropic news covering Claude AI, safety research, model releases, and responsible AI development.",
+  deepseek:
+    "DeepSeek news on AI model releases, open-source developments, and Chinese AI technology advances.",
+  gemini:
+    "Google Gemini news covering multimodal AI capabilities, model updates, and integration across Google products.",
+  copilot:
+    "Microsoft Copilot news including AI assistant features, Office integration, and enterprise productivity tools.",
 };
 
 /**
