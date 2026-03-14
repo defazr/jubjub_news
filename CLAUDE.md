@@ -232,6 +232,17 @@ anthropic, samsung, economy, climate, cybersecurity, 5g, ev, cloud
 - **요청**: `/api/news-ingest?secret=ENV_SECRET`
 - **secret 없으면**: status 404
 
+## 운영 로그
+
+### 2026-03-14
+
+- **GitHub Actions Cron 복구 완료**
+  - 문제: GitHub Secrets에 키가 설정되지 않아 News Ingest Cron이 계속 실패하고 있었음
+  - 해결: GitHub repo → Settings → Secrets and variables → Actions에 필요한 키 등록
+  - 수동 실행 결과: `Response code: 200` (성공)
+  - 1시간마다 자동 실행되므로 이후 뉴스 수집 정상 동작 중
+- **확인 방법**: GitHub Actions 탭에서 "News Ingest Cron" 실행 이력 확인
+
 ## 다음 단계 (추후 작업, 지금은 진행하지 않음)
 
 1. Discover 카드 개선
