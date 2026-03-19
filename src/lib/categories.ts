@@ -17,6 +17,7 @@ export const CATEGORIES: CategoryInfo[] = [
   { name: "Tech", slug: "tech", query: "technology science AI", description: "Technology, science, and AI news", color: "#06b6d4", dbCategory: "technology" },
   { name: "Sports", slug: "sports", query: "sports football baseball", description: "Sports, football, baseball, and athletics news", color: "#ef4444", dbCategory: "sports" },
   { name: "Opinion", slug: "opinion", query: "opinion editorial column", description: "Editorials, columns, and expert opinions", color: "#eab308", dbCategory: "science" },
+  { name: "AI", slug: "ai", query: "AI artificial intelligence machine learning", description: "AI, machine learning, and artificial intelligence news", color: "#8b5cf6", dbCategory: "ai" },
 ];
 
 /** DB categories used on the homepage */
