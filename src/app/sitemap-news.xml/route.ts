@@ -84,14 +84,15 @@ export async function GET() {
     { loc: "/trending", priority: "0.8", freq: "hourly" },
     { loc: "/digest", priority: "0.8", freq: "daily" },
     { loc: "/search", priority: "0.5", freq: "daily" },
-    { loc: "/category/politics", priority: "0.8", freq: "hourly" },
-    { loc: "/category/economy", priority: "0.8", freq: "hourly" },
-    { loc: "/category/society", priority: "0.8", freq: "hourly" },
-    { loc: "/category/world", priority: "0.8", freq: "hourly" },
-    { loc: "/category/culture", priority: "0.8", freq: "hourly" },
-    { loc: "/category/tech", priority: "0.8", freq: "hourly" },
-    { loc: "/category/sports", priority: "0.8", freq: "hourly" },
-    { loc: "/category/opinion", priority: "0.8", freq: "hourly" },
+    { loc: "/topic/politics", priority: "0.8", freq: "hourly" },
+    { loc: "/topic/economy", priority: "0.8", freq: "hourly" },
+    { loc: "/topic/society", priority: "0.8", freq: "hourly" },
+    { loc: "/topic/world", priority: "0.8", freq: "hourly" },
+    { loc: "/topic/culture", priority: "0.8", freq: "hourly" },
+    { loc: "/topic/tech", priority: "0.8", freq: "hourly" },
+    { loc: "/topic/sports", priority: "0.8", freq: "hourly" },
+    { loc: "/topic/opinion", priority: "0.8", freq: "hourly" },
+    { loc: "/topic/ai", priority: "0.8", freq: "hourly" },
   ];
 
   const staticUrls = staticPages

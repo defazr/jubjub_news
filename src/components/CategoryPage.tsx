@@ -205,7 +205,7 @@ export default function CategoryPageContent({ category, initialArticles }: Props
               </h3>
               <div className="flex flex-wrap gap-2">
                 {CATEGORIES.filter((c) => c.slug !== category.slug).map((c) => (
-                  <a key={c.slug} href={`/category/${c.slug}`}>
+                  <a key={c.slug} href={`/topic/${c.slug}`}>
                     <Badge variant="outline" className="hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer">
                       {c.name}
                     </Badge>

@@ -9,6 +9,15 @@ const nextConfig: NextConfig = {
       "images.unsplash.com",
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/category/:slug",
+        destination: "/topic/:slug",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

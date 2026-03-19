@@ -42,7 +42,7 @@ export default function Header() {
               {CATEGORIES.slice(0, 6).map((cat) => (
                 <a
                   key={cat.slug}
-                  href={`/category/${cat.slug}`}
+                  href={`/topic/${cat.slug}`}
                   className="text-xs font-medium text-muted-foreground hover:text-primary px-2 py-1 rounded transition-colors"
                 >
                   {cat.name}
@@ -84,7 +84,7 @@ export default function Header() {
                 {CATEGORIES.slice(0, 6).map((cat) => (
                   <a
                     key={cat.slug}
-                    href={`/category/${cat.slug}`}
+                    href={`/topic/${cat.slug}`}
                     className="text-xs font-medium text-muted-foreground hover:text-primary px-1.5 py-1 rounded transition-colors"
                   >
                     {cat.name}

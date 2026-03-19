@@ -114,7 +114,7 @@ export default async function DigestPage() {
                 />
                 <h2 className="text-base font-bold">{label}</h2>
                 <a
-                  href={`/category/${cat === "business" ? "economy" : cat === "technology" ? "tech" : cat}`}
+                  href={`/topic/${cat === "business" ? "economy" : cat === "technology" ? "tech" : cat}`}
                   className="text-xs text-primary hover:underline ml-auto"
                 >
                   View all
