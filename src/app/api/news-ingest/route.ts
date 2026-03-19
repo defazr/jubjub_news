@@ -163,14 +163,6 @@ Excerpt: ${excerpt}`,
   }
 }
 
-function chunks<T>(arr: T[], size: number): T[][] {
-  const result: T[][] = [];
-  for (let i = 0; i < arr.length; i += size) {
-    result.push(arr.slice(i, i + size));
-  }
-  return result;
-}
-
 async function fetchTrending(language: string = "en"): Promise<RawArticle[]> {
   const url = `https://${RAPIDAPI_HOST}/v2/trendings?topic=General&language=${language}`;
   try {
@@ -311,20 +303,26 @@ export async function GET(req: NextRequest) {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
     const stats = { fetched: 0, inserted: 0, duplicates: 0, errors: 0, summaries: 0 };
+    const timing: Record<string, number> = {};
+    const t0 = Date.now();
 
-    // 1. Fetch trending articles
-    const trending = await fetchTrending("en");
+    // 1. Fetch trending + all categories in parallel
+    const fetchStart = Date.now();
+    const [trending, ...categoryResults] = await Promise.all([
+      fetchTrending("en"),
+      ...CATEGORIES.map((cat) => fetchByCategory(cat.query, "en")),
+    ]);
+    timing.fetchMs = Date.now() - fetchStart;
+
     const allArticles: { article: RawArticle; category: string }[] =
       trending.map((a) => ({ article: a, category: "trending" }));
 
-    // 2. Fetch by category (with delay between calls to avoid rate limiting)
-    for (const cat of CATEGORIES) {
-      const articles = await fetchByCategory(cat.query, "en");
+    // 2. Flatten category results
+    categoryResults.forEach((articles, idx) => {
       for (const a of articles) {
-        allArticles.push({ article: a, category: cat.name });
+        allArticles.push({ article: a, category: CATEGORIES[idx].name });
       }
-      await new Promise((r) => setTimeout(r, 300));
-    }
+    });
 
     stats.fetched = allArticles.length;
 
@@ -419,39 +417,38 @@ export async function GET(req: NextRequest) {
     // 5. Generate AI summaries + keywords (only if ?summarize=true to avoid timeout)
     const shouldSummarize = req.nextUrl.searchParams.get("summarize") === "true";
     if (shouldSummarize) {
-      const BATCH_SIZE = 10;
-      for (const batch of chunks(prepared, BATCH_SIZE)) {
-        const results = await Promise.allSettled(
-          batch.map(async (item) => {
-            if (!item.excerpt) return;
-            const aiResult = await generateSummaryAndKeywords(item.title, item.excerpt);
-            if (aiResult.summary) {
-              item.summary = aiResult.summary;
-              stats.summaries++;
-            }
-            // Merge AI keywords with existing frequency-based keywords (AI first, deduped)
-            if (aiResult.keywords && aiResult.keywords.length > 0) {
-              const seen = new Set(aiResult.keywords);
-              const merged = [...aiResult.keywords];
-              for (const kw of item.keywords) {
-                if (!seen.has(kw)) {
-                  seen.add(kw);
-                  merged.push(kw);
-                }
-              }
-              item.keywords = merged.slice(0, 10);
-            }
-          })
-        );
-        for (const r of results) {
-          if (r.status === "rejected") {
-            console.error("Summary generation failed:", r.reason);
+      const summaryStart = Date.now();
+      const summaryResults = await Promise.allSettled(
+        prepared.map(async (item) => {
+          if (!item.excerpt) return;
+          const aiResult = await generateSummaryAndKeywords(item.title, item.excerpt);
+          if (aiResult.summary) {
+            item.summary = aiResult.summary;
+            stats.summaries++;
           }
+          if (aiResult.keywords && aiResult.keywords.length > 0) {
+            const seen = new Set(aiResult.keywords);
+            const merged = [...aiResult.keywords];
+            for (const kw of item.keywords) {
+              if (!seen.has(kw)) {
+                seen.add(kw);
+                merged.push(kw);
+              }
+            }
+            item.keywords = merged.slice(0, 10);
+          }
+        })
+      );
+      for (const r of summaryResults) {
+        if (r.status === "rejected") {
+          console.error("Summary generation failed:", r.reason);
         }
       }
+      timing.summaryMs = Date.now() - summaryStart;
     }
 
     // 6. Batch insert (Supabase upsert)
+    const insertStart = Date.now();
     if (prepared.length > 0) {
       for (let i = 0; i < prepared.length; i += 50) {
         const chunk = prepared.slice(i, i + 50);
@@ -467,10 +464,15 @@ export async function GET(req: NextRequest) {
         }
       }
     }
+    timing.insertMs = Date.now() - insertStart;
+    timing.totalMs = Date.now() - t0;
+
+    console.log("[INGEST]", { ...stats, timing });
 
     return NextResponse.json({
       success: true,
       stats,
+      timing,
       timestamp: new Date().toISOString(),
     });
   } catch (err) {
