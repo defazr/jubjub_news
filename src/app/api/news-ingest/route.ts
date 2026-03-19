@@ -5,7 +5,10 @@ import { shouldSkipArticle } from "@/lib/articleFilter";
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY || "";
 const RAPIDAPI_HOST = "news-api14.p.rapidapi.com";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const SUPABASE_SERVICE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+const SUPABASE_SERVICE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  "";
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || "";
 const INGEST_SECRET = process.env.INGEST_SECRET || "";
 
@@ -268,6 +271,14 @@ export async function GET(req: NextRequest) {
     }
 
     // Validate required environment variables
+    console.log("[INGEST] env check:", {
+      SUPABASE_URL: !!SUPABASE_URL,
+      SUPABASE_SERVICE_KEY: !!SUPABASE_SERVICE_KEY,
+      RAPIDAPI_KEY: !!RAPIDAPI_KEY,
+      ANTHROPIC_API_KEY: !!ANTHROPIC_API_KEY,
+      INGEST_SECRET: !!INGEST_SECRET,
+      HAS_SERVICE_ROLE: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    });
     if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
       return NextResponse.json(
         { error: "Server misconfiguration: missing Supabase environment variables" },

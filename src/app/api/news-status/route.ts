@@ -2,12 +2,23 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
 export const revalidate = 300; // 5min cache
+export const dynamic = "force-dynamic";
 
 const TOPICS = ["ai", "apple", "nvidia", "semiconductor", "crypto"] as const;
 
 export async function GET() {
+  // Debug: check env availability (no secrets exposed)
+  const envCheck = {
+    SUPABASE_URL: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+    SUPABASE_ANON_KEY: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    INGEST_SECRET: !!process.env.INGEST_SECRET,
+    RAPIDAPI_KEY: !!process.env.RAPIDAPI_KEY,
+    ANTHROPIC_API_KEY: !!process.env.ANTHROPIC_API_KEY,
+  };
+  console.log("[NEWS-STATUS] env check:", envCheck);
+
   try {
-    const now = new Date().toISOString();
     const h24 = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const h1 = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
@@ -27,6 +38,10 @@ export async function GET() {
         .order("created_at", { ascending: false })
         .limit(1),
     ]);
+
+    // Log any DB errors
+    if (totalRes.error) console.error("[NEWS-STATUS] totalRes error:", totalRes.error);
+    if (latestRes.error) console.error("[NEWS-STATUS] latestRes error:", latestRes.error);
 
     // Topic counts in parallel
     const topicEntries = await Promise.all(
@@ -48,6 +63,12 @@ export async function GET() {
       latestTime !== null &&
       new Date(latestTime).getTime() > Date.now() - 2 * 60 * 60 * 1000;
 
+    console.log("[NEWS-STATUS] result:", {
+      articles_total: totalRes.count ?? 0,
+      latest_article_time: latestTime,
+      ingest_ok: ingestOk,
+    });
+
     return NextResponse.json({
       status: "ok",
       articles_total: totalRes.count ?? 0,
@@ -59,10 +80,15 @@ export async function GET() {
         last_ingest: latestTime,
         ingest_ok: ingestOk,
       },
+      env_check: envCheck,
     });
-  } catch {
+  } catch (err) {
+    console.error("[NEWS-STATUS] unexpected error:", err);
     return NextResponse.json(
-      { status: "error", message: "database error" },
+      { status: "error", message: "database error", env_check: {
+        SUPABASE_URL: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+        SUPABASE_ANON_KEY: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      }},
       { status: 500 }
     );
   }
