@@ -243,6 +243,19 @@ anthropic, samsung, economy, climate, cybersecurity, 5g, ev, cloud
   - 1시간마다 자동 실행되므로 이후 뉴스 수집 정상 동작 중
 - **확인 방법**: GitHub Actions 탭에서 "News Ingest Cron" 실행 이력 확인
 
+### 2026-03-19
+
+- **/category/ai 404 수정 완료**
+  - 문제: Digest 페이지 "View all" 링크가 `/category/ai`로 연결되나 해당 페이지 미존재 → 404
+  - 원인: `HOMEPAGE_CATEGORIES`에 AI 있으나, `CATEGORIES` 배열과 `/category/ai/page.tsx` 없음
+  - 해결:
+    - `src/lib/categories.ts` — `CATEGORIES`에 AI 항목 추가 (`slug: "ai"`, `dbCategory: "ai"`)
+    - `src/app/category/ai/page.tsx` — 신규 생성 (기존 카테고리 페이지와 동일 패턴)
+  - TypeScript 에러: 0개
+  - 커밋: `bd2042d`
+- **현재 상태**: 개발 종료. 운영 + 관찰 단계. 기사 636+, 자동 ingest/AI summary/dedupe 정상.
+- **주의**: 구조 수정, Topic 추가, URL 변경, 내부링크 구조 변경 금지. 데이터 축적 + Discover 반응 대기 중.
+
 ## 다음 단계 (추후 작업, 지금은 진행하지 않음)
 
 1. Discover 카드 개선
