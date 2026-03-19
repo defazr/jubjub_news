@@ -199,7 +199,7 @@ export default function FullMenu({ open, onClose }: Props) {
             {MENU_CATEGORIES.map((cat) => (
               <a
                 key={cat.slug}
-                href={`/category/${cat.slug}`}
+                href={`/topic/${cat.slug}`}
                 onClick={onClose}
                 className="flex items-center gap-3 px-4 py-3.5 text-base font-medium hover:bg-accent transition-colors"
               >

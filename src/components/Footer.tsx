@@ -19,7 +19,7 @@ export default function Footer() {
             <ul className="text-base space-y-2">
               {CATEGORIES.map((cat) => (
                 <li key={cat.slug}>
-                  <a href={`/category/${cat.slug}`} className="text-muted-foreground hover:text-primary transition-colors">
+                  <a href={`/topic/${cat.slug}`} className="text-muted-foreground hover:text-primary transition-colors">
                     {cat.name}
                   </a>
                 </li>
