@@ -20,7 +20,7 @@ IMPORTANT: This project is deployed on Netlify, NOT Vercel.
 | 뉴스 수집 | 정상 (/api/news-ingest) |
 | AI 요약 | 정상 (Claude Haiku) |
 | 번역 | 정상 (/api/translate) |
-| DB | articles 231+ |
+| DB | articles 1,080+ |
 | SEO 메타 | 정상 (og, twitter, canonical) |
 | sitemap | 정상 (sitemap.xml, sitemap-news.xml, sitemap-topics.xml) |
 | robots.txt | 정상 |
@@ -253,8 +253,29 @@ anthropic, samsung, economy, climate, cybersecurity, 5g, ev, cloud
     - `src/app/category/ai/page.tsx` — 신규 생성 (기존 카테고리 페이지와 동일 패턴)
   - TypeScript 에러: 0개
   - 커밋: `bd2042d`
-- **현재 상태**: 개발 종료. 운영 + 관찰 단계. 기사 636+, 자동 ingest/AI summary/dedupe 정상.
+
+### 2026-03-20
+
+- **전체 파이프라인 검증 완료**
+  - Netlify 환경변수 `INGEST_SECRET`과 GitHub Actions `secrets.INGEST_SECRET`을 동일하게 재설정
+  - Supabase 프로젝트 정리 (불필요 프로젝트 삭제, `wzxayrmkykzxmujejyzg`만 유지)
+  - `SUPABASE_SERVICE_ROLE_KEY` Netlify 환경변수에 등록
+  - `/api/news-status` 검증 결과:
+    - `articles_total: 1,080`, `articles_last_24h: 70`, `ingest_ok: true`
+    - 환경변수 6개 전부 `true`
+  - GitHub Actions Cron: 최근 10회 중 9회 성공 (90%), 정상 동작
+  - **GPT 핸드오프 보고서 작성**: `GPT-HANDOFF-2026-03-20.md`
+- **현재 상태**: 개발 완전 종료. 전체 파이프라인 자동 운영 중. 기사 1,080+, 자동 ingest/AI summary/dedupe 정상.
 - **주의**: 구조 수정, Topic 추가, URL 변경, 내부링크 구조 변경 금지. 데이터 축적 + Discover 반응 대기 중.
+
+## 운영 체크 방법
+
+- **상태 확인**: `GET https://headlines.fazr.co.kr/api/news-status`
+  - `ingest_ok: true` → 정상
+  - `articles_last_24h > 0` → 수집 중
+- **GitHub Actions**: Actions 탭 → "News Ingest Cron" → 초록불 확인
+- **수동 ingest**: `GET /api/news-ingest?secret=INGEST_SECRET&summarize=true`
+- **AI 요약 백필**: `GET /api/backfill-summaries?secret=INGEST_SECRET&limit=50`
 
 ## 다음 단계 (추후 작업, 지금은 진행하지 않음)
 
