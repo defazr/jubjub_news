@@ -53,25 +53,43 @@
 
 ---
 
+## 실행 트리거 조건
+
+아래 조건 중 하나라도 충족 시 수정 시작:
+
+- impressions 증가 멈춤 (3일 이상 정체)
+- 색인 수 증가 멈춤
+- 특정 페이지 CTR 0 유지
+
+---
+
+## 수정 우선순위 (리스크 낮은 것부터)
+
+1. /category 리다이렉트 (리스크 최소)
+2. /topic/ai 검색 정확도 개선
+3. /ai 페이지 필터 또는 타이틀 수정
+
+---
+
 ## 3~4주 후 처리 체크리스트
 
-### /ai 페이지
+### 1순위: /category/ai
 
-- [ ] getArticlesWithSummary에 카테고리 필터 추가 또는 별도 함수 생성
-- [ ] articles.ts 수정 금지이므로 topicConcepts.ts 등에 새 함수 추가 방식 권장
-- [ ] 또는 페이지 타이틀을 "AI-Summarized News"로 변경하여 의미 맞춤
+- [ ] 옵션 A: /category/:slug → /topic/:slug 301 리다이렉트 추가 (next.config.ts)
+- [ ] 옵션 B: /category/ai/page.tsx 재생성
+- [ ] 옵션 A 추천 (구조 변경 최소)
 
-### /topic/ai 검색 정확도
+### 2순위: /topic/ai 검색 정확도
 
 - [ ] title.ilike.%ai%, excerpt.ilike.%ai% 제거
 - [ ] keywords.cs 조건만 유지 (13개 키워드로 충분)
 - [ ] 또는 ilike 패턴을 단어 경계 고려로 변경 ("% ai %", "ai %")
 
-### /category/ai
+### 3순위: /ai 페이지
 
-- [ ] 옵션 A: /category/:slug → /topic/:slug 301 리다이렉트 추가 (next.config.ts)
-- [ ] 옵션 B: /category/ai/page.tsx 재생성
-- [ ] 옵션 A 추천 (구조 변경 최소)
+- [ ] getArticlesWithSummary에 카테고리 필터 추가 또는 별도 함수 생성
+- [ ] articles.ts 수정 금지이므로 topicConcepts.ts 등에 새 함수 추가 방식 권장
+- [ ] 또는 페이지 타이틀을 "AI-Summarized News"로 변경하여 의미 맞춤
 
 ---
 
