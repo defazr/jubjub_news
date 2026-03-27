@@ -76,11 +76,11 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     images: [
       {
-        url: `${SITE_URL}/Headlines_Fazr_OG_image.webp`,
+        url: `${SITE_URL}/Headlines_Fazr_OG_image.png`,
         width: 1200,
         height: 630,
         alt: `${SITE_NAME} - AI Curated Global News`,
-        type: "image/webp",
+        type: "image/png",
       },
     ],
   },
@@ -88,7 +88,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${SITE_NAME} - AI Curated Global News`,
     description: SITE_DESCRIPTION,
-    images: [`${SITE_URL}/Headlines_Fazr_OG_image.webp`],
+    images: [`${SITE_URL}/Headlines_Fazr_OG_image.png`],
   },
   alternates: {
     canonical: SITE_URL,
