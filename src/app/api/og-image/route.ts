@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const FALLBACK_URL = "https://headlines.fazr.co.kr/Headlines_Fazr_OG_image.webp";
+const FALLBACK_URL = "https://headlines.fazr.co.kr/Headlines_Fazr_OG_image.png";
 
 export async function GET(req: NextRequest) {
   const url = req.nextUrl.searchParams.get("url");
@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
         "User-Agent": "Mozilla/5.0 (compatible; HeadlinesFazrBot/1.0)",
         Accept: "image/*",
       },
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(3000),
     });
 
     if (!res.ok) {
