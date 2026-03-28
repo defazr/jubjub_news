@@ -20,7 +20,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const { summaryText } = parseSummary(article.summary);
   const description = summaryText || article.excerpt || "";
-  const ogImage = article.image_url || "https://headlines.fazr.co.kr/Headlines_Fazr_OG_image.png";
+  const ogImage = article.image_url && !article.image_url.endsWith('.webp')
+    ? article.image_url
+    : "https://headlines.fazr.co.kr/Headlines_Fazr_OG_image.png";
 
   return {
     title: article.title,
