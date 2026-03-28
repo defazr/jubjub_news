@@ -1,4 +1,4 @@
-# Headlines Fazr - SSOT 운영 지시서 v1.1
+# Headlines Fazr - SSOT 운영 지시서 v1.2
 
 IMPORTANT: This project is deployed on Netlify, NOT Vercel.
 
@@ -20,7 +20,7 @@ IMPORTANT: This project is deployed on Netlify, NOT Vercel.
 | 뉴스 수집 | 정상 (/api/news-ingest) |
 | AI 요약 | 정상 (Claude Haiku) |
 | 번역 | 정상 (/api/translate) |
-| DB | articles 1,080+ |
+| DB | articles 1,818+ |
 | SEO 메타 | 정상 (og, twitter, canonical) |
 | sitemap | 정상 (sitemap.xml, sitemap-news.xml, sitemap-topics.xml) |
 | robots.txt | 정상 |
@@ -62,6 +62,15 @@ fetched: 217  inserted: 31  duplicates: 186  errors: 0  summaries: 31
 
 - **구현**: naturalWidth 체크 + onError fallback
 - **fallback**: `/Headlines_Fazr_OG_image.png`
+- **수정 금지**
+
+### 4. OG 이미지 프록시 제거 + WebP 필터링 (2026-03-28)
+
+- **문제**: og:image가 `/api/og-image?url=...` 프록시 경유 → 이중 홉 지연 + Twitter 크롤러 타임아웃
+- **해결**: 프록시 제거, 직접 CDN URL 사용. WebP 이미지는 Twitter 미지원이므로 fallback PNG 사용
+- **파일**: `src/app/news/[slug]/page.tsx` generateMetadata
+- **로직**: JPG/PNG → 직접 사용 / WebP → fallback PNG / 이미지 없음 → fallback PNG
+- **커밋**: `8944cbc`
 - **수정 금지**
 
 ## 캐시 정책 (확정, 수정 금지)
@@ -267,6 +276,20 @@ anthropic, samsung, economy, climate, cybersecurity, 5g, ev, cloud
   - **GPT 핸드오프 보고서 작성**: `GPT-HANDOFF-2026-03-20.md`
 - **현재 상태**: 개발 완전 종료. 전체 파이프라인 자동 운영 중. 기사 1,080+, 자동 ingest/AI summary/dedupe 정상.
 - **주의**: 구조 수정, Topic 추가, URL 변경, 내부링크 구조 변경 금지. 데이터 축적 + Discover 반응 대기 중.
+
+### 2026-03-28
+
+- **OG 이미지 프록시 제거 + WebP 필터링**
+  - 1차: `/api/og-image` 프록시 제거, `article.image_url` 직접 사용 (커밋 `e5d43fd`)
+  - 2차: WebP 이미지 필터링 추가 — `.webp`는 fallback PNG 사용 (커밋 `8944cbc`)
+  - 원인: Twitter/X가 WebP 미지원 + 프록시 이중 홉 타임아웃
+  - 결과: JPG/PNG → 원본 표시, WebP → fallback PNG, Facebook은 모두 정상
+  - GPT 핸드오프 보고서 작성: `GPT-HANDOFF-2026-03-28.md`
+- **GA4 데이터 분석 (2026-02-26 ~ 2026-03-27)**
+  - 활성 사용자 87명 (전원 신규), google organic 7+17(referral) = 약 24 세션
+  - Google 크롤링+노출 시작 단계, 구조 변경 금지 확인
+  - 현재 articles_total: 1,818+, articles_last_24h: 116
+- **현재 상태**: 대기. Google 검색 유입 증가 모니터링 중.
 
 ## 운영 체크 방법
 
