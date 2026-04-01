@@ -73,14 +73,21 @@ fetched: 217  inserted: 31  duplicates: 186  errors: 0  summaries: 31
 - **커밋**: `8944cbc`
 - **수정 금지**
 
-## 캐시 정책 (확정, 수정 금지)
+## 캐시 정책 (2026-04-01 업데이트)
 
-| 페이지 | 캐시 |
+[예외 허용] ISR Writes 초과로 인해 프로젝트 pause 위험 상태.
+기존 "캐시 정책 수정 금지" 규칙을 해제. 캐시 정책 수정은 안정화 작업으로 허용됨.
+
+| 페이지 | 캐시 (이전 → 현재) |
 |--------|------|
-| homepage | 60s |
-| topic | 300s |
-| article | 3600s |
-| digest | 3600s |
+| homepage | 60s → 900s (15분) |
+| category × 7 | 300s → 1800s (30분) |
+| topic | 300s → 3600s (1시간) |
+| trending | 600s → 1800s (30분) |
+| article | 3600s (유지) |
+| digest | 3600s (유지) |
+| trending-keywords API | 600s → 1800s (30분) |
+| news-status API | 300s → 3600s (1시간) |
 
 - Service Worker: HTML cache 없음, static assets cache-first
 

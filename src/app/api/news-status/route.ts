@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
-export const revalidate = 300; // 5min cache
+export const revalidate = 3600; // 1 hour cache (reduced writes)
 export const dynamic = "force-dynamic";
 
 const TOPICS = ["ai", "apple", "nvidia", "semiconductor", "crypto"] as const;

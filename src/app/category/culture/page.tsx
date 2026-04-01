@@ -2,7 +2,7 @@ import { getArticlesByCategory, articleToApiArticle } from "@/lib/articles";
 import { getCategoryBySlug } from "@/lib/categories";
 import CategoryPageContent from "@/components/CategoryPage";
 
-export const revalidate = 300;
+export const revalidate = 1800; // ISR: 30 minutes (reduced writes)
 
 const category = getCategoryBySlug("culture")!;
 

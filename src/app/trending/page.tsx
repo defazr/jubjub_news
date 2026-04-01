@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import SafeImage from "@/components/SafeImage";
 import { TrendingUp, Flame, Hash } from "lucide-react";
 
-export const revalidate = 600; // ISR: 10 minutes
+export const revalidate = 1800; // ISR: 30 minutes (reduced writes)
 
 const SITE_URL = "https://headlines.fazr.co.kr";
 
