@@ -1,8 +1,9 @@
 import { getPopularKeywords } from "@/lib/articles";
+import { supabase } from "@/lib/supabase";
 
 const SITE_URL = "https://headlines.fazr.co.kr";
 
-// Core SEO keywords — always included in sitemap
+// Core SEO keywords — included in sitemap only if they have articles
 const CORE_KEYWORDS = [
   "ai", "chatgpt", "openai", "nvidia", "apple", "tesla", "microsoft",
   "google", "meta", "amazon", "bitcoin", "crypto", "startup",
@@ -13,13 +14,36 @@ const CORE_KEYWORDS = [
 
 export const revalidate = 3600; // Revalidate hourly
 
-export async function GET() {
-  const dbKeywords = await getPopularKeywords(200);
+/** Check which CORE_KEYWORDS have at least 1 article (keywords column or title match) */
+async function getCoreKeywordsWithArticles(): Promise<string[]> {
+  const { data, error } = await supabase
+    .from("articles")
+    .select("keywords")
+    .order("created_at", { ascending: false })
+    .limit(500);
 
-  // Merge: DB keywords + core keywords (deduplicated, case-insensitive)
+  if (error || !data) return [];
+
+  const dbKeywordSet = new Set<string>();
+  for (const row of data as { keywords: string[] }[]) {
+    for (const kw of row.keywords || []) {
+      dbKeywordSet.add(kw.toLowerCase());
+    }
+  }
+
+  return CORE_KEYWORDS.filter((kw) => dbKeywordSet.has(kw.toLowerCase()));
+}
+
+export async function GET() {
+  const [dbKeywords, validCoreKeywords] = await Promise.all([
+    getPopularKeywords(200),
+    getCoreKeywordsWithArticles(),
+  ]);
+
+  // Merge: DB keywords + validated core keywords (deduplicated, case-insensitive)
   const seen = new Set<string>();
   const allKeywords: string[] = [];
-  for (const kw of [...dbKeywords, ...CORE_KEYWORDS]) {
+  for (const kw of [...dbKeywords, ...validCoreKeywords]) {
     const lower = kw.toLowerCase();
     if (!seen.has(lower)) {
       seen.add(lower);
