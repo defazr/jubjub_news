@@ -14,24 +14,21 @@ const CORE_KEYWORDS = [
 
 export const revalidate = 3600; // Revalidate hourly
 
-/** Check which CORE_KEYWORDS have at least 1 article (keywords column or title match) */
+/** Check which CORE_KEYWORDS have at least 1 article (same logic as topic pages: keywords.cs OR title.ilike) */
 async function getCoreKeywordsWithArticles(): Promise<string[]> {
-  const { data, error } = await supabase
-    .from("articles")
-    .select("keywords")
-    .order("created_at", { ascending: false })
-    .limit(500);
+  const checks = CORE_KEYWORDS.map(async (kw) => {
+    const { count, error } = await supabase
+      .from("articles")
+      .select("id", { count: "exact", head: true })
+      .or(`keywords.cs.{${kw}},title.ilike.%${kw}%`)
+      .limit(1);
 
-  if (error || !data) return [];
+    if (error) return null;
+    return (count ?? 0) > 0 ? kw : null;
+  });
 
-  const dbKeywordSet = new Set<string>();
-  for (const row of data as { keywords: string[] }[]) {
-    for (const kw of row.keywords || []) {
-      dbKeywordSet.add(kw.toLowerCase());
-    }
-  }
-
-  return CORE_KEYWORDS.filter((kw) => dbKeywordSet.has(kw.toLowerCase()));
+  const results = await Promise.all(checks);
+  return results.filter((kw): kw is string => kw !== null);
 }
 
 export async function GET() {
