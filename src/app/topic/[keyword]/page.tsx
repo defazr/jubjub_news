@@ -8,6 +8,7 @@ import TopicArticleList from "./TopicArticleList";
 import { Badge } from "@/components/ui/badge";
 import { Hash } from "lucide-react";
 import TrendingTopics from "@/components/TrendingTopics";
+import { filterArticles } from "@/lib/contentFilter";
 
 export const revalidate = 3600; // ISR: 1 hour (reduced writes)
 
@@ -43,10 +44,11 @@ export default async function TopicPage({ params }: Props) {
   const { keyword } = await params;
   const decoded = decodeURIComponent(keyword);
 
-  const [articles, popularKeywords] = await Promise.all([
+  const [rawArticles, popularKeywords] = await Promise.all([
     getArticlesByConceptTopic(decoded, 50),
     getPopularKeywords(20),
   ]);
+  const articles = filterArticles(rawArticles);
 
   // Topic description for About section
   const topicDesc = getTopicDescription(decoded);

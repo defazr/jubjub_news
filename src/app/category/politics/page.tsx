@@ -1,5 +1,6 @@
 import { getArticlesByCategory, articleToApiArticle } from "@/lib/articles";
 import { getCategoryBySlug } from "@/lib/categories";
+import { filterArticles } from "@/lib/contentFilter";
 import CategoryPageContent from "@/components/CategoryPage";
 
 export const revalidate = 1800; // ISR: 30 minutes (reduced writes)
@@ -7,7 +8,7 @@ export const revalidate = 1800; // ISR: 30 minutes (reduced writes)
 const category = getCategoryBySlug("politics")!;
 
 export default async function Page() {
-  const articles = await getArticlesByCategory(category.dbCategory || "world", 20);
-  const apiArticles = articles.map(articleToApiArticle);
+  const raw = await getArticlesByCategory(category.dbCategory || "world", 20);
+  const apiArticles = filterArticles(raw).map(articleToApiArticle);
   return <CategoryPageContent category={category} initialArticles={apiArticles} />;
 }

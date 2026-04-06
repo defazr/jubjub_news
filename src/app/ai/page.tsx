@@ -3,6 +3,7 @@ import { getArticlesWithSummary, getPopularKeywords } from "@/lib/articles";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AdUnit from "@/components/AdUnit";
+import { filterArticles } from "@/lib/contentFilter";
 import AiArticleList from "./AiArticleList";
 
 export const metadata: Metadata = {
@@ -15,10 +16,11 @@ export const metadata: Metadata = {
 };
 
 export default async function AiPage() {
-  const [articles, keywords] = await Promise.all([
+  const [rawArticles, keywords] = await Promise.all([
     getArticlesWithSummary(30),
     getPopularKeywords(15),
   ]);
+  const articles = filterArticles(rawArticles, { excludeFailedSummary: true });
 
   return (
     <div className="min-h-screen bg-background">

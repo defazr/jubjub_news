@@ -8,6 +8,7 @@ import {
   articleToApiArticle,
 } from "@/lib/articles";
 import { HOMEPAGE_CATEGORIES } from "@/lib/categories";
+import { filterArticles } from "@/lib/contentFilter";
 import HomeContent from "./HomeContent";
 
 export const revalidate = 900; // ISR: revalidate every 15 minutes (reduced writes)
@@ -24,13 +25,13 @@ export default async function Home() {
 
   // Fallback: if no trending articles, use latest
   const effectiveTrending = trendingRaw.length > 0 ? trendingRaw : latestRaw;
-  const trending = effectiveTrending.map(articleToApiArticle);
-  const aiArticles = aiRaw.map(articleToApiArticle);
-  const breaking = breakingRaw.map(articleToApiArticle);
+  const trending = filterArticles(effectiveTrending).map(articleToApiArticle);
+  const aiArticles = filterArticles(aiRaw, { excludeFailedSummary: true }).map(articleToApiArticle);
+  const breaking = filterArticles(breakingRaw).map(articleToApiArticle);
 
   const categoryData: Record<string, ReturnType<typeof articleToApiArticle>[]> = {};
   HOMEPAGE_CATEGORIES.forEach((c, i) => {
-    categoryData[c.label] = categoryResults[i].map(articleToApiArticle);
+    categoryData[c.label] = filterArticles(categoryResults[i]).map(articleToApiArticle);
   });
 
   return (
