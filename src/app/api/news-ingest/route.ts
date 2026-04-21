@@ -26,8 +26,8 @@ const CATEGORIES = [
 interface RawArticle {
   title: string;
   url: string;
-  excerpt: string;
-  thumbnail: string;
+  excerpt?: string;
+  thumbnail?: string;
   date: string;
   publisher?: { name?: string };
 }
@@ -97,24 +97,22 @@ interface AiResult {
   keywords: string[] | null;
 }
 
-async function generateSummaryAndKeywords(title: string, excerpt: string): Promise<AiResult> {
-  if (!ANTHROPIC_API_KEY || !excerpt) return { summary: null, keywords: null };
+const FAILED_SUMMARY_PATTERNS = [
+  "i cannot", "i can't", "unable to", "i'm unable",
+  "i do not have access", "i appreciate your request, but",
+];
 
-  try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 250,
-        messages: [
-          {
-            role: "user",
-            content: `You are a news editor. Given this article, produce exactly 3 sections separated by blank lines:
+function isFailedSummary(text: string): boolean {
+  const lower = text.toLowerCase().trim();
+  return FAILED_SUMMARY_PATTERNS.some((p) => lower.startsWith(p) || lower.includes(p));
+}
+
+async function generateSummaryAndKeywords(title: string, excerpt: string | null): Promise<AiResult> {
+  if (!ANTHROPIC_API_KEY) return { summary: null, keywords: null };
+
+  const hasExcerpt = !!excerpt;
+  const promptContent = hasExcerpt
+    ? `You are a news editor. Given this article, produce exactly 3 sections separated by blank lines:
 
 Line 1: A click-worthy, SEO-optimized headline (max 70 chars). Engaging for Google Discover. Do NOT repeat the original title.
 
@@ -131,7 +129,34 @@ KEYWORDS: mit, neuromorphic, ai chip, semiconductor, autonomous vehicles, health
 
 Title: ${title}
 
-Excerpt: ${excerpt}`,
+Excerpt: ${excerpt}`
+    : `You are a news editor. Given ONLY this headline, produce exactly 3 sections separated by blank lines:
+
+Line 1: A click-worthy, SEO-optimized headline (max 70 chars). Engaging for Google Discover. Do NOT repeat the original title.
+
+Line 2+: A 1-2 sentence summary (30-50 words) based ONLY on what the title clearly states. Do NOT speculate, generalize, or add information not evident from the title. If uncertain, keep it short and factual.
+
+Last line: KEYWORDS: comma-separated list of 3-5 specific entities and topics from the title. Lowercase. No generic words.
+
+IMPORTANT: Only summarize facts clearly stated in the title. No speculation, no generalizations, no filler.
+
+Title: ${title}`;
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 250,
+        messages: [
+          {
+            role: "user",
+            content: promptContent,
           },
         ],
       }),
@@ -142,6 +167,9 @@ Excerpt: ${excerpt}`,
     const data = await res.json();
     const text = data.content?.[0]?.text;
     if (!text) return { summary: null, keywords: null };
+
+    // Reject failed/refused summaries
+    if (isFailedSummary(text)) return { summary: null, keywords: null };
 
     // Extract keywords from last line if present
     const keywordsMatch = text.match(/^KEYWORDS:\s*(.+)$/m);
@@ -418,13 +446,16 @@ export async function GET(req: NextRequest) {
     const shouldSummarize = req.nextUrl.searchParams.get("summarize") === "true";
     if (shouldSummarize) {
       const summaryStart = Date.now();
+      const summaryLog = { success: 0, failed_pattern: 0, failed_other: 0 };
       const summaryResults = await Promise.allSettled(
         prepared.map(async (item) => {
-          if (!item.excerpt) return;
-          const aiResult = await generateSummaryAndKeywords(item.title, item.excerpt);
+          const aiResult = await generateSummaryAndKeywords(item.title, item.excerpt ?? null);
           if (aiResult.summary) {
             item.summary = aiResult.summary;
             stats.summaries++;
+            summaryLog.success++;
+          } else {
+            summaryLog.failed_other++;
           }
           if (aiResult.keywords && aiResult.keywords.length > 0) {
             const seen = new Set(aiResult.keywords);
@@ -445,6 +476,7 @@ export async function GET(req: NextRequest) {
         }
       }
       timing.summaryMs = Date.now() - summaryStart;
+      console.log("[SUMMARY]", summaryLog);
     }
 
     // 6. Batch insert (Supabase upsert)
