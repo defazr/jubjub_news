@@ -5,5 +5,9 @@ export const revalidate = 1800; // ISR: 30 minutes (reduced writes)
 
 export async function GET() {
   const keywords = await getPopularKeywords(15);
-  return NextResponse.json({ keywords });
+  return NextResponse.json({ keywords }, {
+    headers: {
+      "Cache-Control": "public, max-age=300, stale-while-revalidate=600",
+    },
+  });
 }

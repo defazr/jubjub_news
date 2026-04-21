@@ -81,6 +81,10 @@ export async function GET() {
         ingest_ok: ingestOk,
       },
       env_check: envCheck,
+    }, {
+      headers: {
+        "Cache-Control": "public, max-age=300, stale-while-revalidate=600",
+      },
     });
   } catch (err) {
     console.error("[NEWS-STATUS] unexpected error:", err);
