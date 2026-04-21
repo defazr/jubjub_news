@@ -14,24 +14,22 @@ interface AiResult {
   keywords: string[] | null;
 }
 
-async function generateSummaryAndKeywords(title: string, excerpt: string): Promise<AiResult> {
-  if (!ANTHROPIC_API_KEY || !excerpt) return { summary: null, keywords: null };
+const FAILED_SUMMARY_PATTERNS = [
+  "i cannot", "i can't", "unable to", "i'm unable",
+  "i do not have access", "i appreciate your request, but",
+];
 
-  try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 250,
-        messages: [
-          {
-            role: "user",
-            content: `You are a news editor. Given this article, produce exactly 3 sections separated by blank lines:
+function isFailedSummary(text: string): boolean {
+  const lower = text.toLowerCase().trim();
+  return FAILED_SUMMARY_PATTERNS.some((p) => lower.startsWith(p) || lower.includes(p));
+}
+
+async function generateSummaryAndKeywords(title: string, excerpt: string | null): Promise<AiResult> {
+  if (!ANTHROPIC_API_KEY) return { summary: null, keywords: null };
+
+  const hasExcerpt = !!excerpt;
+  const promptContent = hasExcerpt
+    ? `You are a news editor. Given this article, produce exactly 3 sections separated by blank lines:
 
 Line 1: A click-worthy, SEO-optimized headline (max 70 chars). Engaging for Google Discover. Do NOT repeat the original title.
 
@@ -48,7 +46,34 @@ KEYWORDS: mit, neuromorphic, ai chip, semiconductor, autonomous vehicles, health
 
 Title: ${title}
 
-Excerpt: ${excerpt}`,
+Excerpt: ${excerpt}`
+    : `You are a news editor. Given ONLY this headline, produce exactly 3 sections separated by blank lines:
+
+Line 1: A click-worthy, SEO-optimized headline (max 70 chars). Engaging for Google Discover. Do NOT repeat the original title.
+
+Line 2+: A 1-2 sentence summary (30-50 words) based ONLY on what the title clearly states. Do NOT speculate, generalize, or add information not evident from the title. If uncertain, keep it short and factual.
+
+Last line: KEYWORDS: comma-separated list of 3-5 specific entities and topics from the title. Lowercase. No generic words.
+
+IMPORTANT: Only summarize facts clearly stated in the title. No speculation, no generalizations, no filler.
+
+Title: ${title}`;
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 250,
+        messages: [
+          {
+            role: "user",
+            content: promptContent,
           },
         ],
       }),
@@ -59,6 +84,9 @@ Excerpt: ${excerpt}`,
     const data = await res.json();
     const text = data.content?.[0]?.text;
     if (!text) return { summary: null, keywords: null };
+
+    // Reject failed/refused summaries
+    if (isFailedSummary(text)) return { summary: null, keywords: null };
 
     const keywordsMatch = text.match(/^KEYWORDS:\s*(.+)$/m);
     let aiKeywords: string[] | null = null;
@@ -104,7 +132,6 @@ export async function GET(req: NextRequest) {
       .from("articles")
       .select("id, title, excerpt, keywords")
       .is("summary", null)
-      .not("excerpt", "is", null)
       .order("created_at", { ascending: false })
       .limit(limit);
 
@@ -117,6 +144,7 @@ export async function GET(req: NextRequest) {
     }
 
     const stats = { total: articles.length, success: 0, failed: 0 };
+    const backfillLog = { success: 0, failed_pattern: 0, failed_other: 0 };
 
     // Process in batches of 10
     for (let i = 0; i < articles.length; i += BATCH_SIZE) {
@@ -124,7 +152,7 @@ export async function GET(req: NextRequest) {
 
       const results = await Promise.allSettled(
         batch.map(async (article) => {
-          const aiResult = await generateSummaryAndKeywords(article.title, article.excerpt!);
+          const aiResult = await generateSummaryAndKeywords(article.title, article.excerpt ?? null);
           if (aiResult.summary) {
             const updateData: Record<string, unknown> = { summary: aiResult.summary };
 
@@ -152,8 +180,10 @@ export async function GET(req: NextRequest) {
               return;
             }
             stats.success++;
+            backfillLog.success++;
           } else {
             stats.failed++;
+            backfillLog.failed_other++;
           }
         })
       );
@@ -164,6 +194,8 @@ export async function GET(req: NextRequest) {
         }
       }
     }
+
+    console.log("[BACKFILL]", backfillLog);
 
     return NextResponse.json({
       success: true,
