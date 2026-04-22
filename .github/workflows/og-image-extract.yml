@@ -1,0 +1,22 @@
+name: OG Image Extract
+
+on:
+  schedule:
+    - cron: "30 */1 * * *"
+  workflow_dispatch:
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger og:image extraction
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            -A "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
+            "https://headlines.fazr.co.kr/api/extract-og-images?secret=${{ secrets.INGEST_SECRET }}&limit=30" \
+            --max-time 180)
+          echo "Response code: $response"
+          if [ "$response" -ne 200 ]; then
+            echo "Extraction failed with status $response"
+            exit 1
+          fi
