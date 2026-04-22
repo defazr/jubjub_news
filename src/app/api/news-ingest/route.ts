@@ -102,9 +102,36 @@ const FAILED_SUMMARY_PATTERNS = [
   "i do not have access", "i appreciate your request, but",
 ];
 
+const POOR_QUALITY_PATTERNS = [
+  /headline does not specify/i,
+  /does not provide/i,
+  /the title does not/i,
+  /based on the title alone/i,
+  /cannot be determined from the title/i,
+  /without additional context/i,
+  /though the .* does not specify/i,
+  /the exact reasons (are|remain) (unclear|unknown)/i,
+  /no further details/i,
+  /more information (is|would be) needed/i,
+  /it is unclear/i,
+  /it is not clear/i,
+  /no specific .* (provided|mentioned)/i,
+];
+
 function isFailedSummary(text: string): boolean {
   const lower = text.toLowerCase().trim();
   return FAILED_SUMMARY_PATTERNS.some((p) => lower.startsWith(p) || lower.includes(p));
+}
+
+function isPoorQualitySummary(summary: string): boolean {
+  if (!summary) return true;
+  if (summary.trim().length < 20) return true;
+  return POOR_QUALITY_PATTERNS.some((p) => p.test(summary));
+}
+
+function generateFallbackSummary(title: string): string {
+  const cleaned = title.trim().replace(/\.$/, "");
+  return `${cleaned}.`;
 }
 
 async function generateSummaryAndKeywords(title: string, excerpt: string | null): Promise<AiResult> {
@@ -130,17 +157,24 @@ KEYWORDS: mit, neuromorphic, ai chip, semiconductor, autonomous vehicles, health
 Title: ${title}
 
 Excerpt: ${excerpt}`
-    : `You are a news editor. Given ONLY this headline, produce exactly 3 sections separated by blank lines:
+    : `You are rewriting a news headline into a natural 2-3 sentence English summary.
 
-Line 1: A click-worthy, SEO-optimized headline (max 70 chars). Engaging for Google Discover. Do NOT repeat the original title.
+STRICT RULES:
+- Only use facts explicitly stated in the headline.
+- NEVER write meta-commentary such as "the headline does not specify",
+  "the exact reasons are unclear", "based on the title alone",
+  "without more context", "though the headline does not", or any phrase
+  explaining what the headline does or does not contain.
+- If the headline lacks detail, simply restate it naturally in English.
+  Do NOT explain the lack of detail.
+- Always produce a complete English sentence even if information is minimal.
+- No speculation, no generalization, no exaggeration.
+- Output only the summary. No preamble, no disclaimer.
 
-Line 2+: A 1-2 sentence summary (30-50 words) based ONLY on what the title clearly states. Do NOT speculate, generalize, or add information not evident from the title. If uncertain, keep it short and factual.
+After the summary, add a blank line and then:
+KEYWORDS: comma-separated list of 3-5 specific entities and topics from the headline. Lowercase. No generic words.
 
-Last line: KEYWORDS: comma-separated list of 3-5 specific entities and topics from the title. Lowercase. No generic words.
-
-IMPORTANT: Only summarize facts clearly stated in the title. No speculation, no generalizations, no filler.
-
-Title: ${title}`;
+Headline: ${title}`;
 
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -162,14 +196,14 @@ Title: ${title}`;
       }),
     });
 
-    if (!res.ok) return { summary: null, keywords: null };
+    if (!res.ok) return { summary: generateFallbackSummary(title), keywords: null };
 
     const data = await res.json();
     const text = data.content?.[0]?.text;
-    if (!text) return { summary: null, keywords: null };
+    if (!text) return { summary: generateFallbackSummary(title), keywords: null };
 
     // Reject failed/refused summaries
-    if (isFailedSummary(text)) return { summary: null, keywords: null };
+    if (isFailedSummary(text)) return { summary: generateFallbackSummary(title), keywords: null };
 
     // Extract keywords from last line if present
     const keywordsMatch = text.match(/^KEYWORDS:\s*(.+)$/m);
@@ -185,9 +219,14 @@ Title: ${title}`;
       summaryText = text.replace(/\n*^KEYWORDS:.*$/m, "").trim();
     }
 
+    // Reject poor quality summaries with meta-commentary
+    if (isPoorQualitySummary(summaryText)) {
+      return { summary: generateFallbackSummary(title), keywords: aiKeywords };
+    }
+
     return { summary: summaryText, keywords: aiKeywords };
   } catch {
-    return { summary: null, keywords: null };
+    return { summary: generateFallbackSummary(title), keywords: null };
   }
 }
 
@@ -446,15 +485,23 @@ export async function GET(req: NextRequest) {
     const shouldSummarize = req.nextUrl.searchParams.get("summarize") === "true";
     if (shouldSummarize) {
       const summaryStart = Date.now();
-      const summaryLog = { success: 0, failed_pattern: 0, failed_other: 0 };
+      const summaryLog = { success: 0, fallback_used: 0, failed_pattern: 0, failed_other: 0 };
       const summaryResults = await Promise.allSettled(
         prepared.map(async (item) => {
           const aiResult = await generateSummaryAndKeywords(item.title, item.excerpt ?? null);
           if (aiResult.summary) {
+            const isFallback = aiResult.summary === generateFallbackSummary(item.title);
             item.summary = aiResult.summary;
             stats.summaries++;
-            summaryLog.success++;
+            if (isFallback) {
+              summaryLog.fallback_used++;
+            } else {
+              summaryLog.success++;
+            }
           } else {
+            // NULL 방지: fallback으로 채움
+            item.summary = generateFallbackSummary(item.title);
+            stats.summaries++;
             summaryLog.failed_other++;
           }
           if (aiResult.keywords && aiResult.keywords.length > 0) {
