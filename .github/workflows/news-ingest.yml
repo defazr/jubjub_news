@@ -13,6 +13,7 @@ jobs:
       - name: Trigger news ingest
         run: |
           response=$(curl -s -o /dev/null -w "%{http_code}" \
+            -A "Mozilla/5.0 HeadlinesFazrCron/1.0" \
             "https://headlines.fazr.co.kr/api/news-ingest?secret=${{ secrets.INGEST_SECRET }}&summarize=true" \
             --max-time 120)
           echo "Response code: $response"
@@ -24,6 +25,7 @@ jobs:
       - name: Trigger backfill summaries
         run: |
           response=$(curl -s -o /dev/null -w "%{http_code}" \
+            -A "Mozilla/5.0 HeadlinesFazrCron/1.0" \
             "https://headlines.fazr.co.kr/api/backfill-summaries?secret=${{ secrets.INGEST_SECRET }}&limit=50" \
             --max-time 180)
           echo "Response code: $response"
