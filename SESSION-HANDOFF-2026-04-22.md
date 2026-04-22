@@ -1,110 +1,106 @@
-# Headlines Fazr — 세션 핸드오프 (2026-04-22)
+# Headlines Fazr — 세션 핸드오프 (2026-04-22 최종)
 
-## 현재 상��
+## 현재 상태
 
 - 사이트: https://headlines.fazr.co.kr
 - 브랜치: `main`
-- 기사 수: ~3,500 (373건 삭제 후)
-- summary NULL: 2건 (사실상 0)
-- 파이프라인: 정상 (ingest + summary 정상화 완료)
-- DNS: Cloudflare (Active, Bot Fight Mode ON)
-- 단계: 긴급 복구 완료 → 안정화 관찰 중
+- 기사 수: 3,588
+- summary NULL: 2건
+- 파이프라인: 정상 (ingest + summary + og:image 자동)
+- DNS: Cloudflare Active (Bot Fight Mode OFF)
+- 호스팅: Netlify Free
+- 단계: Phase 0 완료 → 6개월 관망 모드
 
 ---
 
-## 이번 세션에서 한 작업
-
-### 1. Cache-Control 헤더 추가 (커밋 `6582472`)
-
-- `/api/news-status`, `/api/trending-keywords`
-- `Cache-Control: public, max-age=300, stale-while-revalidate=600`
-
-### 2. ingest 복구 (커밋 `ed14fee`)
-
-- 근본 원인: RapidAPI가 excerpt/thumbnail 필드 제거
-- RawArticle 인터페이스 optional 처리
-- excerpt 없이 title만으로 summary 생성
-- title-only 프롬프트 (추측 금지 가이드)
-- `isFailedSummary()` 패턴 필터
-- `[SUMMARY]` 로깅
-
-### 3. backfill 복구 (커밋 `ba81a15`)
-
-- ingest와 동일 수정
-- `.not("excerpt", "is", null)` 필터 제거
-- `[BACKFILL]` 로깅
-
-### 4. 데이터 복구 + 정리
-
-- backfill 실행: 571건 중 298건 복구
-- 성공률 20% 이하 수렴 → 복구 종료
-- 남은 373건 삭제
-- 백업: `articles_backup_20260422`
-
-### 5. Cloudflare 이전 + 봇 차단
-
-- Cloudflare DNS 이전 완료 (Active)
-- NS: `darl.ns.cloudflare.com`, `meiling.ns.cloudflare.com`
-- 롤백용 가비아 NS: `ns.gabia.co.kr`, `ns1.gabia.co.kr`, `ns.gabia.net`
-- WAF Rule 1: Block SG bots (Managed Challenge) 배포 완료
-- Bot Fight Mode: ON, 브라우저 무결성 검��: ON
-
----
-
-## 커밋 이력 (이번 세션)
+## 이번 세션 커밋 (10개)
 
 | 커밋 | 내용 |
 |------|------|
-| `6582472` | Cache-Control 헤더 추가 |
-| `ed14fee` | ingest 복구 (RapidAPI 스펙 변경 대응) |
-| `ba81a15` | backfill 복구 (동일 수정) |
-| `6a763b8` | 핸드오�� 문서 추가 |
+| `6582472` | Cache-Control 헤더 |
+| `ed14fee` | ingest 복구 (RapidAPI 스펙 대응) |
+| `ba81a15` | backfill 복구 |
+| `96083aa` | Cron UA (실패) |
+| `fbad8fe` | Cron UA Chrome 위장 (성공) |
+| `de972e9` | 프롬프트 + fallback + NULL 금지 |
+| `76567d5` | 3중 가드 + 마크다운 후처리 |
+| `0e19fd7` | 카테고리 사전 차단 |
+| `162fb0d` | og:image 독립 추출 시스템 |
+| 핸드오프 | 문서 2회 업데이트 |
+
+---
+
+## Phase 0 완료 상태
+
+- ✅ 1단계: Cron 200 (Bot Fight Mode OFF + UA 위장)
+- ✅ 2단계: 3중 가드 + 프롬프트 (메타코멘트 차단, 영어 유지)
+- ✅ 3단계: DB 오염 파악 (228건)
+- ⏸ 4단계: DELETE (다음 세션)
+- ✅ 5단계: 카테고리 사전 차단
+- ✅ og:image 독립 추출 (60% 성공률, 에러 0)
+
+---
+
+## 신규 파일 (이번 세션)
+
+| 파일 | 역할 |
+|------|------|
+| `src/lib/ogImageExtractor.ts` | og:image 추출 유틸 |
+| `src/app/api/extract-og-images/route.ts` | og:image API |
+| `.github/workflows/og-image-extract.yml` | og:image cron (매시간 :30) |
+
+---
+
+## 다음 세션 할 것
+
+### 1. 4단계 DELETE
+
+```sql
+SELECT COUNT(*) FROM articles_backup_20260422_phase0_delete;
+
+DELETE FROM articles
+WHERE id IN (SELECT id FROM articles_backup_20260422_phase0_delete);
+```
+
+### 2. og:image 결과 확인
+
+```sql
+SELECT
+  COUNT(*) FILTER (WHERE image_url IS NULL) AS still_null,
+  COUNT(*) FILTER (WHERE image_url IS NOT NULL) AS have_image
+FROM articles;
+```
+
+### 3. 관망 모드 진입
 
 ---
 
 ## 현재 한계
 
-- **Summary 길이**: 150~200자 (이전 300~500자) — title만 기반이라 한계
-- **이미지**: 모든 신규 기사 fallback (RapidAPI thumbnail 미제공)
-
----
-
-## 남은 작업
-
-### Cloudflare (미완료)
-
-- Rule 2: `/topic` 경로 JS Challenge
-- Rule 3: `/api/` 경로 JS Challenge
-
-### 안정화 기간 (3~5일)
-
-코드 건드리지 말 것:
-- ingest 정상 동작 확인
-- summary 생성 정상 확인
-- Cloudflare 봇 차단 효과 확인
-
-### 이후
-
-- og:image 추출 구현 (기사 URL에서 og:image 메타태그 스크래핑)
-- RapidAPI 교체 검토 (장기)
+- **Summary 길이**: 150~200자 (title 기반, 이전 300~500자)
+- **이미지**: og:image 추출 60% 성공, 나머지 fallback
+- **DB 오염**: 228건 잔존 (contentFilter가 출력 차단 중)
 
 ---
 
 ## 수정 금지 (항상)
 
 - `src/lib/articles.ts`
-- `src/app/api/news-ingest/route.ts` (긴급 복구 완료 → 다시 수정 금지)
-- `src/app/api/backfill-summaries/route.ts` (긴급 복구 완료 → 다시 수정 금지)
+- `src/app/api/news-ingest/route.ts`
+- `src/app/api/backfill-summaries/route.ts`
 - Supabase schema
 - DB/API/URL/아키텍처 구조
 - CORE_KEYWORDS 배열
 
 ---
 
-## DB 참고
+## 핵심 원칙
 
-- 컬럼: id, title, slug, summary, excerpt, source_url, image_url, publisher, category, keywords, published_at, created_at, source_hash
-- 백업: `articles_backup_20260416`, `articles_backup_20260417`, `articles_backup_20260422`
+1. 외부 API 절대 신뢰 금지
+2. ingest는 외부 의존하지 않는 구조
+3. summary 영어 유지
+4. DELETE 전 백업 필수
+5. Bot Fight Mode OFF 유지 (cron 호환)
 
 ---
 
@@ -112,6 +108,6 @@
 
 | 문서 | 용도 |
 |------|------|
-| `CLAUDE.md` | 프로젝트 SSOT (운영 지시서 v1.2) |
-| `GPT-HANDOFF-2026-04-22.md` | GPT용 핸드오프 (이번 세션) |
+| `CLAUDE.md` | 프로젝트 SSOT |
+| `GPT-HANDOFF-2026-04-22.md` | GPT 핸드오프 (최종) |
 | `SESSION-HANDOFF-2026-04-06.md` | 이전 세션 핸드오프 |
