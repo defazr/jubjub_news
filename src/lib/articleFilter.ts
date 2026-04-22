@@ -117,6 +117,18 @@ const CITY_PORTAL_PATTERNS = [
   /^latest\s+[\w\s]+ news/i,
 ];
 
+// 12. Aggregator / Section / Category page 패턴
+const AGGREGATOR_PATTERNS = [
+  /^Latest World & National News & Headlines$/i,
+  /^Entertainment \|.*Reporter-Telegram$/i,
+  /^Health & Fitness \| TechRadar$/i,
+  /^Just Jared:.*Entertainment$/i,
+  /^Russia \| World \| The Guardian$/i,
+  /^Arts & Entertainment Calendar \|/i,
+  /Reuters .* News Summary \|/i,
+  /\| Darts World Magazine$/i,
+];
+
 /**
  * 쓰레기 기사 여부 판단 (12가지 패턴)
  *
@@ -153,6 +165,11 @@ export function shouldSkipArticle(
 
   // 11. City Portal / Section Page
   if (CITY_PORTAL_PATTERNS.some((regex) => regex.test(title))) {
+    return true;
+  }
+
+  // 12. Aggregator / Section / Category pages
+  if (AGGREGATOR_PATTERNS.some((regex) => regex.test(title))) {
     return true;
   }
 

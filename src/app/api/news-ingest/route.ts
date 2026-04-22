@@ -28,6 +28,7 @@ interface RawArticle {
   url: string;
   excerpt?: string;
   thumbnail?: string;
+  contentLength?: number;
   date: string;
   publisher?: { name?: string };
 }
@@ -451,7 +452,7 @@ export async function GET(req: NextRequest) {
       if (!article.title || !article.url) continue;
 
       // Junk article filter (cookie/paywall/login/bot/portal pages)
-      if (shouldSkipArticle(article.title, article.excerpt)) continue;
+      if (shouldSkipArticle(article.title, article.excerpt, article.contentLength)) continue;
 
       // Spam / SEO page filter
       const titleLower = article.title.toLowerCase();
