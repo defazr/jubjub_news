@@ -51,6 +51,17 @@ function generateFallbackSummary(title: string): string {
   return `${cleaned}.`;
 }
 
+function cleanMarkdown(summary: string): string {
+  return summary
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/\*\*(.+?)\*\*/g, "$1")
+    .replace(/\*(.+?)\*/g, "$1")
+    .replace(/^[-*+]\s+/gm, "")
+    .replace(/`(.+?)`/g, "$1")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 async function generateSummaryAndKeywords(title: string, excerpt: string | null): Promise<AiResult> {
   if (!ANTHROPIC_API_KEY) return { summary: generateFallbackSummary(title), keywords: null };
 
@@ -113,13 +124,14 @@ Headline: ${title}`;
       }),
     });
 
+    // [1차 가드] AI 호출 실패
     if (!res.ok) return { summary: generateFallbackSummary(title), keywords: null };
 
     const data = await res.json();
     const text = data.content?.[0]?.text;
-    if (!text) return { summary: generateFallbackSummary(title), keywords: null };
+    if (!text || text.trim() === "") return { summary: generateFallbackSummary(title), keywords: null };
 
-    // Reject failed/refused summaries
+    // [1차 가드] AI 거부 패턴
     if (isFailedSummary(text)) return { summary: generateFallbackSummary(title), keywords: null };
 
     const keywordsMatch = text.match(/^KEYWORDS:\s*(.+)$/m);
@@ -134,7 +146,10 @@ Headline: ${title}`;
       summaryText = text.replace(/\n*^KEYWORDS:.*$/m, "").trim();
     }
 
-    // Reject poor quality summaries with meta-commentary
+    // 마크다운 후처리
+    summaryText = cleanMarkdown(summaryText);
+
+    // [2차 가드] 품질 필터
     if (isPoorQualitySummary(summaryText)) {
       return { summary: generateFallbackSummary(title), keywords: aiKeywords };
     }
