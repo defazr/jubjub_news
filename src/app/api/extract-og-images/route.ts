@@ -78,6 +78,11 @@ export async function GET(req: NextRequest) {
           stats.extracted++;
         }
       } else {
+        // not_found → 빈 문자열로 마킹하여 재시도 방지
+        await supabase
+          .from("articles")
+          .update({ image_url: "" })
+          .eq("id", article.id);
         stats.not_found++;
       }
     } catch (err) {
