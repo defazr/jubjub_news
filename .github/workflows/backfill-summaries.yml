@@ -1,23 +1,22 @@
-name: News Ingest Cron
+name: Backfill Summaries
 
 on:
   schedule:
-    # Every 2 hours
-    - cron: "0 */2 * * *"
-  workflow_dispatch: # Manual trigger
+    - cron: "10,40 * * * *"
+  workflow_dispatch:
 
 jobs:
-  ingest:
+  backfill:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger news ingest
+      - name: Trigger summary backfill
         run: |
           response=$(curl -s -o /dev/null -w "%{http_code}" \
             -A "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-            "https://headlines.fazr.co.kr/api/news-ingest?secret=${{ secrets.INGEST_SECRET }}" \
+            "https://headlines.fazr.co.kr/api/backfill-summaries?secret=${{ secrets.INGEST_SECRET }}&limit=5" \
             --max-time 30)
           echo "Response code: $response"
           if [ "$response" != "200" ]; then
-            echo "Ingest failed with status $response"
+            echo "Backfill summaries failed with status $response"
             exit 1
           fi
