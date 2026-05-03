@@ -1,8 +1,8 @@
 name: Backfill Summaries
 
 on:
-  schedule:
-    - cron: "10,40 * * * *"
+  # schedule:
+  #   - cron: "10,40 * * * *"
   workflow_dispatch:
 
 jobs:
